@@ -19,7 +19,7 @@ export class MinioService implements OnModuleInit {
   constructor(private readonly config: ConfigService) {
     const endpoint = this.config.get<string>('MINIO_ENDPOINT', 'minio');
     const port = this.config.get<number>('MINIO_PORT', 9000);
-    const useSsl = this.config.get<boolean>('MINIO_USE_SSL', false);
+    const useSsl = this.config.get<string>('MINIO_USE_SSL', 'false') === 'true';
     this.bucket = this.config.get<string>('MINIO_BUCKET', 'datashare');
 
     const accessKeyId = this.config.get<string>('MINIO_ACCESS_KEY');
