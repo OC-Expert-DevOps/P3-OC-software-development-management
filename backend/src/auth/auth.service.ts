@@ -136,7 +136,7 @@ export class AuthService {
   // ─── Private helpers ───
 
   private generateAccessToken(userId: string, email: string): string {
-    const secret = this.config.get<string>('JWT_SECRET');
+    const secret = this.config.get<string>('JWT_SECRET')!;
     const expiresIn = this.config.get<string>('JWT_EXPIRES_IN') || '15m';
 
     return jwt.sign({ sub: userId, email }, secret, { expiresIn });
