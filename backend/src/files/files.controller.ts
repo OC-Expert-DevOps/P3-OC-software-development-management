@@ -8,6 +8,7 @@ import {
   HttpStatus,
   Param,
   Post,
+  Query,
   Req,
   UploadedFile,
   UseGuards,
@@ -17,6 +18,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtGuard } from '../auth/guards/jwt.guard';
 import { FilesService } from './files.service';
 import { UploadFileDto } from './dto/upload-file.dto';
+import { ListFilesDto } from './dto/list-files.dto';
 
 @UseGuards(JwtGuard)
 @Controller('files')
@@ -34,10 +36,16 @@ export class FilesController {
     return this.filesService.uploadFile(userId, file, dto);
   }
 
-  @Get()
-  async findAll(@Req() req: any) {
+  @Get('stats')
+  async getStats(@Req() req: any) {
     const userId = req.user.userId as string;
-    return this.filesService.findAllByUser(userId);
+    return this.filesService.getStats(userId);
+  }
+
+  @Get()
+  async findAll(@Req() req: any, @Query() dto: ListFilesDto) {
+    const userId = req.user.userId as string;
+    return this.filesService.findAllByUser(userId, dto);
   }
 
   @Get(':id')

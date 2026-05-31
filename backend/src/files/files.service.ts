@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
 import { MinioService } from '../minio/minio.service';
 import { UploadFileDto } from './dto/upload-file.dto';
+import { ListFilesDto } from './dto/list-files.dto';
 import { randomUUID } from 'crypto';
 import * as path from 'path';
 
@@ -59,14 +60,66 @@ export class FilesService {
     }
   }
 
-  async findAllByUser(userId: string) {
+  async findAllByUser(userId: string, dto?: ListFilesDto) {
     try {
-      return this.prisma.file.findMany({
-        where: { userId, isDeleted: false },
-        orderBy: { createdAt: 'desc' },
-      });
+      const page = dto?.page ?? 1;
+      const limit = dto?.limit ?? 20;
+      const sortBy = dto?.sortBy ?? 'createdAt';
+      const order = dto?.order ?? 'desc';
+      const skip = (page - 1) * limit;
+
+      const where = { userId, isDeleted: false };
+
+      const [data, total] = await Promise.all([
+        this.prisma.file.findMany({
+          where,
+          orderBy: { [sortBy]: order },
+          skip,
+          take: limit,
+        }),
+        this.prisma.file.count({ where }),
+      ]);
+
+      return {
+        data,
+        meta: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit),
+        },
+      };
     } catch (err) {
       this.logger.error('findAllByUser failed', err as any);
+      throw err;
+    }
+  }
+
+  /** Return file statistics for a user. */
+  async getStats(userId: string) {
+    try {
+      const where = { userId, isDeleted: false };
+
+      const [fileCount, deletedCount, aggregation, activeLinks] = await Promise.all([
+        this.prisma.file.count({ where }),
+        this.prisma.file.count({ where: { userId, isDeleted: true } }),
+        this.prisma.file.aggregate({ where, _sum: { sizeBytes: true } }),
+        this.prisma.downloadToken.count({
+          where: {
+            file: { userId, isDeleted: false },
+            expiresAt: { gt: new Date() },
+          },
+        }),
+      ]);
+
+      return {
+        fileCount,
+        deletedCount,
+        totalSizeBytes: (aggregation._sum.sizeBytes ?? BigInt(0)).toString(),
+        activeLinks,
+      };
+    } catch (err) {
+      this.logger.error('getStats failed', err as any);
       throw err;
     }
   }
