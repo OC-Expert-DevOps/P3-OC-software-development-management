@@ -70,6 +70,8 @@ services:
     image: minio/minio:latest
     container_name: datashare-minio
     command: server /data --console-address ":9001"
+    ports:
+      - "9001:9001"   # MinIO console (dev only)
     env_file:
       - ../.env
     environment:
