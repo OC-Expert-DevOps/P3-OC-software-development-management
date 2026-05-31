@@ -2,64 +2,52 @@
 
 ## Current Focus
 
-**Step 2 — Infrastructure Docker Compose & App Init** ✅ COMPLETE (2026-05-31)
+**Step 3 — US03+US04 Authentication** ✅ COMPLETE (2026-05-31)
 
-All infrastructure files created. Backend (NestJS) and Frontend (React/Vite) initialized.
+AuthModule implemented with 4 routes, JWT strategy, refresh token rotation, and 10 unit tests.
 
-## Files Created in Step 2
+## Files Created/Modified in Step 3
 
 ```
-├── .env.example
-├── .gitignore (updated)
-├── docker-compose.yml (5 services)
-├── README.md (updated — 8 sections)
-├── nginx/
-│   └── nginx.conf
-├── backend/
-│   ├── Dockerfile
-│   ├── package.json
-│   ├── tsconfig.json
-│   ├── nest-cli.json
-│   ├── src/
-│   │   ├── main.ts
-│   │   ├── app.module.ts
-│   │   └── app.controller.ts (GET /health)
-│   └── prisma/
-│       └── schema.prisma (6 entities)
-├── frontend/
-│   ├── Dockerfile
-│   ├── package.json
-│   ├── tsconfig.json
-│   ├── vite.config.ts
-│   ├── index.html
-│   └── src/
-│       ├── main.tsx
-│       └── App.tsx (4 routes: /, /login, /register, /dashboard, /upload)
-└── docs/infrastructure/
-    └── 04-infrastructure-setup.md
+backend/src/
+├── prisma/
+│   ├── prisma.module.ts    ← NEW: Global DB service module
+│   └── prisma.service.ts   ← NEW: PrismaClient wrapper
+├── auth/
+│   ├── auth.module.ts      ← NEW: Auth NestJS module
+│   ├── auth.controller.ts  ← NEW: 4 REST endpoints
+│   ├── auth.service.ts     ← NEW: Business logic
+│   ├── auth.service.spec.ts ← NEW: 10 unit tests
+│   ├── dto/
+│   │   ├── register.dto.ts ← NEW: Email + password validation
+│   │   └── login.dto.ts    ← NEW: Email + password validation
+│   └── guards/
+│       └── jwt.guard.ts    ← NEW: Reusable JWT guard
+├── app.module.ts            ← MODIFIED: imports PrismaModule + AuthModule
+docs/backend/
+└── 05-auth.md               ← NEW: Full auth documentation
+CHANGELOG.md                  ← MODIFIED: added [0.3.0]
 ```
 
 ## Active Decisions
 
-- Docker Compose with 5 services on `datashare-net` bridge network
-- Only Nginx exposed to host (ports 80/443), all others internal
-- Healthchecks on postgres and minio (backend waits for healthy)
-- Named volumes for data persistence (postgres-data, minio-data)
-- Self-signed TLS certificates for dev (nginx/certs/ gitignored)
-- Prisma schema maps to snake_case table/column names
+- JWT HS256 access token (15min) + UUID v4 refresh token (7d, bcrypt hash in DB)
+- Refresh token in HttpOnly cookie (Secure, SameSite=Strict, path /api/auth)
+- Token rotation on each refresh (old token revoked)
+- Password: bcrypt salt rounds = 10, min 8 chars
+- Email normalized to lowercase before storage/lookup
+- PrismaModule is @Global() — available to all modules without explicit import
 
 ## Next Step
 
-**Step 3 — Backend API Implementation**
-- Auth module (register, login, logout, refresh)
-- Files module (upload, list, delete, metadata)
-- Download module (generate token, public download)
-- Tags module (CRUD)
-- Prisma service + MinIO service
-- Cron job for expired file cleanup
+**Step 4 — US01: File Upload**
+- MinIO service module (upload, delete, presigned URL)
+- Files module (upload, anonymous upload, list, delete, metadata)
+- Integration with auth (JwtGuard on protected routes)
 
 ## Risks & Attention Points
 
 - `npm ci` in Dockerfiles requires package-lock.json (generated on first `npm install`)
-- Prisma migrations need running postgres (use `docker compose run backend npx prisma migrate dev`)
+- Prisma migrations need running postgres (`docker compose run backend npx prisma migrate dev`)
 - MinIO bucket must be created before first upload
+- Refresh token lookup iterates all non-revoked tokens (acceptable for MVP, not for scale)

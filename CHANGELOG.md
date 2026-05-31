@@ -5,6 +5,42 @@ All notable changes to this project will be documented in this file.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 Versioning follows [Semantic Versioning](https://semver.org/).
 
+## [0.3.0] - 2026-05-31 — Step 3: US03+US04 Authentication
+
+### Added
+
+**Backend Modules:**
+- `PrismaModule`: global DB service (`prisma.service.ts`, `prisma.module.ts`)
+- `AuthModule`: 4 REST endpoints (register, login, logout, refresh)
+- `JwtGuard`: reusable guard for protected routes (extracts + validates JWT)
+
+**Auth Routes:**
+- `POST /api/auth/register` — create account (bcrypt hash, email validation)
+- `POST /api/auth/login` — authenticate, emit JWT access token + HttpOnly refresh cookie
+- `POST /api/auth/logout` — revoke refresh token (requires JWT)
+- `POST /api/auth/refresh` — renew access token via cookie (token rotation)
+
+**DTOs & Validation:**
+- `RegisterDto`: email (IsEmail), password (MinLength 8)
+- `LoginDto`: email (IsEmail), password (IsString)
+- class-validator + class-transformer for input validation
+
+**Token Strategy:**
+- Access token: JWT HS256, payload `{sub, email}`, TTL 15min
+- Refresh token: UUID v4, bcrypt hash in DB, HttpOnly cookie, TTL 7 days
+- Token rotation on each refresh (old token revoked)
+
+**Tests:**
+- `auth.service.spec.ts`: 10 unit tests (register, login, logout, refresh)
+- Covers: success paths, duplicate email, wrong password, token expiry
+
+**Documentation:**
+- `docs/backend/05-auth.md`: full AuthModule documentation (routes, strategy, diagrams, tests)
+
+**GitHub:**
+- Issue #6: `[AUTH] Step 3 — US03+US04 : User registration & authentication`
+- PR: `feature/step3-auth` → `main`
+
 ## [0.2.0] - 2026-05-31 — Step 2: Infrastructure & App Init
 
 ### Added
