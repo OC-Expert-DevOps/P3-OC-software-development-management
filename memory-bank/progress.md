@@ -19,10 +19,25 @@
 - .gitignore: updated (node_modules, .env, certs, coverage, volumes)
 - README.md: 8 sections (Prerequisites, Installation, Configuration, Launch, Tests, Security, Limitations)
 - docs/infrastructure/04-infrastructure-setup.md
-- **GitHub**: Issue #2 + PR (feature/step2-infrastructure → main)
+- **GitHub**: Issue #3 → closed via PR #5 (squash merged)
+
+## Step 3 — US03+US04 Authentication ✅ (2026-05-31)
+
+- PrismaModule: global DB service (@Global, auto-connect/disconnect)
+- AuthModule: 4 REST endpoints (register, login, logout, refresh)
+- JwtGuard: reusable guard for protected routes
+- DTOs: RegisterDto (email + password min 8), LoginDto (email + password)
+- Token strategy: JWT HS256 (15min) + refresh UUID v4 in HttpOnly cookie (7d)
+- Token rotation: old refresh token revoked on each refresh
+- Password: bcrypt (salt rounds 10), email normalized to lowercase
+- Tests: 10 unit tests in auth.service.spec.ts (register, login, logout, refresh)
+- Documentation: docs/backend/05-auth.md (routes, strategy, diagrams, tests, env vars)
+- **GitHub**: Issue #6 → PR feature/step3-auth → main
 
 ## What's Left
 
-- [ ] Step 3 — Backend API (auth, files, download, tags, cron)
-- [ ] Step 4 — Frontend React (pages, components, API integration)
-- [ ] Step 5 — Tests & CI (Jest 70%, E2E, final docs)
+- [ ] Step 4 — US01: File Upload (MinIO service, upload/list/delete endpoints)
+- [ ] Step 5 — US02: Download Links (token generation, public download, password protection)
+- [ ] Step 6 — US07-US10: Advanced features (anonymous upload, tags, password, auto-expiration)
+- [ ] Step 7 — Frontend React (pages, components, API integration)
+- [ ] Step 8 — Tests & CI (Jest 70%+, Cypress E2E, final docs)

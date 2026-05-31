@@ -1,16 +1,14 @@
 import { Module } from '@nestjs/common';
-import { ScheduleModule } from '@nestjs/schedule';
+import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
+import { PrismaModule } from './prisma/prisma.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
-    ScheduleModule.forRoot(),
-    // TODO: AuthModule,
-    // TODO: FilesModule,
-    // TODO: DownloadModule,
-    // TODO: TagsModule,
-    // TODO: PrismaModule,
-    // TODO: MinioModule,
+    ConfigModule.forRoot({ isGlobal: true }),
+    PrismaModule,
+    AuthModule,
   ],
   controllers: [AppController],
 })
