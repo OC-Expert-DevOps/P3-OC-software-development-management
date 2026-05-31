@@ -32,9 +32,10 @@ model File {
   createdAt    DateTime @default(now()) @map("created_at")
   isDeleted    Boolean  @default(false) @map("is_deleted")
 
-  user           User?           @relation(fields: [userId], references: [id])
-  downloadTokens DownloadToken[]
-  fileTags       FileTag[]
+  user            User?              @relation(fields: [userId], references: [id])
+  downloadTokens  DownloadToken[]
+  downloadHistory DownloadHistory[]
+  fileTags        FileTag[]
 
   @@index([userId])
   @@index([expiresAt, isDeleted])
@@ -50,7 +51,8 @@ model DownloadToken {
   maxDownloads  Int      @default(0) @map("max_downloads")
   createdAt     DateTime @default(now()) @map("created_at")
 
-  file File @relation(fields: [fileId], references: [id])
+  file            File              @relation(fields: [fileId], references: [id])
+  downloadHistory DownloadHistory[]
 
   @@index([fileId])
   @@map("download_tokens")
@@ -68,6 +70,21 @@ model RefreshToken {
 
   @@index([userId])
   @@map("refresh_tokens")
+}
+
+model DownloadHistory {
+  id          String   @id @default(uuid()) @db.Uuid
+  fileId      String   @map("file_id") @db.Uuid
+  tokenId     String?  @map("token_id") @db.Uuid
+  downloadedAt DateTime @default(now()) @map("downloaded_at")
+  ipAddress   String?  @map("ip_address") @db.VarChar(45)
+  userAgent   String?  @map("user_agent") @db.VarChar(500)
+
+  file  File           @relation(fields: [fileId], references: [id])
+  token DownloadToken? @relation(fields: [tokenId], references: [id])
+
+  @@index([fileId])
+  @@map("download_history")
 }
 
 model Tag {
