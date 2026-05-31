@@ -1,6 +1,6 @@
 {
   "name": "datashare-backend",
-  "version": "0.1.0",
+  "version": "0.3.1",
   "description": "DataShare API — NestJS backend",
   "private": true,
   "scripts": {
