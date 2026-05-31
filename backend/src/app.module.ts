@@ -4,6 +4,7 @@ import { AppController } from './app.controller';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import { FilesModule } from './files/files.module';
+import { DownloadModule } from './download/download.module';
 
 @Module({
   imports: [
@@ -11,6 +12,7 @@ import { FilesModule } from './files/files.module';
     PrismaModule,
     AuthModule,
     FilesModule,
+    DownloadModule,
   ],
   controllers: [AppController],
 })
