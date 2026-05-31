@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 Versioning follows [Semantic Versioning](https://semver.org/).
 
+## [0.3.1] - 2026-05-31 — Fix: TypeScript strict typing for auth
+
+### Fixed
+- `auth.service.ts`: non-null assertion on `config.get<string>('JWT_SECRET')!` (TS2769)
+- `jwt.guard.ts`: same fix for `jwt.verify()` call
+- Added `@nestjs/config` as explicit dependency in `package.json`
+- All 10 auth tests pass — `auth.service.ts` at 100% statement coverage
+
 ## [0.3.0] - 2026-05-31 — Step 3: US03+US04 Authentication
 
 ### Added

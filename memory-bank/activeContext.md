@@ -5,6 +5,7 @@
 **Step 3 — US03+US04 Authentication** ✅ COMPLETE (2026-05-31)
 
 AuthModule implemented with 4 routes, JWT strategy, refresh token rotation, and 10 unit tests.
+All 10 tests pass — auth.service.ts at 100% coverage. Fix v0.3.1: TS strict typing.
 
 ## Files Created/Modified in Step 3
 

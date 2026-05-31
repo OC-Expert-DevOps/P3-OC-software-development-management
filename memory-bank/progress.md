@@ -32,7 +32,9 @@
 - Password: bcrypt (salt rounds 10), email normalized to lowercase
 - Tests: 10 unit tests in auth.service.spec.ts (register, login, logout, refresh)
 - Documentation: docs/backend/05-auth.md (routes, strategy, diagrams, tests, env vars)
-- **GitHub**: Issue #6 → PR feature/step3-auth → main
+- **GitHub**: Issue #6 → PR #7 feature/step3-auth → main (squash merged)
+- **Fix v0.3.1**: TS strict typing (non-null assertion on config.get), @nestjs/config added
+- **Tests**: 10/10 PASS, auth.service.ts 100% statement coverage
 
 ## What's Left
 
