@@ -1,30 +1,25 @@
 import { Routes, Route } from 'react-router-dom';
-
-function LoginPage() {
-  return <h1>Login — DataShare</h1>;
-}
-
-function RegisterPage() {
-  return <h1>Register — DataShare</h1>;
-}
-
-function DashboardPage() {
-  return <h1>Dashboard — My Files</h1>;
-}
-
-function UploadPage() {
-  return <h1>Upload a File</h1>;
-}
+import Navbar from './components/Navbar';
+import PrivateRoute from './components/PrivateRoute';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
+import DashboardPage from './pages/DashboardPage';
+import UploadPage from './pages/UploadPage';
+import DownloadPage from './pages/DownloadPage';
 
 function App() {
   return (
-    <Routes>
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/register" element={<RegisterPage />} />
-      <Route path="/dashboard" element={<DashboardPage />} />
-      <Route path="/upload" element={<UploadPage />} />
-      <Route path="/" element={<LoginPage />} />
-    </Routes>
+    <>
+      <Navbar />
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/dashboard" element={<PrivateRoute><DashboardPage /></PrivateRoute>} />
+        <Route path="/upload" element={<PrivateRoute><UploadPage /></PrivateRoute>} />
+        <Route path="/download/:token" element={<DownloadPage />} />
+        <Route path="/" element={<LoginPage />} />
+      </Routes>
+    </>
   );
 }
 
