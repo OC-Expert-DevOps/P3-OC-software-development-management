@@ -47,6 +47,7 @@ model DownloadToken {
   token         String   @unique @db.VarChar(255)
   expiresAt     DateTime @map("expires_at")
   downloadCount Int      @default(0) @map("download_count")
+  maxDownloads  Int      @default(0) @map("max_downloads")
   createdAt     DateTime @default(now()) @map("created_at")
 
   file File @relation(fields: [fileId], references: [id])
