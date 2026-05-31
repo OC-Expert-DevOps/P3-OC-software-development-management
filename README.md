@@ -20,11 +20,7 @@ cp .env.example .env
 # → Edit .env with your values
 
 # Generate self-signed TLS certificates (dev only)
-mkdir -p nginx/certs
-openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-  -keyout nginx/certs/selfsigned.key \
-  -out nginx/certs/selfsigned.crt \
-  -subj "/CN=localhost"
+make certs
 ```
 
 ## Configuration
@@ -57,7 +53,11 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
 ### Development (Docker Compose)
 
 ```bash
-docker compose up --build
+# Using Makefile (recommended)
+make up
+
+# Or directly
+docker compose -f infra/docker-compose.yml up --build
 ```
 
 Services:

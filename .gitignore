@@ -15,7 +15,7 @@ build/
 *.secret.*
 
 # ─── TLS certificates (dev) ───
-nginx/certs/
+infra/nginx/certs/
 
 # ─── IDE / OS ───
 .vscode/

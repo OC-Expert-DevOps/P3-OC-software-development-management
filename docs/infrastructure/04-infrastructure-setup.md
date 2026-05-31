@@ -46,14 +46,11 @@ cp .env.example .env
 # Edit .env with your values (especially secrets)
 
 # 3. Generate self-signed TLS certificates (dev only)
-mkdir -p nginx/certs
-openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-  -keyout nginx/certs/selfsigned.key \
-  -out nginx/certs/selfsigned.crt \
-  -subj "/CN=localhost"
+make certs
 
 # 4. Start all services
-docker compose up --build
+make up
+# Or: docker compose -f infra/docker-compose.yml up --build
 
 # 5. Verify
 curl -k https://localhost/api/health
