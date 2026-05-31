@@ -4,7 +4,7 @@
 
 | Date | Step | Status | Details |
 |------|------|--------|---------|
-| 2026-05-31 | Step 1 — Architecture & Design | 🔄 In Progress | Architecture diagrams, MCD, sequence flows, OpenAPI contract |
+| 2026-05-31 | Step 1 — Architecture & Design | ✅ Complete | Architecture diagrams, MCD, sequence flows, OpenAPI contract |
 | — | Step 2 — Infrastructure | ⏳ Planned | Docker Compose, PostgreSQL, MinIO, Nginx setup |
 | — | Step 3 — Backend API | ⏳ Planned | NestJS: auth, files, download, tags, cron |
 | — | Step 4 — Frontend | ⏳ Planned | React: pages, components, API integration |
@@ -18,13 +18,13 @@
 - [x] Memory bank initialized (5 files)
 - [x] Branch `feature/step1-architecture-mvp` created
 
-### In Progress
-- [ ] Architecture overview diagram (Mermaid)
-- [ ] Technology choices table
-- [ ] Database schema MCD (6 entities)
-- [ ] Sequence diagrams (8 flows, US01–US10)
-- [ ] OpenAPI 3.0 contract (14 routes)
-- [ ] GitHub Issue #1 + PR
+### Completed (continued)
+- [x] Architecture overview diagram (Mermaid)
+- [x] Technology choices table (12 technologies justified)
+- [x] Database schema MCD (6 entities: User, File, DownloadToken, RefreshToken, Tag, FileTag)
+- [x] Sequence diagrams (8 flows A→H, covering US01–US10)
+- [x] OpenAPI 3.0 contract (14 routes: auth, files, tags, download)
+- [x] GitHub Issue #1 + PR #2 created with labels (architecture, documentation, mvp)
 
 ### Key Decisions Made
 - Stack: NestJS + React + PostgreSQL + MinIO + Prisma

@@ -2,13 +2,9 @@
 
 ## Current Focus
 
-**Step 1 — Architecture & Technical Design** (started 2026-05-31)
+**Step 1 — Architecture & Technical Design** ✅ COMPLETE (2026-05-31)
 
-Producing the 4 architecture deliverables:
-1. Architecture overview diagram + technology choices table
-2. Database schema (MCD) — 6 entities covering US01–US10
-3. Sequence diagrams — 8 flows covering all user stories
-4. API contract — OpenAPI 3.0 YAML (14 routes)
+All 4 architecture deliverables produced. Issue #1 + PR #2 created on GitHub.
 
 ## Files Being Created
 
@@ -29,7 +25,12 @@ docs/architecture/
 
 ## Next Step
 
-Step 2 — Infrastructure setup (Docker Compose, database init, MinIO config)
+**Step 2 — Infrastructure setup**
+- Docker Compose with all 5 services (nginx, frontend, backend, postgres, minio)
+- Database schema initialization (Prisma migrations)
+- MinIO bucket creation
+- Nginx reverse proxy configuration
+- `.env.example` with all required environment variables
 
 ## Risks & Attention Points
 
