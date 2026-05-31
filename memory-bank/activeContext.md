@@ -2,32 +2,28 @@
 
 ## Current Focus
 
-**Step 3 — US03+US04 Authentication** ✅ COMPLETE (2026-05-31)
+**Step 4 — US01 File Upload (GitHub Copilot)** 🟡 IN PROGRESS (2026-05-31)
 
-AuthModule implemented with 4 routes, JWT strategy, refresh token rotation, and 10 unit tests.
-All 10 tests pass — auth.service.ts at 100% coverage. Fix v0.3.1: TS strict typing.
+Scaffold ready: skeleton files + Copilot prompts + supervision log template.
+Waiting for developer to generate code with GitHub Copilot, then review and commit.
 
-## Files Created/Modified in Step 3
+## Files Created in Step 4 Scaffold
 
 ```
 backend/src/
-├── prisma/
-│   ├── prisma.module.ts    ← NEW: Global DB service module
-│   └── prisma.service.ts   ← NEW: PrismaClient wrapper
-├── auth/
-│   ├── auth.module.ts      ← NEW: Auth NestJS module
-│   ├── auth.controller.ts  ← NEW: 4 REST endpoints
-│   ├── auth.service.ts     ← NEW: Business logic
-│   ├── auth.service.spec.ts ← NEW: 10 unit tests
-│   ├── dto/
-│   │   ├── register.dto.ts ← NEW: Email + password validation
-│   │   └── login.dto.ts    ← NEW: Email + password validation
-│   └── guards/
-│       └── jwt.guard.ts    ← NEW: Reusable JWT guard
-├── app.module.ts            ← MODIFIED: imports PrismaModule + AuthModule
-docs/backend/
-└── 05-auth.md               ← NEW: Full auth documentation
-CHANGELOG.md                  ← MODIFIED: added [0.3.0]
+├── minio/
+│   ├── minio.module.ts         ← SKELETON: Copilot Prompt 1
+│   └── minio.service.ts        ← SKELETON: Copilot Prompt 1
+├── files/
+│   ├── files.module.ts         ← SKELETON: Copilot Prompt 3
+│   ├── files.controller.ts     ← SKELETON: Copilot Prompt 3
+│   ├── files.service.ts        ← SKELETON: Copilot Prompt 2
+│   ├── files.service.spec.ts   ← SKELETON: Copilot Prompt 4
+│   └── dto/
+│       └── upload-file.dto.ts  ← SKELETON: Copilot Prompt 2
+docs/ai-usage/
+├── us01-copilot-prompts.md     ← 4 prompts for Copilot Chat
+└── us01-supervision-log.md     ← Template for human review
 ```
 
 ## Active Decisions
