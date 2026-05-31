@@ -1,0 +1,90 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String         @id @default(uuid()) @db.Uuid
+  email        String         @unique @db.VarChar(255)
+  passwordHash String         @map("password_hash") @db.VarChar(255)
+  createdAt    DateTime       @default(now()) @map("created_at")
+  updatedAt    DateTime       @updatedAt @map("updated_at")
+
+  files         File[]
+  refreshTokens RefreshToken[]
+
+  @@map("users")
+}
+
+model File {
+  id           String   @id @default(uuid()) @db.Uuid
+  userId       String?  @map("user_id") @db.Uuid
+  originalName String   @map("original_name") @db.VarChar(255)
+  storageKey   String   @unique @map("storage_key") @db.VarChar(500)
+  mimeType     String?  @map("mime_type") @db.VarChar(100)
+  sizeBytes    BigInt   @map("size_bytes")
+  passwordHash String?  @map("password_hash") @db.VarChar(255)
+  expiresAt    DateTime @map("expires_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+  isDeleted    Boolean  @default(false) @map("is_deleted")
+
+  user           User?           @relation(fields: [userId], references: [id])
+  downloadTokens DownloadToken[]
+  fileTags       FileTag[]
+
+  @@index([userId])
+  @@index([expiresAt, isDeleted])
+  @@map("files")
+}
+
+model DownloadToken {
+  id            String   @id @default(uuid()) @db.Uuid
+  fileId        String   @map("file_id") @db.Uuid
+  token         String   @unique @db.VarChar(255)
+  expiresAt     DateTime @map("expires_at")
+  downloadCount Int      @default(0) @map("download_count")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  file File @relation(fields: [fileId], references: [id])
+
+  @@index([fileId])
+  @@map("download_tokens")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  tokenHash String   @unique @map("token_hash") @db.VarChar(255)
+  expiresAt DateTime @map("expires_at")
+  isRevoked Boolean  @default(false) @map("is_revoked")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+model Tag {
+  id   String @id @default(uuid()) @db.Uuid
+  name String @unique @db.VarChar(30)
+
+  fileTags FileTag[]
+
+  @@map("tags")
+}
+
+model FileTag {
+  fileId String @map("file_id") @db.Uuid
+  tagId  String @map("tag_id") @db.Uuid
+
+  file File @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  tag  Tag  @relation(fields: [tagId], references: [id])
+
+  @@id([fileId, tagId])
+  @@map("file_tags")
+}

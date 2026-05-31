@@ -1,33 +1,28 @@
 # DataShare — Progress
 
-## Timeline
+## Step 1 — Architecture & Technical Design ✅ (2026-05-31)
 
-| Date | Step | Status | Details |
-|------|------|--------|---------|
-| 2026-05-31 | Step 1 — Architecture & Design | ✅ Complete | Architecture diagrams, MCD, sequence flows, OpenAPI contract |
-| — | Step 2 — Infrastructure | ⏳ Planned | Docker Compose, PostgreSQL, MinIO, Nginx setup |
-| — | Step 3 — Backend API | ⏳ Planned | NestJS: auth, files, download, tags, cron |
-| — | Step 4 — Frontend | ⏳ Planned | React: pages, components, API integration |
-| — | Step 5 — Testing & CI | ⏳ Planned | Jest, Cypress, TESTING.md, SECURITY.md, PERF.md, MAINTENANCE.md |
+- Architecture overview (Mermaid) + 12 tech choices justified
+- MCD: 6 entities (User, File, DownloadToken, RefreshToken, Tag, FileTag)
+- 8 sequence diagrams (register, login, upload, download, anonymous, history, deletion, tags)
+- OpenAPI 3.0 contract (14 routes)
+- Memory bank initialized (5 files)
+- **GitHub**: Issue #1 → closed via PR #2 (squash merged)
 
-## Step 1 — Architecture & Design (2026-05-31)
+## Step 2 — Infrastructure Docker Compose & App Init ✅ (2026-05-31)
 
-### Completed
-- [x] Repository initialized on GitHub
-- [x] README.md + .gitignore created
-- [x] Memory bank initialized (5 files)
-- [x] Branch `feature/step1-architecture-mvp` created
+- Docker Compose: 5 services (nginx, frontend, backend, postgres, minio)
+- Backend NestJS initialized: Dockerfile, package.json, main.ts, app.module, app.controller (health), Prisma schema (6 entities)
+- Frontend React/Vite initialized: Dockerfile, package.json, vite.config, App.tsx (4 routes), main.tsx
+- Nginx reverse proxy: TLS, routing / → frontend, /api/ → backend
+- .env.example: 18 variables documented
+- .gitignore: updated (node_modules, .env, certs, coverage, volumes)
+- README.md: 8 sections (Prerequisites, Installation, Configuration, Launch, Tests, Security, Limitations)
+- docs/infrastructure/04-infrastructure-setup.md
+- **GitHub**: Issue #2 + PR (feature/step2-infrastructure → main)
 
-### Completed (continued)
-- [x] Architecture overview diagram (Mermaid)
-- [x] Technology choices table (12 technologies justified)
-- [x] Database schema MCD (6 entities: User, File, DownloadToken, RefreshToken, Tag, FileTag)
-- [x] Sequence diagrams (8 flows A→H, covering US01–US10)
-- [x] OpenAPI 3.0 contract (14 routes: auth, files, tags, download)
-- [x] GitHub Issue #1 + PR #2 created with labels (architecture, documentation, mvp)
+## What's Left
 
-### Key Decisions Made
-- Stack: NestJS + React + PostgreSQL + MinIO + Prisma
-- Auth: JWT access (15min) + refresh (7d HttpOnly cookie)
-- Downloads: MinIO presigned URLs (no backend proxy)
-- Expiration: CronJob daily purge via @nestjs/schedule
+- [ ] Step 3 — Backend API (auth, files, download, tags, cron)
+- [ ] Step 4 — Frontend React (pages, components, API integration)
+- [ ] Step 5 — Tests & CI (Jest 70%, E2E, final docs)

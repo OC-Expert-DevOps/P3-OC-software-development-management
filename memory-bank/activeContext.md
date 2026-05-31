@@ -2,38 +2,64 @@
 
 ## Current Focus
 
-**Step 1 — Architecture & Technical Design** ✅ COMPLETE (2026-05-31)
+**Step 2 — Infrastructure Docker Compose & App Init** ✅ COMPLETE (2026-05-31)
 
-All 4 architecture deliverables produced. Issue #1 + PR #2 created on GitHub.
+All infrastructure files created. Backend (NestJS) and Frontend (React/Vite) initialized.
 
-## Files Being Created
+## Files Created in Step 2
 
 ```
-docs/architecture/
-├── 01-architecture-overview.md
-├── 02-database-schema.md
-├── 03-sequence-diagrams.md
-└── openapi.yaml
+├── .env.example
+├── .gitignore (updated)
+├── docker-compose.yml (5 services)
+├── README.md (updated — 8 sections)
+├── nginx/
+│   └── nginx.conf
+├── backend/
+│   ├── Dockerfile
+│   ├── package.json
+│   ├── tsconfig.json
+│   ├── nest-cli.json
+│   ├── src/
+│   │   ├── main.ts
+│   │   ├── app.module.ts
+│   │   └── app.controller.ts (GET /health)
+│   └── prisma/
+│       └── schema.prisma (6 entities)
+├── frontend/
+│   ├── Dockerfile
+│   ├── package.json
+│   ├── tsconfig.json
+│   ├── vite.config.ts
+│   ├── index.html
+│   └── src/
+│       ├── main.tsx
+│       └── App.tsx (4 routes: /, /login, /register, /dashboard, /upload)
+└── docs/infrastructure/
+    └── 04-infrastructure-setup.md
 ```
 
 ## Active Decisions
 
-- NestJS chosen over Spring Boot / .NET Core / Symfony for TypeScript E2E consistency with React
-- MinIO chosen as S3-compatible self-hosted storage for Docker Compose demo
-- Prisma chosen over TypeORM for type-safe ORM with auto-generated types
-- JWT access (15min) + refresh token (7d HttpOnly cookie) for auth
+- Docker Compose with 5 services on `datashare-net` bridge network
+- Only Nginx exposed to host (ports 80/443), all others internal
+- Healthchecks on postgres and minio (backend waits for healthy)
+- Named volumes for data persistence (postgres-data, minio-data)
+- Self-signed TLS certificates for dev (nginx/certs/ gitignored)
+- Prisma schema maps to snake_case table/column names
 
 ## Next Step
 
-**Step 2 — Infrastructure setup**
-- Docker Compose with all 5 services (nginx, frontend, backend, postgres, minio)
-- Database schema initialization (Prisma migrations)
-- MinIO bucket creation
-- Nginx reverse proxy configuration
-- `.env.example` with all required environment variables
+**Step 3 — Backend API Implementation**
+- Auth module (register, login, logout, refresh)
+- Files module (upload, list, delete, metadata)
+- Download module (generate token, public download)
+- Tags module (CRUD)
+- Prisma service + MinIO service
+- Cron job for expired file cleanup
 
 ## Risks & Attention Points
 
-- 4-week timeline is tight — prioritize MVP (US01–US06) first
-- MinIO presigned URLs must be tested for proper CORS configuration
-- File size limit (1 GB) requires proper multipart handling and timeouts
+- `npm ci` in Dockerfiles requires package-lock.json (generated on first `npm install`)
+- Prisma migrations need running postgres (use `docker compose run backend npx prisma migrate dev`)
+- MinIO bucket must be created before first upload
