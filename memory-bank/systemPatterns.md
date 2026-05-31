@@ -87,6 +87,44 @@
   ```
 - **Codes**: `ValidationError`, `Unauthorized`, `Forbidden`, `NotFound`, `Conflict`, `LinkExpired`, `PasswordRequired`, `FileTooLarge`, `ForbiddenFileType`
 
+## Infrastructure Pattern (Docker Compose)
+
+**Decision**: 5 services on single bridge network, only Nginx exposed
+
+- **Context**: MVP demo for investors, needs to be easy to start and self-contained.
+- **Impact**: Single `make up` command starts everything. No external dependencies.
+- **Implementation**:
+  - All services on `datashare-net` bridge network
+  - Only Nginx exposed (ports 80/443) — all other services internal
+  - `infra/docker-compose.yml` with relative paths (`../backend`, `../frontend`)
+  - Healthchecks on postgres + minio → backend waits for both healthy
+  - Named volumes for persistence (`postgres-data`, `minio-data`)
+  - `make reset` destroys volumes for clean start
+
+## Nginx Routing Pattern
+
+**Decision**: TLS termination + reverse proxy, path-based routing
+
+- **Context**: Need HTTPS for security demo, single entry point for browser.
+- **Impact**: Browser only talks to Nginx. Frontend and backend are internal services.
+- **Implementation**:
+  - `/` → `frontend:3000` (React SPA)
+  - `/api/` → `backend:3001` (NestJS API)
+  - Self-signed TLS certs in `infra/nginx/certs/` (gitignored)
+  - HTTP → HTTPS redirect (301)
+
+## Prisma Schema Pattern
+
+**Decision**: snake_case DB mapping with `@@map` / `@map`
+
+- **Context**: TypeScript uses camelCase, PostgreSQL convention is snake_case.
+- **Impact**: Prisma models use camelCase in code, snake_case in DB. Clean for both worlds.
+- **Implementation**:
+  - Model `User` → table `users` (`@@map("users")`)
+  - Field `createdAt` → column `created_at` (`@map("created_at")`)
+  - 6 entities: User, File, DownloadToken, RefreshToken, Tag, FileTag
+  - Relations: User 1→N File, File 1→N DownloadToken, User 1→N RefreshToken, File M→N Tag (via FileTag)
+
 ## File Deletion Pattern (US06)
 
 **Decision**: Physical deletion from MinIO + soft-delete in DB
