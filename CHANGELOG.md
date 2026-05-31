@@ -5,6 +5,33 @@ All notable changes to this project will be documented in this file.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 Versioning follows [Semantic Versioning](https://semver.org/).
 
+## [0.4.3] - 2026-05-31 — US07-US10: Advanced Features
+
+### Added
+
+**Features :**
+- US07: Password-protected files (bcrypt hash, set/remove via PUT/DELETE)
+- US08: Anonymous upload (POST /api/files/anonymous, public, 1-day expiry)
+- US09: File tagging (upsert tags, max 10 per file, normalized lowercase)
+- US10: Download history (last 100 events with IP + User-Agent)
+
+**Routes :**
+- `PUT /api/files/:id/password` — Set file password (JWT required)
+- `DELETE /api/files/:id/password` — Remove file password (JWT required)
+- `POST /api/files/anonymous` — Anonymous upload (public)
+- `PUT /api/files/:id/tags` — Set file tags (JWT required)
+- `GET /api/files/:id/tags` — Get file tags (JWT required)
+- `GET /api/files/:id/history` — Download history (JWT required)
+
+**Database :**
+- `DownloadHistory` model (id, fileId, tokenId, downloadedAt, ipAddress, userAgent)
+- Relations: File → DownloadHistory, DownloadToken → DownloadHistory
+
+**Documentation :**
+- `docs/backend/07-advanced-features.md` — Full US07-US10 documentation
+
+**GitHub :** Issue #13 → PR #17 (squash merged)
+
 ## [0.4.2] - 2026-05-31 — US05+US06: Paginated File List & Stats
 
 ### Added

@@ -75,6 +75,20 @@
 - Stats route placed before :id route to avoid NestJS route conflict
 - **GitHub**: Issue #12 → PR #16 (squash merged) → v0.4.2
 
+## Step 4d — US07-US10 Advanced Features ✅ (2026-05-31)
+
+- US07: Password-protected files (PUT/DELETE /api/files/:id/password, bcrypt hash)
+- US08: Anonymous upload (POST /api/files/anonymous, public, 1-day expiry, anonymous/ prefix)
+- US09: File tagging (PUT/GET /api/files/:id/tags, upsert, max 10, normalized lowercase)
+- US10: Download history (GET /api/files/:id/history, last 100 events with IP + UA)
+- Prisma: DownloadHistory model + relations on File/DownloadToken
+- DTOs: SetPasswordDto (min 4 chars), ManageTagsDto (max 10, max 30 chars each)
+- Documentation: docs/backend/07-advanced-features.md
+- **GitHub**: Issue #13 → PR #17 (squash merged) → v0.4.3
+
 ## What's Left
 
-- [ ] Step 4d — US07-US10: Advanced features (Issue #13) → v0.4.3
+- **Backend MVP complete** ✅ — All 10 User Stories implemented
+- [ ] Frontend React pages (login, register, dashboard, upload, file detail)
+- [ ] E2E / integration tests
+- [ ] Docker Compose smoke test

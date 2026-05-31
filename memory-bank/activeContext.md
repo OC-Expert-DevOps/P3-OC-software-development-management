@@ -2,62 +2,72 @@
 
 ## Current Focus
 
-**Step 4b — US02 Download Links COMPLETE** ✅ (2026-05-31)
+**Backend MVP COMPLETE** ✅ (2026-05-31, v0.4.3)
 
-**Next: Step 4c — US05+US06 List & Delete enhancements** (Issue #12)
+All 10 User Stories implemented:
+- US01: File Upload ✅
+- US02: Download Links ✅
+- US03: Registration ✅
+- US04: Login ✅
+- US05: Paginated File List ✅
+- US06: User Stats ✅
+- US07: Password-Protected Files ✅
+- US08: Anonymous Upload ✅
+- US09: File Tagging ✅
+- US10: Download History ✅
 
-## Completed in Step 4b (US02)
+## API Routes Summary (20 routes)
 
-### Files Added/Modified
-```
-backend/src/
-├── app.module.ts                 ← DownloadModule registered
-├── download/
-│   ├── download.module.ts        ← NestJS module (imports MinioModule)
-│   ├── download.controller.ts    ← 3 JWT routes + 1 public route
-│   ├── download.service.ts       ← createLink, findByFile, revokeLink, useToken
-│   ├── download.service.spec.ts  ← 10 unit tests
-│   └── dto/
-│       └── create-link.dto.ts    ← ttlSeconds, maxDownloads
-backend/prisma/schema.prisma      ← maxDownloads field added
-docs/backend/06-download-links.md ← Full documentation
-.env.example                      ← DOWNLOAD_LINK_TTL_SECONDS=86400
-```
+### Auth (4 routes)
+| Method | Path | Auth | US |
+|--------|------|------|-----|
+| POST | /api/auth/register | Public | US03 |
+| POST | /api/auth/login | Public | US04 |
+| POST | /api/auth/logout | JWT | US04 |
+| POST | /api/auth/refresh | Cookie | US04 |
 
-### Routes Added
-| Method | Path | Auth | Description |
-|--------|------|------|-------------|
-| POST | /api/files/:id/links | JWT | Generate download token |
-| GET | /api/files/:id/links | JWT | List active tokens |
-| DELETE | /api/files/:id/links/:tokenId | JWT | Revoke token |
-| GET | /api/download/:token | Public | 302 → MinIO presigned URL |
+### Files (11 routes)
+| Method | Path | Auth | US |
+|--------|------|------|-----|
+| POST | /api/files/upload | JWT | US01 |
+| POST | /api/files/anonymous | Public | US08 |
+| GET | /api/files | JWT | US05 |
+| GET | /api/files/stats | JWT | US06 |
+| GET | /api/files/:id | JWT | US01 |
+| DELETE | /api/files/:id | JWT | US01 |
+| PUT | /api/files/:id/password | JWT | US07 |
+| DELETE | /api/files/:id/password | JWT | US07 |
+| PUT | /api/files/:id/tags | JWT | US09 |
+| GET | /api/files/:id/tags | JWT | US09 |
+| GET | /api/files/:id/history | JWT | US10 |
 
-## Active Decisions
+### Download Links (4 routes)
+| Method | Path | Auth | US |
+|--------|------|------|-----|
+| POST | /api/files/:id/links | JWT | US02 |
+| GET | /api/files/:id/links | JWT | US02 |
+| DELETE | /api/files/:id/links/:tokenId | JWT | US02 |
+| GET | /api/download/:token | Public | US02 |
 
-- JWT HS256 access token (15min) + UUID v4 refresh token (7d, bcrypt hash in DB)
-- Refresh token in HttpOnly cookie (Secure, SameSite=Strict, path /api/auth)
-- Token rotation on each refresh (old token revoked)
-- File storage: MinIO via AWS SDK v3 (S3-compatible)
-- Soft-delete pattern: `isDeleted` flag (no physical DB delete)
-- Download tokens: UUID v4, configurable TTL + maxDownloads
-- Public download: HTTP 302 redirect to MinIO presigned URL (5min TTL)
-- Token revocation: set `expiresAt` to current timestamp
+### Health (1 route)
+| Method | Path | Auth |
+|--------|------|------|
+| GET | /api/health | Public |
+
+## GitHub Issues & PRs
+
+| Step | Issue | PR | Version |
+|------|-------|-----|---------|
+| 1 - Architecture | #1 | #2 | v0.1.0 |
+| 2 - Infrastructure | #3 | #5 | v0.2.0 |
+| 3 - Auth | #6 | #7 | v0.3.0 |
+| 4 - File Upload | #10 | #14 | v0.4.0 |
+| 4b - Download Links | #11 | #15 | v0.4.1 |
+| 4c - List & Stats | #12 | #16 | v0.4.2 |
+| 4d - Advanced | #13 | #17 | v0.4.3 |
 
 ## Next Steps
 
-1. **Step 4c — US05+US06: List & Delete enhancements** (Issue #12)
-   - Pagination for GET /api/files (page, limit, sortBy, order)
-   - GET /api/files/stats (fileCount, totalSizeBytes)
-
-2. **Step 4d — US07-US10: Advanced Features** (Issue #13)
-   - US07: Password-protected files
-   - US08: Anonymous upload
-   - US09: File tagging
-   - US10: Download history
-
-## Risks & Attention Points
-
-- Prisma migrations need running postgres
-- MinIO bucket auto-created on startup via `onModuleInit`
-- BigInt serialization: Prisma BigInt fields need custom serialization for JSON
-- Refresh token lookup iterates all non-revoked tokens (acceptable for MVP)
+1. **Frontend React pages** — login, register, dashboard, upload, file detail
+2. **E2E / integration tests** — Cypress or Playwright
+3. **Docker Compose smoke test** — full stack validation
