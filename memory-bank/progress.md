@@ -54,10 +54,19 @@
 - Documentation: docs/ai-usage/us01-copilot-prompts.md + us01-supervision-log.md
 - **GitHub**: Issue #10 → PR #14 (squash merged) → v0.4.0
 
+## Step 4b — US02 Download Links ✅ (2026-05-31)
+
+- DownloadService: createLink, findByFile, revokeLink, useToken (302 redirect to MinIO presigned URL)
+- DownloadController: 3 JWT-protected routes + 1 public route (GET /api/download/:token)
+- Prisma schema: added `maxDownloads` field to DownloadToken
+- DownloadModule registered in AppModule
+- Token logic: UUID v4, configurable TTL (DOWNLOAD_LINK_TTL_SECONDS), optional maxDownloads
+- Public download: validates token → 302 redirect to MinIO presigned URL (5min TTL)
+- Tests: 10 unit tests (create, custom TTL, file not found, wrong owner, valid download, expired, revoked, file deleted, maxDownloads reached)
+- Documentation: docs/backend/06-download-links.md
+- **GitHub**: Issue #11 → PR #15 (squash merged) → v0.4.1
+
 ## What's Left
 
-- [ ] Step 5 — US02: Download Links (Issue #11)
-- [ ] Step 6 — US05+US06: File List & Delete enhancements (Issue #12)
-- [ ] Step 7 — US07-US10: Advanced features (Issue #13)
-- [ ] Step 8 — Frontend React (pages, components, API integration)
-- [ ] Step 9 — Tests & CI (Jest 70%+, Cypress E2E, final docs)
+- [ ] Step 4c — US05+US06: File List & Delete enhancements (Issue #12) → v0.4.2
+- [ ] Step 4d — US07-US10: Advanced features (Issue #13) → v0.4.3

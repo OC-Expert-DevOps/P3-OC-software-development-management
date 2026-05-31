@@ -5,6 +5,33 @@ All notable changes to this project will be documented in this file.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 Versioning follows [Semantic Versioning](https://semver.org/).
 
+## [0.4.1] - 2026-05-31 — US02: Download Links
+
+### Added
+
+**Features :**
+- US02: Temporary secure download links for file sharing without authentication
+- DownloadService: createLink, findByFile, revokeLink, useToken (302 redirect to MinIO presigned URL)
+- DownloadController: 3 JWT-protected routes + 1 public route
+- Prisma schema: `maxDownloads` field added to DownloadToken
+
+**Routes :**
+- `POST /api/files/:id/links` — Generate download token (JWT required)
+- `GET /api/files/:id/links` — List active tokens (JWT required)
+- `DELETE /api/files/:id/links/:tokenId` — Revoke token (JWT required)
+- `GET /api/download/:token` — Public download (302 → MinIO presigned URL)
+
+**Variables d'environnement :**
+- `DOWNLOAD_LINK_TTL_SECONDS` (optionnelle, défaut: `86400`)
+
+**Tests :**
+- 10 unit tests for DownloadService (create, TTL, expiry, revoke, maxDownloads, file deleted)
+
+**Documentation :**
+- `docs/backend/06-download-links.md` — Full DownloadModule documentation
+
+**GitHub :** Issue #11 → PR #15 (squash merged)
+
 ## [0.4.0] - 2026-05-31 — US01: File Upload (GitHub Copilot + Human Review)
 
 ### Added
