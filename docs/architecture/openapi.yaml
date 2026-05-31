@@ -1,0 +1,778 @@
+openapi: 3.0.3
+info:
+  title: DataShare API
+  description: |
+    Secure file transfer platform API for freelancers and small businesses.
+    Enables file upload, temporary download link generation, and file management.
+  version: 1.0.0
+  contact:
+    name: DataShare Team
+
+servers:
+  - url: https://localhost/api
+    description: Local Docker Compose (via Nginx reverse proxy)
+
+tags:
+  - name: Auth
+    description: User registration, login, logout, token refresh
+  - name: Files
+    description: File upload, listing, metadata, deletion
+  - name: Download
+    description: Public download via temporary links
+  - name: Tags
+    description: Tag management for files (US08)
+
+# ──────────────────────────────────────────────
+# Security Schemes
+# ──────────────────────────────────────────────
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT access token (15min TTL)
+
+  schemas:
+    # ── Error ──
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code:
+              type: string
+              example: NotFound
+            message:
+              type: string
+              example: Resource not found
+
+    # ── Auth ──
+    RegisterRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+          example: user@example.com
+        password:
+          type: string
+          minLength: 8
+          example: MyP@ssw0rd
+
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+          example: user@example.com
+        password:
+          type: string
+          example: MyP@ssw0rd
+
+    UserResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 550e8400-e29b-41d4-a716-446655440000
+        email:
+          type: string
+          format: email
+          example: user@example.com
+        created_at:
+          type: string
+          format: date-time
+
+    LoginResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        token_type:
+          type: string
+          example: Bearer
+
+    RefreshResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        token_type:
+          type: string
+          example: Bearer
+
+    # ── Files ──
+    FileResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        original_name:
+          type: string
+          example: report-q4.pdf
+        mime_type:
+          type: string
+          example: application/pdf
+        size_bytes:
+          type: integer
+          format: int64
+          example: 2048576
+        download_url:
+          type: string
+          example: https://localhost/api/download/a1b2c3d4-e5f6-7890-abcd-ef1234567890
+        expires_at:
+          type: string
+          format: date-time
+        link_status:
+          type: string
+          enum: [valid, expired]
+          example: valid
+        created_at:
+          type: string
+          format: date-time
+
+    FileUploadResponse:
+      type: object
+      properties:
+        file_id:
+          type: string
+          format: uuid
+        original_name:
+          type: string
+          example: report-q4.pdf
+        size_bytes:
+          type: integer
+          format: int64
+          example: 2048576
+        download_url:
+          type: string
+          example: https://localhost/api/download/a1b2c3d4-e5f6-7890-abcd-ef1234567890
+        expires_at:
+          type: string
+          format: date-time
+
+    # ── Download ──
+    DownloadInfoResponse:
+      type: object
+      properties:
+        filename:
+          type: string
+          example: report-q4.pdf
+        size_bytes:
+          type: integer
+          format: int64
+          example: 2048576
+        mime_type:
+          type: string
+          example: application/pdf
+        expires_at:
+          type: string
+          format: date-time
+        password_required:
+          type: boolean
+          example: false
+
+    # ── Tags ──
+    TagResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          example: design
+          maxLength: 30
+
+    AddTagsRequest:
+      type: object
+      required: [tags]
+      properties:
+        tags:
+          type: array
+          items:
+            type: string
+            maxLength: 30
+          example: ["design", "client-x"]
+
+    TagListResponse:
+      type: object
+      properties:
+        tags:
+          type: array
+          items:
+            $ref: "#/components/schemas/TagResponse"
+
+# ──────────────────────────────────────────────
+# Paths
+# ──────────────────────────────────────────────
+paths:
+  # ════════════════════════════════════════════
+  # AUTH
+  # ════════════════════════════════════════════
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Register a new user (US03)
+      description: Create a new user account with email and password.
+      operationId: register
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterRequest"
+      responses:
+        "201":
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+        "400":
+          description: Validation error (invalid email format, password too short)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                error:
+                  code: ValidationError
+                  message: Password must be at least 8 characters
+        "409":
+          description: Email already registered
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                error:
+                  code: Conflict
+                  message: Email already registered
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Login user (US04)
+      description: |
+        Authenticate with email + password. Returns a JWT access token in the response body
+        and sets an HttpOnly refresh token cookie.
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Login successful
+          headers:
+            Set-Cookie:
+              description: HttpOnly refresh token cookie (7 days)
+              schema:
+                type: string
+                example: refresh_token=abc123; HttpOnly; Secure; SameSite=Strict; Path=/api/auth; Max-Age=604800
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                error:
+                  code: Unauthorized
+                  message: Invalid credentials
+
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Logout user
+      description: Revoke the current refresh token.
+      operationId: logout
+      security:
+        - BearerAuth: []
+      responses:
+        "204":
+          description: Logout successful (refresh token revoked)
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /auth/refresh:
+    post:
+      tags: [Auth]
+      summary: Refresh access token
+      description: |
+        Use the HttpOnly refresh token cookie to obtain a new access token.
+        The old refresh token is revoked and a new one is issued.
+      operationId: refreshToken
+      parameters:
+        - in: cookie
+          name: refresh_token
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: New access token issued
+          headers:
+            Set-Cookie:
+              description: New HttpOnly refresh token cookie
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RefreshResponse"
+        "401":
+          description: Invalid or expired refresh token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                error:
+                  code: Unauthorized
+                  message: Invalid or expired refresh token
+
+  # ════════════════════════════════════════════
+  # FILES
+  # ════════════════════════════════════════════
+  /files:
+    post:
+      tags: [Files]
+      summary: Upload a file (US01)
+      description: |
+        Upload a file with multipart/form-data. Generates a unique download token.
+        Optional: set expiration (1-7 days) and password protection (US09).
+      operationId: uploadFile
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: File to upload (max 1 GB)
+                expires_in:
+                  type: integer
+                  minimum: 1
+                  maximum: 7
+                  default: 7
+                  description: Expiration in days (1-7)
+                password:
+                  type: string
+                  minLength: 6
+                  description: Optional download password (US09, min 6 chars)
+      responses:
+        "201":
+          description: File uploaded successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FileUploadResponse"
+        "400":
+          description: Validation error (file too large, forbidden type)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                error:
+                  code: FileTooLarge
+                  message: File exceeds maximum size of 1 GB
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    get:
+      tags: [Files]
+      summary: List user's files (US05)
+      description: Returns all non-deleted files owned by the authenticated user.
+      operationId: listFiles
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: List of user's files
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FileResponse"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /files/anonymous:
+    post:
+      tags: [Files]
+      summary: Upload a file anonymously (US07)
+      description: |
+        Upload a file without authentication. The file is not linked to any user account
+        and cannot be managed after upload.
+      operationId: uploadFileAnonymous
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: File to upload (max 1 GB)
+                expires_in:
+                  type: integer
+                  minimum: 1
+                  maximum: 7
+                  default: 7
+                  description: Expiration in days (1-7)
+      responses:
+        "201":
+          description: File uploaded successfully (anonymous)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  download_url:
+                    type: string
+                    example: https://localhost/api/download/a1b2c3d4-e5f6-7890-abcd-ef1234567890
+                  expires_at:
+                    type: string
+                    format: date-time
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /files/{fileId}:
+    get:
+      tags: [Files]
+      summary: Get file metadata
+      description: Returns metadata for a specific file owned by the authenticated user.
+      operationId: getFileMetadata
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: fileId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: File metadata
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FileResponse"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: Not the file owner
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                error:
+                  code: Forbidden
+                  message: You do not own this file
+        "404":
+          description: File not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    delete:
+      tags: [Files]
+      summary: Delete a file (US06)
+      description: |
+        Permanently delete a file from MinIO storage and invalidate all download tokens.
+        This action is irreversible. Only the file owner can delete.
+      operationId: deleteFile
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: fileId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: File deleted successfully (irreversible)
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: Not the file owner
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: File not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  # ════════════════════════════════════════════
+  # TAGS (US08)
+  # ════════════════════════════════════════════
+  /files/{fileId}/tags:
+    post:
+      tags: [Tags]
+      summary: Add tags to a file (US08)
+      description: Add one or more tags to a file. Duplicates are ignored.
+      operationId: addTags
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: fileId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddTagsRequest"
+      responses:
+        "200":
+          description: Tags added successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TagListResponse"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: Not the file owner
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /files/{fileId}/tags/{tagId}:
+    delete:
+      tags: [Tags]
+      summary: Remove a tag from a file (US08)
+      description: Remove a specific tag from a file.
+      operationId: removeTag
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: fileId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: tagId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Tag removed successfully
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: Not the file owner
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /tags:
+    get:
+      tags: [Tags]
+      summary: List user's tags (US08)
+      description: Returns all distinct tags used by the authenticated user's files.
+      operationId: listTags
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: List of user's tags
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TagResponse"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  # ════════════════════════════════════════════
+  # DOWNLOAD (PUBLIC)
+  # ════════════════════════════════════════════
+  /download/{token}/info:
+    get:
+      tags: [Download]
+      summary: Get download link info (US02)
+      description: |
+        Returns file metadata before download. Public endpoint — no authentication required.
+        Shows filename, size, MIME type, expiration, and whether a password is required.
+      operationId: getDownloadInfo
+      parameters:
+        - in: path
+          name: token
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Unique download token (UUID v4)
+      responses:
+        "200":
+          description: File metadata
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DownloadInfoResponse"
+        "404":
+          description: Token not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                error:
+                  code: NotFound
+                  message: Download link not found
+        "410":
+          description: Link expired
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                error:
+                  code: LinkExpired
+                  message: This download link has expired
+
+  /download/{token}:
+    get:
+      tags: [Download]
+      summary: Download a file (US02)
+      description: |
+        Download a file using a temporary token. Public endpoint.
+        If the file is password-protected (US09), the password must be provided as a query parameter.
+        Returns a 302 redirect to a MinIO presigned URL (5min TTL).
+      operationId: downloadFile
+      parameters:
+        - in: path
+          name: token
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Unique download token (UUID v4)
+        - in: query
+          name: password
+          required: false
+          schema:
+            type: string
+          description: File password (required if file is password-protected)
+      responses:
+        "302":
+          description: Redirect to MinIO presigned URL for file download
+          headers:
+            Location:
+              description: MinIO presigned URL (5min TTL)
+              schema:
+                type: string
+                example: https://minio:9000/datashare/abc123/report.pdf?X-Amz-...
+        "403":
+          description: Password required or incorrect
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                error:
+                  code: PasswordRequired
+                  message: This file requires a password to download
+        "404":
+          description: Token not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "410":
+          description: Link expired
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                error:
+                  code: LinkExpired
+                  message: This download link has expired
