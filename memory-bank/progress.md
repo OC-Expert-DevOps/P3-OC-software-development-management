@@ -66,7 +66,15 @@
 - Documentation: docs/backend/06-download-links.md
 - **GitHub**: Issue #11 → PR #15 (squash merged) → v0.4.1
 
+## Step 4c — US05+US06 Paginated File List & Stats ✅ (2026-05-31)
+
+- ListFilesDto: page, limit, sortBy (createdAt|originalName|sizeBytes), order (asc|desc)
+- FilesService.findAllByUser: paginated response with meta (page, limit, total, totalPages)
+- FilesService.getStats: fileCount, deletedCount, totalSizeBytes, activeLinks
+- FilesController: GET /api/files with query params, GET /api/files/stats
+- Stats route placed before :id route to avoid NestJS route conflict
+- **GitHub**: Issue #12 → PR #16 (squash merged) → v0.4.2
+
 ## What's Left
 
-- [ ] Step 4c — US05+US06: File List & Delete enhancements (Issue #12) → v0.4.2
 - [ ] Step 4d — US07-US10: Advanced features (Issue #13) → v0.4.3

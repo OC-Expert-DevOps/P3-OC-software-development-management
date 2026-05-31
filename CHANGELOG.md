@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 Versioning follows [Semantic Versioning](https://semver.org/).
 
+## [0.4.2] - 2026-05-31 — US05+US06: Paginated File List & Stats
+
+### Added
+
+**Features :**
+- US05: Paginated file list with sorting (page, limit, sortBy, order)
+- US06: User file statistics endpoint (fileCount, deletedCount, totalSizeBytes, activeLinks)
+- ListFilesDto with class-validator + class-transformer validation
+
+**Routes :**
+- `GET /api/files?page=1&limit=20&sortBy=createdAt&order=desc` — Paginated list (JWT required)
+- `GET /api/files/stats` — User file statistics (JWT required)
+
+**GitHub :** Issue #12 → PR #16 (squash merged)
+
 ## [0.4.1] - 2026-05-31 — US02: Download Links
 
 ### Added
