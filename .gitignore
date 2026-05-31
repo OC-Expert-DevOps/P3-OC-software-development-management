@@ -1,53 +1,50 @@
-# Dependencies
+# ─── Dependencies ───
 node_modules/
-.pnp
+.pnp/
 .pnp.js
 
-# Build output
+# ─── Build output ───
 dist/
 build/
 .next/
-out/
 
-# Environment variables
+# ─── Environment & Secrets ───
 .env
 .env.local
 .env.*.local
 *.secret.*
 
-# Docker volumes
+# ─── TLS certificates (dev) ───
+infra/nginx/certs/
+
+# ─── IDE / OS ───
+.vscode/
+.idea/
+.DS_Store
+*.swp
+*.swo
+Thumbs.db
+
+# ─── Coverage & Testing ───
+coverage/
+htmlcov/
+.coverage
+*.lcov
+
+# ─── Docker volumes (if local) ───
 postgres-data/
 minio-data/
 
-# Coverage & testing
-coverage/
-.nyc_output/
-cypress/screenshots/
-cypress/videos/
-
-# Cache
-.cache/
-.eslintcache
-*.tsbuildinfo
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Logs
+# ─── Logs ───
 *.log
 npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
 
-# Python (if tooling)
-__pycache__/
-.venv/
-venv/
-*.py[cod]
+# ─── TypeScript cache ───
+*.tsbuildinfo
+
+# ─── Prisma ───
+backend/prisma/*.db
+backend/prisma/*.db-journal
+
+# ─── Misc ───
+.turbo/
