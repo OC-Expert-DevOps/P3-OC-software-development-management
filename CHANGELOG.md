@@ -5,6 +5,67 @@ All notable changes to this project will be documented in this file.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 Versioning follows [Semantic Versioning](https://semver.org/).
 
+## [0.5.1] - 2026-06-07 — E2E Infra Fixes
+
+### Fixed
+
+**Backend:**
+- Fix BigInt JSON serialization in `main.ts` (Prisma returns BigInt for `sizeBytes` field, crashed `JSON.stringify`)
+- Add optional `name` field to `RegisterDto` (frontend sends it, backend was rejecting with 400)
+
+**E2E Tests:**
+- Fix auth fixture: register redirects to `/login`, not `/dashboard`
+- Add `registerAndLogin` helper for tests needing authenticated user
+- Replace `registerUser` → `registerAndLogin` in all 10 specs
+- Fix US06 stats test to use proper auth flow
+
+**Infrastructure:**
+- Prisma `db push`: created missing database tables (no migrations directory existed)
+
+**Test Results:** 2/20 → **17/21 passing**
+
+**GitHub:** PR #25 (squash merged, labels: fix, testing)
+
+## [0.5.0] - 2026-05-31 — E2E Tests Playwright
+
+### Added
+
+**Features:**
+- 10 Playwright test specs covering US01-US10 (21 test cases total)
+- Page objects: LoginPage, RegisterPage, DashboardPage, UploadPage
+- Auth fixture with unique-email user generation
+- Playwright config targeting https://localhost with self-signed cert bypass
+
+**Tests:**
+- US01: File upload (authenticated) + redirect guard (2 tests)
+- US02: Download link generation + public access (2 tests)
+- US03: Registration + duplicate email + short password (3 tests)
+- US04: Login + wrong password + logout (3 tests)
+- US05: File list empty state + file display + metadata (3 tests)
+- US06: User statistics via API (1 test)
+- US07: Password protection set/remove (2 tests)
+- US08: Anonymous upload via API (1 test)
+- US09: Tags add/normalize/reject >10 (3 tests)
+- US10: Download history recording (1 test)
+
+**Dépendances:**
+- `@playwright/test` >= 1.x (e2e directory)
+
+**GitHub:** Issue #23 → PR #24 (squash merged, label: testing)
+
+## [0.4.4] - 2026-05-31 — Frontend UI Pages
+
+### Added
+
+**Features:**
+- 5 functional pages: Login, Register, Dashboard, Upload, Download
+- Axios client with JWT interceptor + auto-refresh on 401
+- AuthProvider context + useAuth hook
+- Navbar + PrivateRoute components
+- Protected routes (dashboard, upload) redirect to login
+
+**GitHub:** Issue #21 → PR #22 (squash merged, label: feature)
+
 ## [0.4.3] - 2026-05-31 — US07-US10: Advanced Features
 
 ### Added
