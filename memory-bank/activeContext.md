@@ -1,65 +1,41 @@
-# Active Context
+# Active Context — DataShare Platform
 
 ## Current Focus
-E2E tests stabilized — 17/21 passing. Backend and frontend fully operational.
 
-## Recent Changes (2026-06-07)
+**Version:** 0.5.2
+**Status:** All 21/21 E2E tests passing ✅
+**Branch:** `main` (up to date after PR #28 merge)
 
-### PR #25 — E2E Infra Fixes (merged)
-- **BigInt serialization**: Added `BigInt.prototype.toJSON` in `main.ts` — Prisma returns BigInt for `sizeBytes`, JSON.stringify crashed
-- **RegisterDto**: Added optional `name` field — frontend sends it, backend was rejecting with 400
-- **Auth fixture**: Fixed register flow — register redirects to `/login`, not `/dashboard`
-- **All specs**: Replaced `registerUser` → `registerAndLogin` for authenticated tests
-- **Prisma db push**: Created missing database tables (no migrations dir existed)
+## Recent Changes (PR #28 — 2026-06-07)
 
-### Test Results: 17/21 passing
-**Passing (17):**
-- US01: redirect to login when not authenticated ✅
-- US02: access download link publicly ✅
-- US03: register (3 tests) ✅
-- US04: login/logout (3 tests) ✅
-- US05: empty state, file metadata ✅
-- US06: stats API ✅
-- US07: password set/remove ✅
-- US08: anonymous upload ✅
-- US09: tags (3 tests) ✅
-- US10: download history ✅
+### Bug Fixes
+- **JWT Guard** (`backend/src/auth/guards/jwt.guard.ts`): Fixed `payload.sub` → `request.user.userId` mapping. Previously, the raw JWT payload was passed to `request.user`, causing uploaded files to have `userId: null`.
+- **Frontend DTO mismatch** (`frontend/src/pages/DashboardPage.tsx`): Fixed `expiresInSeconds` → `ttlSeconds` to match backend `CreateLinkDto`. The "Link" button on dashboard was failing silently.
 
-**Failing (4) — all related to upload→dashboard file list:**
-- US01: upload file + see in dashboard (file uploaded but `userId: null` → not in user's list)
-- US02: generate download link (depends on upload showing in dashboard)
-- US05: display uploaded files in list (same userId issue)
-- US05: empty state timeout (dashboard selector `p[style*="color: rgb(136, 136, 136)"]` not found after data exists from previous tests)
+### E2E Test Robustness
+- **Dashboard page object**: Added `waitForLoaded()` method that waits for "Loading..." to disappear before checking file rows. Fixes race conditions where tests checked DOM before API response.
+- **US02/US10 download tests**: Added `maxRedirects: 0` to prevent Playwright from following 302 redirects to internal `http://minio:9000/...` hostname (unreachable from host machine).
+- **US02 generate link**: Changed from UI-based notification detection to API-based approach (more reliable).
 
-### Root Cause of 4 Remaining Failures
-The JWT guard extracts `req.user.sub` but the upload controller passes it as `userId`. When the file is created, `userId` is set to the JWT `sub` value, but the dashboard query filters by the same userId. The issue is that between tests, leftover data from previous test runs can affect the empty state check.
+### Documentation
+- Created `docs/testing/08-e2e-testing.md` — comprehensive E2E test plan covering all 10 user stories (21 test cases).
 
-## Architecture (unchanged)
-```
-frontend/src/
-├── api/client.ts          # Axios + JWT interceptor
-├── hooks/useAuth.tsx       # AuthProvider + useAuth hook
-├── components/
-│   ├── Navbar.tsx          # Auth-aware navigation
-│   └── PrivateRoute.tsx    # Route guard
-├── pages/
-│   ├── LoginPage.tsx       # POST /api/auth/login
-│   ├── RegisterPage.tsx    # POST /api/auth/register
-│   ├── DashboardPage.tsx   # GET /api/files + delete + generate links
-│   ├── UploadPage.tsx      # POST /api/files/upload (multipart, drag&drop)
-│   └── DownloadPage.tsx    # Public download via token
-├── App.tsx                 # Routes with PrivateRoute protection
-└── main.tsx                # BrowserRouter + QueryClient + AuthProvider
-```
+## Test Results History
 
-## Services Status (verified 2026-06-07)
-- ✅ Frontend (Vite SPA on https://localhost)
-- ✅ Backend API (register, login, upload all work via curl)
-- ✅ MinIO (file storage working)
-- ✅ PostgreSQL (tables created via prisma db push)
-- ✅ Nginx reverse proxy (TLS)
+| Version | Passing | Total | Delta |
+|---------|---------|-------|-------|
+| 0.5.0 | 2 | 20 | Initial |
+| 0.5.1 | 17 | 21 | +15 |
+| 0.5.2 | **21** | **21** | **+4 (100%)** |
+
+## Known Issues
+
+- **File size "NaN MB"**: Frontend `formatSize()` receives BigInt as string from API (Prisma BigInt serialization), causing `NaN` display. Cosmetic only, doesn't affect functionality.
+- **MinIO presigned URLs**: Download redirect uses internal Docker hostname (`minio:9000`). Works in browser (nginx proxy) but not from host-level API clients. Consider adding nginx proxy for MinIO or using external endpoint config.
 
 ## Next Steps
-- Fix 4 remaining E2E tests (userId mapping in upload flow)
-- Setup proper Prisma migrations (replace db push)
-- UI polish for investor demo
+
+- Fix file size display (BigInt → Number conversion in frontend)
+- Consider adding nginx proxy rule for MinIO presigned URLs
+- Deploy preparation (Docker Compose production profile)
+- Final demo preparation for investors

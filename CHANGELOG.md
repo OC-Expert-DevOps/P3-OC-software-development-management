@@ -5,6 +5,32 @@ All notable changes to this project will be documented in this file.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 Versioning follows [Semantic Versioning](https://semver.org/).
 
+## [0.5.2] - 2026-06-07 — JWT userId Fix + E2E 21/21
+
+### Fixed
+
+**Backend:**
+- Fix JWT guard: map `payload.sub` → `request.user.userId` (uploaded files had `userId: null`)
+
+**Frontend:**
+- Fix `expiresInSeconds` → `ttlSeconds` in `DashboardPage.tsx` (matching `CreateLinkDto` backend DTO)
+
+**E2E Tests:**
+- Dashboard page object: add `waitForLoaded()` to avoid race conditions on file list rendering
+- US02: use API-based approach for link generation test + `maxRedirects: 0` for download (MinIO internal hostname)
+- US05: add `waitForLoaded()` before checking table headers
+- US10: use `maxRedirects: 0` to avoid following redirect to internal MinIO hostname
+- Fix `expiresInSeconds` → `ttlSeconds` in US02 and US10
+
+### Added
+
+**Documentation:**
+- Add `docs/testing/08-e2e-testing.md` — complete E2E test plan (US01–US10, 21 test cases)
+
+**Test Results:** 17/21 → **21/21 passing** ✅
+
+**GitHub:** Issue #27, PR #28 (squash merged, labels: bug, testing)
+
 ## [0.5.1] - 2026-06-07 — E2E Infra Fixes
 
 ### Fixed

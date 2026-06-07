@@ -1,55 +1,89 @@
-# Progress
+# Progress — DataShare Platform
 
-## Completed
+## Completed Steps
 
-### 2026-05-31 — Infrastructure Setup (Issues #1-#10)
-- Docker Compose with 5 services: nginx, frontend, backend, postgres, minio
-- Nginx reverse proxy with self-signed TLS certs
-- Backend NestJS with Prisma ORM + PostgreSQL
-- MinIO S3-compatible object storage
-- Health checks on postgres and minio
+### Step 1 — Architecture & Technical Design ✅
+- Architecture overview (Mermaid diagrams)
+- Database schema (6 entities: User, File, DownloadToken, RefreshToken, Tag, FileTag)
+- OpenAPI 3.0 contract (14 REST routes)
+- 8 sequence diagrams
+- **GitHub:** Issue #1 → PR #2
 
-### 2026-05-31 — Backend API (Issues #11-#13)
-- Auth module: register, login, logout, refresh (JWT + refresh tokens)
-- Files module: upload (multipart), list, delete, metadata
-- Download links module: generate signed temporary links, public download
-- Prisma schema: User, File, DownloadLink entities
+### Step 2 — Infrastructure Docker Compose ✅
+- 5 services: nginx (TLS), frontend (React/Vite), backend (NestJS), PostgreSQL, MinIO
+- Reverse proxy with TLS termination
+- Makefile shortcuts
+- `.env.example` with 18 variables
+- **GitHub:** Issue #3 → PR #4
 
-### 2026-05-31 — Bug Fixes
-- Issue #18 (PR direct on main — process violation documented): Docker Dockerfile + MINIO_USE_SSL parsing
-- Issue #19 (PR #20, squash-merged): MinIO console port 9001 exposed for dev
+### Step 3 — Authentication (US03+US04) ✅
+- Register, login, logout, refresh endpoints
+- JWT HS256 access tokens (15min) + refresh tokens (7d, rotation)
+- JwtGuard for protected routes
+- 10 unit tests (100% coverage)
+- **GitHub:** Issue #6 → PR (squash merged)
 
-### 2026-05-31 — Frontend UI (Issue #21, PR #22, squash-merged)
-- 5 functional pages: Login, Register, Dashboard, Upload, Download
-- Axios client with JWT interceptor + auto-refresh on 401
-- AuthProvider context + useAuth hook
-- Navbar + PrivateRoute components
-- Protected routes (dashboard, upload) redirect to login
+### Step 4 — File Upload (US01) ✅
+- MinioService (upload, delete, presigned URLs)
+- FilesService + FilesController (4 routes)
+- GitHub Copilot-generated code with 5 human corrections
+- 10 unit tests
+- **GitHub:** Issue #10 → PR #14
 
-### 2026-05-31 — E2E Tests Playwright (Issue #23, PR #24, squash-merged)
-- 10 test specs covering US01-US10 (21 test cases total)
-- Playwright config targeting https://localhost
-- Page objects: Login, Register, Dashboard, Upload
-- Auth fixture with registerAndLogin helper
+### Step 5 — Download Links (US02) ✅
+- DownloadService: createLink, useToken (302 redirect)
+- 3 protected + 1 public route
+- 10 unit tests
+- **GitHub:** Issue #11 → PR #15
 
-### 2026-06-07 — E2E Infra Fixes (PR #25, squash-merged)
-- Fix BigInt JSON serialization in main.ts (Prisma sizeBytes field)
-- Fix RegisterDto: added optional `name` field (frontend sends it)
-- Fix auth fixture: register redirects to /login not /dashboard
-- Fix all specs: use registerAndLogin for authenticated tests
-- Prisma db push: created missing database tables
-- **Results: 2/20 → 17/21 tests passing**
+### Step 6 — Paginated List & Stats (US05+US06) ✅
+- Paginated file list with sorting
+- User statistics endpoint
+- **GitHub:** Issue #12 → PR #16
 
-## What Works
-- ✅ Full backend API (auth, files, download links, tags, password, history)
-- ✅ Frontend SPA with real pages and API integration
-- ✅ Docker Compose deployment (all 5 services healthy)
-- ✅ MinIO console accessible on localhost:9001
-- ✅ Nginx reverse proxy with TLS
-- ✅ E2E tests: 17/21 passing (register, login, logout, stats, password, tags, history, anonymous upload)
+### Step 7 — Advanced Features (US07-US10) ✅
+- US07: Password protection (bcrypt)
+- US08: Anonymous upload (1-day expiry)
+- US09: File tagging (max 10, normalized)
+- US10: Download history (IP, User-Agent)
+- **GitHub:** Issue #13 → PR #17
 
-## What's Left
-- [ ] Fix 4 remaining E2E tests (upload→dashboard file list display, userId mapping)
-- [ ] Prisma migrations setup (currently using db push, need proper migrations)
-- [ ] UI polish / styling for investor demo
-- [ ] Production-ready deployment considerations
+### Step 8 — E2E Tests Playwright ✅
+- 10 specs, 21 test cases (US01-US10)
+- Page objects + auth fixture
+- Playwright config (Chromium, TLS bypass)
+- **GitHub:** Issue #23 → PR #24
+
+### Step 9 — E2E Infra Fixes ✅
+- BigInt serialization fix
+- RegisterDto `name` field
+- Auth fixture redirect fix
+- 2/20 → 17/21 passing
+- **GitHub:** PR #25
+
+### Step 10 — JWT userId Fix + E2E 21/21 ✅
+- JWT guard: `payload.sub` → `request.user.userId`
+- Frontend: `expiresInSeconds` → `ttlSeconds`
+- Dashboard waitForLoaded, maxRedirects
+- E2E test doc: `docs/testing/08-e2e-testing.md`
+- **17/21 → 21/21 passing (100%)**
+- **GitHub:** Issue #27 → PR #28
+
+## Current Status
+
+| Area | Status |
+|------|--------|
+| Architecture | ✅ Complete |
+| Infrastructure | ✅ Complete |
+| Backend API | ✅ 14 routes, all functional |
+| Frontend | ✅ 5 pages, auth flow working |
+| Unit Tests | ✅ 30+ tests |
+| E2E Tests | ✅ **21/21 passing** |
+| Documentation | ✅ 8 doc files + memory-bank |
+
+## What Remains
+
+- [ ] Fix file size display (BigInt → Number in frontend)
+- [ ] MinIO presigned URL proxy (nginx rule for external access)
+- [ ] Production Docker Compose profile
+- [ ] Final investor demo preparation
