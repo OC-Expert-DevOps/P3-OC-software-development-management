@@ -71,6 +71,13 @@
 
 ## Current Status
 
+### v0.5.3 — Fix NaN MB + Broken Download Links (2026-06-07)
+- **Fixed:** Frontend file size display "NaN MB" (used `sizeBytes` instead of `size`, BigInt→Number)
+- **Fixed:** Presigned download URLs used Docker internal hostname `minio:9000` — added `MINIO_PUBLIC_URL` env var
+- **Infra:** Exposed MinIO S3 port 9000 in docker-compose
+- **Tests:** 21/21 E2E pass ✅
+- **GitHub:** Issue #29 → PR #30 (squash merged)
+
 | Area | Status |
 |------|--------|
 | Architecture | ✅ Complete |
@@ -83,7 +90,7 @@
 
 ## What Remains
 
-- [ ] Fix file size display (BigInt → Number in frontend)
-- [ ] MinIO presigned URL proxy (nginx rule for external access)
+- [x] Fix file size display (BigInt → Number in frontend) ✅ v0.5.3
+- [x] MinIO presigned URL (MINIO_PUBLIC_URL env var) ✅ v0.5.3
 - [ ] Production Docker Compose profile
 - [ ] Final investor demo preparation

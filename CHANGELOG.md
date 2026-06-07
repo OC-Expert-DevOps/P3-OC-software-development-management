@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 Versioning follows [Semantic Versioning](https://semver.org/).
 
+## [0.5.3] - 2026-06-07 — Fix NaN MB + Broken Download Links
+
+### Fixed
+
+**Frontend:**
+- Fix file size display "NaN MB": use `sizeBytes` field instead of `size`, convert BigInt string via `Number()`
+
+**Backend:**
+- Fix broken download links: presigned URLs used Docker internal hostname `minio:9000`
+- Add `MINIO_PUBLIC_URL` env var to replace internal hostname with public URL in presigned URLs
+
+**Infrastructure:**
+- Expose MinIO S3 API port `9000` in docker-compose for browser-accessible presigned URLs
+
+**Variables d'environnement:**
+- `MINIO_PUBLIC_URL` (optional, default: none) — Public URL for MinIO presigned URLs (e.g. `http://localhost:9000`)
+
+### Tests
+- ✅ 21/21 E2E tests pass (Playwright)
+
+---
+
 ## [0.5.2] - 2026-06-07 — JWT userId Fix + E2E 21/21
 
 ### Fixed
