@@ -5,7 +5,7 @@ interface FileItem {
   id: string;
   originalName: string;
   mimeType: string;
-  size: number;
+  sizeBytes: number | string;
   createdAt: string;
 }
 
@@ -74,7 +74,7 @@ export default function DashboardPage() {
               <tr key={f.id} style={{ borderBottom: '1px solid #eee' }}>
                 <td style={{ padding: '0.6rem' }}>{f.originalName}</td>
                 <td>{f.mimeType}</td>
-                <td>{formatSize(f.size)}</td>
+                <td>{formatSize(Number(f.sizeBytes))}</td>
                 <td>{new Date(f.createdAt).toLocaleDateString()}</td>
                 <td style={{ display: 'flex', gap: '0.5rem' }}>
                   <button onClick={() => generateLink(f.id)}
