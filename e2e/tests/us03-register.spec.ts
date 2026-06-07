@@ -1,22 +1,21 @@
 import { test, expect } from '@playwright/test';
-import { generateTestUser, registerUser } from '../fixtures/auth.fixture';
+import { generateTestUser, registerUser, registerAndLogin } from '../fixtures/auth.fixture';
 import { RegisterPage } from '../pages/register.page';
 
 test.describe('US03 — User Registration', () => {
-  test('should register a new user and redirect to dashboard', async ({ page }) => {
+  test('should register a new user and redirect to login', async ({ page }) => {
     const user = generateTestUser();
     const registerPage = new RegisterPage(page);
     await registerPage.register(user.name, user.email, user.password);
-    await page.waitForURL('**/dashboard', { timeout: 10000 });
-    expect(page.url()).toContain('/dashboard');
+    // App redirects to /login after register
+    await page.waitForURL('**/login', { timeout: 10000 });
+    expect(page.url()).toContain('/login');
   });
 
   test('should show error for duplicate email', async ({ page }) => {
     const user = generateTestUser();
-    // Register first time
+    // Register first time → goes to /login
     await registerUser(page, user);
-    // Logout
-    await page.click('button:has-text("Logout")');
     // Try to register again with same email
     const registerPage = new RegisterPage(page);
     await registerPage.register(user.name, user.email, user.password);

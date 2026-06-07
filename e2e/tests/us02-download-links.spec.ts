@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { generateTestUser, registerUser } from '../fixtures/auth.fixture';
+import { generateTestUser, registerAndLogin } from '../fixtures/auth.fixture';
 import { UploadPage } from '../pages/upload.page';
 import { DashboardPage } from '../pages/dashboard.page';
 import * as path from 'path';
@@ -9,7 +9,7 @@ const TEST_FILE = path.resolve(__dirname, '../fixtures/test-file.txt');
 test.describe('US02 — Download Links', () => {
   test('should generate a download link for an uploaded file', async ({ page }) => {
     const user = generateTestUser();
-    await registerUser(page, user);
+    await registerAndLogin(page, user);
 
     // Upload a file first
     const uploadPage = new UploadPage(page);
@@ -26,7 +26,7 @@ test.describe('US02 — Download Links', () => {
 
   test('should access download link publicly (without auth)', async ({ page, request }) => {
     const user = generateTestUser();
-    await registerUser(page, user);
+    await registerAndLogin(page, user);
 
     // Upload a file
     const uploadPage = new UploadPage(page);

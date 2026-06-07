@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { generateTestUser, registerUser } from '../fixtures/auth.fixture';
+import { generateTestUser, registerAndLogin } from '../fixtures/auth.fixture';
 import { UploadPage } from '../pages/upload.page';
 import * as path from 'path';
 
@@ -8,7 +8,7 @@ const TEST_FILE = path.resolve(__dirname, '../fixtures/test-file.txt');
 test.describe('US10 — Download History', () => {
   test('should record download events and expose history via API', async ({ page, request }) => {
     const user = generateTestUser();
-    await registerUser(page, user);
+    await registerAndLogin(page, user);
 
     // Upload a file
     const uploadPage = new UploadPage(page);

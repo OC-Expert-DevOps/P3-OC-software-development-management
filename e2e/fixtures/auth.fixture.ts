@@ -10,17 +10,18 @@ function generateTestUser() {
   };
 }
 
-/** Register a new user via the UI. */
+/** Register a new user via the UI — redirects to /login after success. */
 async function registerUser(page: Page, user: { name: string; email: string; password: string }) {
   await page.goto('/register');
   await page.fill('input[type="text"]', user.name);
   await page.fill('input[type="email"]', user.email);
   await page.fill('input[type="password"]', user.password);
   await page.click('button[type="submit"]');
-  await page.waitForURL('**/dashboard', { timeout: 10000 });
+  // App redirects to /login after register (not /dashboard)
+  await page.waitForURL('**/login', { timeout: 10000 });
 }
 
-/** Login an existing user via the UI. */
+/** Login an existing user via the UI — redirects to /dashboard. */
 async function loginUser(page: Page, user: { email: string; password: string }) {
   await page.goto('/login');
   await page.fill('input[type="email"]', user.email);
@@ -29,11 +30,12 @@ async function loginUser(page: Page, user: { email: string; password: string }) 
   await page.waitForURL('**/dashboard', { timeout: 10000 });
 }
 
-/** Register + login helper that returns the user object. */
-async function registerAndLogin(page: Page) {
-  const user = generateTestUser();
-  await registerUser(page, user);
-  return user;
+/** Register then login — ends on /dashboard. */
+async function registerAndLogin(page: Page, user?: { name: string; email: string; password: string }) {
+  const u = user || generateTestUser();
+  await registerUser(page, u);
+  await loginUser(page, u);
+  return u;
 }
 
 export { generateTestUser, registerUser, loginUser, registerAndLogin };
@@ -50,7 +52,7 @@ export const test = base.extend<AuthFixtures>({
     await use(user);
   },
   authenticatedPage: async ({ page, testUser }, use) => {
-    await registerUser(page, testUser);
+    await registerAndLogin(page, testUser);
     await use(page);
   },
 });
