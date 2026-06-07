@@ -1,41 +1,35 @@
-# Active Context — DataShare Platform
+# Active Context — DataShare
 
 ## Current Focus
 
-**Version:** 0.5.2
-**Status:** All 21/21 E2E tests passing ✅
-**Branch:** `main` (up to date after PR #28 merge)
+**Step 5a COMPLETED** — Unit Tests & Coverage (Issue #33, PR #34)
 
-## Recent Changes (PR #28 — 2026-06-07)
+### What was done
+- Fixed and expanded `files.service.spec.ts` (28 tests covering US05-US10 features)
+- Created `auth.controller.spec.ts` (4 tests for register/login/logout/refresh)
+- Created `jwt.guard.spec.ts` (5 tests for token validation/error handling)
+- Created `download.controller.spec.ts` (4 tests for CRUD + public download)
+- Configured Jest `collectCoverageFrom` to target business logic files
+- Set `coverageThreshold` at 70% statements/lines
+- Created `docs/testing/TESTING.md` with full testing strategy
 
-### Bug Fixes
-- **JWT Guard** (`backend/src/auth/guards/jwt.guard.ts`): Fixed `payload.sub` → `request.user.userId` mapping. Previously, the raw JWT payload was passed to `request.user`, causing uploaded files to have `userId: null`.
-- **Frontend DTO mismatch** (`frontend/src/pages/DashboardPage.tsx`): Fixed `expiresInSeconds` → `ttlSeconds` to match backend `CreateLinkDto`. The "Link" button on dashboard was failing silently.
-
-### E2E Test Robustness
-- **Dashboard page object**: Added `waitForLoaded()` method that waits for "Loading..." to disappear before checking file rows. Fixes race conditions where tests checked DOM before API response.
-- **US02/US10 download tests**: Added `maxRedirects: 0` to prevent Playwright from following 302 redirects to internal `http://minio:9000/...` hostname (unreachable from host machine).
-- **US02 generate link**: Changed from UI-based notification detection to API-based approach (more reliable).
-
-### Documentation
-- Created `docs/testing/08-e2e-testing.md` — comprehensive E2E test plan covering all 10 user stories (21 test cases).
-
-## Test Results History
-
-| Version | Passing | Total | Delta |
-|---------|---------|-------|-------|
-| 0.5.0 | 2 | 20 | Initial |
-| 0.5.1 | 17 | 21 | +15 |
-| 0.5.2 | **21** | **21** | **+4 (100%)** |
-
-## Known Issues
-
-- **File size "NaN MB"**: Frontend `formatSize()` receives BigInt as string from API (Prisma BigInt serialization), causing `NaN` display. Cosmetic only, doesn't affect functionality.
-- **MinIO presigned URLs**: Download redirect uses internal Docker hostname (`minio:9000`). Works in browser (nginx proxy) but not from host-level API clients. Consider adding nginx proxy for MinIO or using external endpoint config.
+### Results
+- **68 tests**, 6 suites, all passing
+- **72.82% statement coverage** (threshold: 70%)
+- All services at 92-100% coverage
 
 ## Next Steps
 
-- Fix file size display (BigInt → Number conversion in frontend)
-- Consider adding nginx proxy rule for MinIO presigned URLs
-- Deploy preparation (Docker Compose production profile)
-- Final demo preparation for investors
+### Remaining for project completion
+1. **Documentation docs** — SECURITY.md, performance considerations, maintenance guide
+2. **Memory-bank sync** — Ensure all docs reflect current state
+3. **Final review** — README, CHANGELOG, all docs up to date
+
+## Key Decisions
+- Coverage collected from `*.service.ts`, `*.controller.ts`, `*.guard.ts` only (not modules/DTOs)
+- Controllers tested with mocked services + ConfigService (for JwtGuard DI)
+- Guard tested with mocked `jsonwebtoken` module
+- req object stored as reference in guard tests (not recreated per getRequest() call)
+
+## Known Issues
+- IDE shows "Cannot find name 'jest'" in spec files — this is normal (Jest types loaded at runtime via ts-jest, not by IDE TypeScript server)

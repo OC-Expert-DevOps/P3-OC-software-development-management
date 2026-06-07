@@ -69,7 +69,18 @@
 - **17/21 → 21/21 passing (100%)**
 - **GitHub:** Issue #27 → PR #28
 
+### Step 13 — Unit Tests & Coverage ✅
+- Fixed/expanded all unit tests: 68 tests, 6 suites, all passing
+- 72.82% statement coverage (threshold: 70%)
+- `docs/testing/TESTING.md` — full testing strategy
+- **GitHub:** Issue #33 → PR #34 (squash merged)
+
 ## Current Status
+
+### v0.6.0 — Unit Tests & Coverage (2026-06-07)
+- 68 tests, 6 suites, 72.82% statement coverage
+- Coverage threshold configured at 70%
+- `docs/testing/TESTING.md` added
 
 ### v0.5.4 — Fix Presigned URL Signature (2026-06-07)
 - **Fixed:** `SignatureDoesNotMatch` — v0.5.3 replaced hostname AFTER HMAC signature computation
@@ -91,7 +102,7 @@
 | Infrastructure | ✅ Complete |
 | Backend API | ✅ 14 routes, all functional |
 | Frontend | ✅ 5 pages, auth flow working |
-| Unit Tests | ✅ 30+ tests |
+| Unit Tests | ✅ **68 tests, 72.82% coverage** |
 | E2E Tests | ✅ **21/21 passing** |
 | Documentation | ✅ 8 doc files + memory-bank |
 

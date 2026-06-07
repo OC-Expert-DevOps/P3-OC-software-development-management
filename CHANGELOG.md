@@ -5,6 +5,31 @@ All notable changes to this project will be documented in this file.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 Versioning follows [Semantic Versioning](https://semver.org/).
 
+## [0.6.0] - 2026-06-07 — Unit Tests & Coverage
+
+### Added
+
+**Tests:**
+- `auth.service.spec.ts` — 14 tests (register, login, logout, refresh, JWT)
+- `auth.controller.spec.ts` — 4 tests (register, login, logout, refresh endpoints)
+- `jwt.guard.spec.ts` — 5 tests (token extraction, validation, error handling)
+- `files.service.spec.ts` — 28 tests (upload, list, delete, password, anonymous, tags, history)
+- `download.service.spec.ts` — 13 tests (link creation, token usage, revocation)
+- `download.controller.spec.ts` — 4 tests (CRUD + public download)
+
+**Documentation:**
+- `docs/testing/TESTING.md` — Full testing strategy document
+
+### Changed
+
+**Configuration:**
+- `backend/package.json`: `collectCoverageFrom` now targets business logic (`*.service.ts`, `*.controller.ts`, `*.guard.ts`)
+- `backend/package.json`: `coverageThreshold` set to 70% statements/lines, 50% branches, 60% functions
+
+**Metrics:**
+- 68 tests, 6 suites, all passing
+- 72.82% statement coverage (threshold: 70%)
+
 ## [0.5.4] - 2026-06-07 — Fix Presigned URL Signature
 
 ### Fixed
