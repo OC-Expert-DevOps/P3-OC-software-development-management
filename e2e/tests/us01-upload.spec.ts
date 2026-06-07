@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { generateTestUser, registerUser } from '../fixtures/auth.fixture';
+import { generateTestUser, registerAndLogin } from '../fixtures/auth.fixture';
 import { UploadPage } from '../pages/upload.page';
 import { DashboardPage } from '../pages/dashboard.page';
 import * as path from 'path';
@@ -9,7 +9,7 @@ const TEST_FILE = path.resolve(__dirname, '../fixtures/test-file.txt');
 test.describe('US01 — File Upload (authenticated)', () => {
   test('should upload a file and see it in dashboard', async ({ page }) => {
     const user = generateTestUser();
-    await registerUser(page, user);
+    await registerAndLogin(page, user);
 
     const uploadPage = new UploadPage(page);
     await uploadPage.uploadAndSubmit(TEST_FILE);

@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { generateTestUser, registerUser } from '../fixtures/auth.fixture';
+import { generateTestUser, registerAndLogin } from '../fixtures/auth.fixture';
 import { UploadPage } from '../pages/upload.page';
 import * as path from 'path';
 
@@ -8,7 +8,7 @@ const TEST_FILE = path.resolve(__dirname, '../fixtures/test-file.txt');
 test.describe('US09 — File Tags', () => {
   test('should add tags to a file via API', async ({ page, request }) => {
     const user = generateTestUser();
-    await registerUser(page, user);
+    await registerAndLogin(page, user);
 
     const uploadPage = new UploadPage(page);
     await uploadPage.uploadAndSubmit(TEST_FILE);
@@ -31,7 +31,7 @@ test.describe('US09 — File Tags', () => {
 
   test('should normalize tags to lowercase', async ({ page, request }) => {
     const user = generateTestUser();
-    await registerUser(page, user);
+    await registerAndLogin(page, user);
 
     const uploadPage = new UploadPage(page);
     await uploadPage.uploadAndSubmit(TEST_FILE);
@@ -58,7 +58,7 @@ test.describe('US09 — File Tags', () => {
 
   test('should reject more than 10 tags', async ({ page, request }) => {
     const user = generateTestUser();
-    await registerUser(page, user);
+    await registerAndLogin(page, user);
 
     const uploadPage = new UploadPage(page);
     await uploadPage.uploadAndSubmit(TEST_FILE);
