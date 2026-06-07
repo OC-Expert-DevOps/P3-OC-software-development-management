@@ -14,9 +14,8 @@ import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 export class MinioService implements OnModuleInit {
   private readonly logger = new Logger(MinioService.name);
   private readonly client: S3Client;
+  private readonly publicClient: S3Client;
   private readonly bucket: string;
-  private readonly internalUrl: string;
-  private readonly publicUrl: string | null;
 
   constructor(private readonly config: ConfigService) {
     const endpoint = this.config.get<string>('MINIO_ENDPOINT', 'minio');
@@ -31,18 +30,18 @@ export class MinioService implements OnModuleInit {
     }
 
     const protocol = useSsl ? 'https' : 'http';
-    this.internalUrl = `${protocol}://${endpoint}:${port}`;
-    this.publicUrl = this.config.get<string>('MINIO_PUBLIC_URL', '') || null;
+    const internalUrl = `${protocol}://${endpoint}:${port}`;
+    const publicUrl = this.config.get<string>('MINIO_PUBLIC_URL', '') || internalUrl;
 
-    this.client = new S3Client({
-      endpoint: this.internalUrl,
-      region: 'us-east-1',
-      forcePathStyle: true,
-      credentials: {
-        accessKeyId,
-        secretAccessKey,
-      },
-    });
+    const credentials = { accessKeyId, secretAccessKey };
+    const commonOpts = { region: 'us-east-1', forcePathStyle: true, credentials };
+
+    // Internal client: used for upload, delete, bucket ops (minio:9000 inside Docker)
+    this.client = new S3Client({ ...commonOpts, endpoint: internalUrl });
+
+    // Public client: used for presigned URLs (localhost:9000 from browser)
+    // Signature is computed with publicUrl so it remains valid when browser hits it
+    this.publicClient = new S3Client({ ...commonOpts, endpoint: publicUrl });
   }
 
   async onModuleInit() {
@@ -94,11 +93,8 @@ export class MinioService implements OnModuleInit {
   async getPresignedUrl(key: string, ttlSeconds = 300): Promise<string> {
     try {
       const cmd = new GetObjectCommand({ Bucket: this.bucket, Key: key });
-      let url = await getSignedUrl(this.client, cmd, { expiresIn: ttlSeconds });
-      // Replace internal Docker hostname with public URL for browser access
-      if (this.publicUrl) {
-        url = url.replace(this.internalUrl, this.publicUrl);
-      }
+      // Use publicClient so signature is computed with the public hostname
+      const url = await getSignedUrl(this.publicClient, cmd, { expiresIn: ttlSeconds });
       return url;
     } catch (err) {
       this.logger.error(`Failed to create presigned url for ${key}`, err as any);
