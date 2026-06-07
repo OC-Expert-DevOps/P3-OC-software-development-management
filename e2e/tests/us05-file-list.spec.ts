@@ -36,6 +36,7 @@ test.describe('US05 — File List (paginated)', () => {
     await uploadPage.uploadAndSubmit(TEST_FILE);
 
     const dashboard = new DashboardPage(page);
+    await dashboard.waitForLoaded();
     const headers = page.locator('thead th');
     const headerTexts = await headers.allTextContents();
     expect(headerTexts).toEqual(expect.arrayContaining(['Name', 'Type', 'Size', 'Uploaded']));
