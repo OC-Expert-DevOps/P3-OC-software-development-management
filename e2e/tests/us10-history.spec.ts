@@ -26,7 +26,7 @@ test.describe('US10 — Download History', () => {
       // Generate download link
       const linkResponse = await request.post(`/api/files/${fileId}/links`, {
         headers: { Authorization: `Bearer ${token}` },
-        data: { expiresInSeconds: 86400 },
+        data: { ttlSeconds: 86400 },
       });
 
       if (linkResponse.ok()) {
@@ -34,8 +34,10 @@ test.describe('US10 — Download History', () => {
         const downloadToken = linkData.token || linkData.data?.token;
 
         if (downloadToken) {
-          // Download file (creates history entry)
-          await request.get(`/api/download/${downloadToken}`);
+          // Download file (creates history entry) — don't follow redirect to internal minio host
+          await request.get(`/api/download/${downloadToken}`, {
+            maxRedirects: 0,
+          });
 
           // Check history endpoint (if available)
           const historyResponse = await request.get(`/api/files/${fileId}/history`, {

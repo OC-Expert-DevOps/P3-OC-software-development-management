@@ -35,7 +35,7 @@ export default function DashboardPage() {
   };
 
   const generateLink = async (id: string) => {
-    const { data } = await api.post(`/files/${id}/links`, { expiresInSeconds: 86400 });
+    const { data } = await api.post(`/files/${id}/links`, { ttlSeconds: 86400 });
     const token = data.token || data.data?.token;
     const url = `${window.location.origin}/api/download/${token}`;
     setLinkUrl(url);
