@@ -71,6 +71,13 @@
 
 ## Current Status
 
+### v0.5.4 — Fix Presigned URL Signature (2026-06-07)
+- **Fixed:** `SignatureDoesNotMatch` — v0.5.3 replaced hostname AFTER HMAC signature computation
+- **Solution:** separate `publicClient: S3Client` configured with `MINIO_PUBLIC_URL` for presigned URLs
+- **Architecture:** `client` (internal, minio:9000) / `publicClient` (public, localhost:9000)
+- **Tests:** 21/21 E2E pass ✅
+- **GitHub:** Issue #31 → PR #32 (squash merged)
+
 ### v0.5.3 — Fix NaN MB + Broken Download Links (2026-06-07)
 - **Fixed:** Frontend file size display "NaN MB" (used `sizeBytes` instead of `size`, BigInt→Number)
 - **Fixed:** Presigned download URLs used Docker internal hostname `minio:9000` — added `MINIO_PUBLIC_URL` env var

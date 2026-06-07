@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 Versioning follows [Semantic Versioning](https://semver.org/).
 
+## [0.5.4] - 2026-06-07 — Fix Presigned URL Signature
+
+### Fixed
+
+**Backend:**
+- Fix `SignatureDoesNotMatch` error on download links: v0.5.3 replaced hostname AFTER signature computation
+- Create separate `publicClient: S3Client` configured with `MINIO_PUBLIC_URL` for presigned URL generation
+- Signature now computed with correct public hostname (`localhost:9000`) from the start
+
+**Architecture:**
+- `client` (internal) → upload, delete, bucket ops via `minio:9000`
+- `publicClient` (public) → presigned URLs via `localhost:9000`
+
+### Tests
+- ✅ 21/21 E2E tests pass (Playwright)
+
+**GitHub:** Issue #31 → PR #32 (squash merged)
+
+---
+
 ## [0.5.3] - 2026-06-07 — Fix NaN MB + Broken Download Links
 
 ### Fixed
