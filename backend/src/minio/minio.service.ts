@@ -14,7 +14,6 @@ import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 export class MinioService implements OnModuleInit {
   private readonly logger = new Logger(MinioService.name);
   private readonly client: S3Client;
-  private readonly publicClient: S3Client;
   private readonly bucket: string;
 
   constructor(private readonly config: ConfigService) {
@@ -30,18 +29,17 @@ export class MinioService implements OnModuleInit {
     }
 
     const protocol = useSsl ? 'https' : 'http';
-    const internalUrl = `${protocol}://${endpoint}:${port}`;
-    const publicUrl = this.config.get<string>('MINIO_PUBLIC_URL', '') || internalUrl;
+    const url = `${protocol}://${endpoint}:${port}`;
 
-    const credentials = { accessKeyId, secretAccessKey };
-    const commonOpts = { region: 'us-east-1', forcePathStyle: true, credentials };
-
-    // Internal client: used for upload, delete, bucket ops (minio:9000 inside Docker)
-    this.client = new S3Client({ ...commonOpts, endpoint: internalUrl });
-
-    // Public client: used for presigned URLs (localhost:9000 from browser)
-    // Signature is computed with publicUrl so it remains valid when browser hits it
-    this.publicClient = new S3Client({ ...commonOpts, endpoint: publicUrl });
+    this.client = new S3Client({
+      endpoint: url,
+      region: 'us-east-1',
+      forcePathStyle: true,
+      credentials: {
+        accessKeyId,
+        secretAccessKey,
+      },
+    });
   }
 
   async onModuleInit() {
@@ -93,8 +91,7 @@ export class MinioService implements OnModuleInit {
   async getPresignedUrl(key: string, ttlSeconds = 300): Promise<string> {
     try {
       const cmd = new GetObjectCommand({ Bucket: this.bucket, Key: key });
-      // Use publicClient so signature is computed with the public hostname
-      const url = await getSignedUrl(this.publicClient, cmd, { expiresIn: ttlSeconds });
+      const url = await getSignedUrl(this.client, cmd, { expiresIn: ttlSeconds });
       return url;
     } catch (err) {
       this.logger.error(`Failed to create presigned url for ${key}`, err as any);
