@@ -1,51 +1,51 @@
-# DataShare — Database Schema (MCD)
+# DataShare — Schéma de base de données (MCD)
 
-## Entity-Relationship Diagram
+## Diagramme Entité-Relation
 
 ```mermaid
 erDiagram
     User {
-        uuid id PK "Primary key (UUID v4)"
+        uuid id PK "Clé primaire (UUID v4)"
         varchar email UK "Unique, NOT NULL, max 255"
-        varchar password_hash "bcrypt hash, NOT NULL, max 255"
-        timestamp created_at "Default NOW()"
-        timestamp updated_at "Updated on modification"
+        varchar password_hash "Hash bcrypt, NOT NULL, max 255"
+        timestamp created_at "Par défaut NOW()"
+        timestamp updated_at "Mis à jour lors de la modification"
     }
 
     File {
-        uuid id PK "Primary key (UUID v4)"
-        uuid user_id FK "FK → User.id, NULLABLE (US07 anonymous)"
-        varchar original_name "Original filename, NOT NULL, max 255"
-        varchar storage_key UK "MinIO object key, UNIQUE, NOT NULL, max 500"
-        varchar mime_type "MIME type, max 100"
-        bigint size_bytes "File size in bytes, NOT NULL"
-        varchar password_hash "bcrypt hash, NULLABLE (US09)"
-        timestamp expires_at "Expiration date, NOT NULL"
-        timestamp created_at "Default NOW()"
-        boolean is_deleted "Soft delete flag, default false"
+        uuid id PK "Clé primaire (UUID v4)"
+        uuid user_id FK "FK → User.id, NULLABLE (US07 anonyme)"
+        varchar original_name "Nom de fichier original, NOT NULL, max 255"
+        varchar storage_key UK "Clé objet MinIO, UNIQUE, NOT NULL, max 500"
+        varchar mime_type "Type MIME, max 100"
+        bigint size_bytes "Taille du fichier en octets, NOT NULL"
+        varchar password_hash "Hash bcrypt, NULLABLE (US09)"
+        timestamp expires_at "Date d'expiration, NOT NULL"
+        timestamp created_at "Par défaut NOW()"
+        boolean is_deleted "Indicateur de suppression logique, par défaut false"
     }
 
     DownloadToken {
-        uuid id PK "Primary key (UUID v4)"
+        uuid id PK "Clé primaire (UUID v4)"
         uuid file_id FK "FK → File.id, NOT NULL"
         varchar token UK "UUID v4, UNIQUE, NOT NULL, max 255"
-        timestamp expires_at "Token expiration, NOT NULL"
-        int download_count "Number of downloads, default 0"
-        timestamp created_at "Default NOW()"
+        timestamp expires_at "Expiration du jeton, NOT NULL"
+        int download_count "Nombre de téléchargements, par défaut 0"
+        timestamp created_at "Par défaut NOW()"
     }
 
     RefreshToken {
-        uuid id PK "Primary key (UUID v4)"
+        uuid id PK "Clé primaire (UUID v4)"
         uuid user_id FK "FK → User.id, NOT NULL"
-        varchar token_hash UK "bcrypt hash, UNIQUE, NOT NULL, max 255"
-        timestamp expires_at "Token expiration (7 days), NOT NULL"
-        boolean is_revoked "Revocation flag, default false"
-        timestamp created_at "Default NOW()"
+        varchar token_hash UK "Hash bcrypt, UNIQUE, NOT NULL, max 255"
+        timestamp expires_at "Expiration du jeton (7 jours), NOT NULL"
+        boolean is_revoked "Indicateur de révocation, par défaut false"
+        timestamp created_at "Par défaut NOW()"
     }
 
     Tag {
-        uuid id PK "Primary key (UUID v4)"
-        varchar name UK "Tag name, UNIQUE, NOT NULL, max 30"
+        uuid id PK "Clé primaire (UUID v4)"
+        varchar name UK "Nom du tag, UNIQUE, NOT NULL, max 30"
     }
 
     FileTag {
@@ -53,125 +53,125 @@ erDiagram
         uuid tag_id FK "FK → Tag.id, NOT NULL"
     }
 
-    User ||--o{ File : "owns (nullable for anonymous)"
-    User ||--o{ RefreshToken : "has"
-    File ||--o{ DownloadToken : "generates"
-    File }o--o{ Tag : "tagged via FileTag"
+    User ||--o{ File : "possède (nullable pour anonyme)"
+    User ||--o{ RefreshToken : "possède"
+    File ||--o{ DownloadToken : "génère"
+    File }o--o{ Tag : "étiqueté via FileTag"
 ```
 
-## Entity Details
+## Détails des entités
 
 ### User (US03, US04)
 
-Registered users who can upload and manage files.
+Utilisateurs inscrits pouvant uploader et gérer des fichiers.
 
-| Column | Type | Constraints | Description |
+| Colonne | Type | Contraintes | Description |
 |--------|------|-------------|-------------|
-| `id` | UUID | PK, default `gen_random_uuid()` | Unique user identifier |
-| `email` | VARCHAR(255) | UNIQUE, NOT NULL | User email (login identifier) |
-| `password_hash` | VARCHAR(255) | NOT NULL | bcrypt hash (salt rounds = 12) |
-| `created_at` | TIMESTAMP | NOT NULL, default `NOW()` | Registration date |
-| `updated_at` | TIMESTAMP | NOT NULL, default `NOW()` | Last profile update |
+| `id` | UUID | PK, par défaut `gen_random_uuid()` | Identifiant unique de l'utilisateur |
+| `email` | VARCHAR(255) | UNIQUE, NOT NULL | Email de l'utilisateur (identifiant de connexion) |
+| `password_hash` | VARCHAR(255) | NOT NULL | Hash bcrypt (salt rounds = 12) |
+| `created_at` | TIMESTAMP | NOT NULL, par défaut `NOW()` | Date d'inscription |
+| `updated_at` | TIMESTAMP | NOT NULL, par défaut `NOW()` | Dernière mise à jour du profil |
 
-**Indexes**: `UNIQUE(email)`
+**Index** : `UNIQUE(email)`
 
 ---
 
 ### File (US01, US06, US07, US09, US10)
 
-Uploaded files metadata. The actual file is stored in MinIO.
+Métadonnées des fichiers uploadés. Le fichier réel est stocké dans MinIO.
 
-| Column | Type | Constraints | Description |
+| Colonne | Type | Contraintes | Description |
 |--------|------|-------------|-------------|
-| `id` | UUID | PK, default `gen_random_uuid()` | Unique file identifier |
-| `user_id` | UUID | FK → User.id, **NULLABLE** | Owner (NULL = anonymous upload, US07) |
-| `original_name` | VARCHAR(255) | NOT NULL | Original filename from client |
-| `storage_key` | VARCHAR(500) | UNIQUE, NOT NULL | MinIO object key (`{uuid}/{filename}`) |
-| `mime_type` | VARCHAR(100) | NULLABLE | MIME type (e.g., `application/pdf`) |
-| `size_bytes` | BIGINT | NOT NULL | File size in bytes (max 1 GB = 1073741824) |
-| `password_hash` | VARCHAR(255) | NULLABLE | bcrypt hash of file password (US09) |
-| `expires_at` | TIMESTAMP | NOT NULL | Expiration date (1–7 days from upload) |
-| `created_at` | TIMESTAMP | NOT NULL, default `NOW()` | Upload date |
-| `is_deleted` | BOOLEAN | NOT NULL, default `false` | Soft delete flag |
+| `id` | UUID | PK, par défaut `gen_random_uuid()` | Identifiant unique du fichier |
+| `user_id` | UUID | FK → User.id, **NULLABLE** | Propriétaire (NULL = upload anonyme, US07) |
+| `original_name` | VARCHAR(255) | NOT NULL | Nom de fichier original du client |
+| `storage_key` | VARCHAR(500) | UNIQUE, NOT NULL | Clé objet MinIO (`{uuid}/{filename}`) |
+| `mime_type` | VARCHAR(100) | NULLABLE | Type MIME (ex. : `application/pdf`) |
+| `size_bytes` | BIGINT | NOT NULL | Taille du fichier en octets (max 1 Go = 1073741824) |
+| `password_hash` | VARCHAR(255) | NULLABLE | Hash bcrypt du mot de passe du fichier (US09) |
+| `expires_at` | TIMESTAMP | NOT NULL | Date d'expiration (1 à 7 jours après l'upload) |
+| `created_at` | TIMESTAMP | NOT NULL, par défaut `NOW()` | Date d'upload |
+| `is_deleted` | BOOLEAN | NOT NULL, par défaut `false` | Indicateur de suppression logique |
 
-**Indexes**: `UNIQUE(storage_key)`, `INDEX(user_id)`, `INDEX(expires_at, is_deleted)`
+**Index** : `UNIQUE(storage_key)`, `INDEX(user_id)`, `INDEX(expires_at, is_deleted)`
 
-**Business Rules**:
-- `user_id` is NULL for anonymous uploads (US07)
-- `password_hash` is NULL if no password set (US09)
-- `expires_at` defaults to `NOW() + 7 days`, configurable 1–7 days
-- `is_deleted = true` after manual deletion (US06) or auto-expiration (US10)
+**Règles métier** :
+- `user_id` est NULL pour les uploads anonymes (US07)
+- `password_hash` est NULL si aucun mot de passe n'est défini (US09)
+- `expires_at` vaut par défaut `NOW() + 7 jours`, configurable de 1 à 7 jours
+- `is_deleted = true` après suppression manuelle (US06) ou expiration automatique (US10)
 
 ---
 
 ### DownloadToken (US02)
 
-Unique, non-predictable tokens for file download links.
+Jetons uniques et non prédictibles pour les liens de téléchargement de fichiers.
 
-| Column | Type | Constraints | Description |
+| Colonne | Type | Contraintes | Description |
 |--------|------|-------------|-------------|
-| `id` | UUID | PK, default `gen_random_uuid()` | Token record identifier |
-| `file_id` | UUID | FK → File.id, NOT NULL | Associated file |
-| `token` | VARCHAR(255) | UNIQUE, NOT NULL | UUID v4 download token |
-| `expires_at` | TIMESTAMP | NOT NULL | Token expiration (matches file expiration) |
-| `download_count` | INT | NOT NULL, default `0` | Number of successful downloads |
-| `created_at` | TIMESTAMP | NOT NULL, default `NOW()` | Token creation date |
+| `id` | UUID | PK, par défaut `gen_random_uuid()` | Identifiant de l'enregistrement du jeton |
+| `file_id` | UUID | FK → File.id, NOT NULL | Fichier associé |
+| `token` | VARCHAR(255) | UNIQUE, NOT NULL | Jeton de téléchargement UUID v4 |
+| `expires_at` | TIMESTAMP | NOT NULL | Expiration du jeton (correspond à l'expiration du fichier) |
+| `download_count` | INT | NOT NULL, par défaut `0` | Nombre de téléchargements réussis |
+| `created_at` | TIMESTAMP | NOT NULL, par défaut `NOW()` | Date de création du jeton |
 
-**Indexes**: `UNIQUE(token)`, `INDEX(file_id)`
+**Index** : `UNIQUE(token)`, `INDEX(file_id)`
 
-**Business Rules**:
-- Token is a `crypto.randomUUID()` — non-sequential, non-predictable
-- Download URL: `GET /api/download/{token}`
-- Token invalidated when `expires_at < NOW()` or parent file is deleted
+**Règles métier** :
+- Le jeton est un `crypto.randomUUID()` — non séquentiel, non prédictible
+- URL de téléchargement : `GET /api/download/{token}`
+- Le jeton est invalidé lorsque `expires_at < NOW()` ou que le fichier parent est supprimé
 
 ---
 
-### RefreshToken (US04 — Auth)
+### RefreshToken (US04 — Authentification)
 
-Stores hashed refresh tokens for JWT renewal.
+Stocke les jetons de rafraîchissement hashés pour le renouvellement JWT.
 
-| Column | Type | Constraints | Description |
+| Colonne | Type | Contraintes | Description |
 |--------|------|-------------|-------------|
-| `id` | UUID | PK, default `gen_random_uuid()` | Token record identifier |
-| `user_id` | UUID | FK → User.id, NOT NULL | Token owner |
-| `token_hash` | VARCHAR(255) | UNIQUE, NOT NULL | bcrypt hash of the refresh token |
-| `expires_at` | TIMESTAMP | NOT NULL | Expiration (7 days from creation) |
-| `is_revoked` | BOOLEAN | NOT NULL, default `false` | Set to `true` on logout |
-| `created_at` | TIMESTAMP | NOT NULL, default `NOW()` | Token creation date |
+| `id` | UUID | PK, par défaut `gen_random_uuid()` | Identifiant de l'enregistrement du jeton |
+| `user_id` | UUID | FK → User.id, NOT NULL | Propriétaire du jeton |
+| `token_hash` | VARCHAR(255) | UNIQUE, NOT NULL | Hash bcrypt du jeton de rafraîchissement |
+| `expires_at` | TIMESTAMP | NOT NULL | Expiration (7 jours après la création) |
+| `is_revoked` | BOOLEAN | NOT NULL, par défaut `false` | Mis à `true` lors de la déconnexion |
+| `created_at` | TIMESTAMP | NOT NULL, par défaut `NOW()` | Date de création du jeton |
 
-**Indexes**: `UNIQUE(token_hash)`, `INDEX(user_id)`
+**Index** : `UNIQUE(token_hash)`, `INDEX(user_id)`
 
-**Business Rules**:
-- Refresh token sent as HttpOnly cookie (never in response body)
-- On logout: `is_revoked = true` (not deleted, for audit trail)
-- On refresh: old token revoked, new token issued
+**Règles métier** :
+- Le jeton de rafraîchissement est envoyé en cookie HttpOnly (jamais dans le corps de la réponse)
+- À la déconnexion : `is_revoked = true` (non supprimé, pour la piste d'audit)
+- Au rafraîchissement : l'ancien jeton est révoqué, un nouveau jeton est émis
 
 ---
 
 ### Tag (US08)
 
-Tags for file organization.
+Tags pour l'organisation des fichiers.
 
-| Column | Type | Constraints | Description |
+| Colonne | Type | Contraintes | Description |
 |--------|------|-------------|-------------|
-| `id` | UUID | PK, default `gen_random_uuid()` | Tag identifier |
-| `name` | VARCHAR(30) | UNIQUE, NOT NULL | Tag name (free text, max 30 chars) |
+| `id` | UUID | PK, par défaut `gen_random_uuid()` | Identifiant du tag |
+| `name` | VARCHAR(30) | UNIQUE, NOT NULL | Nom du tag (texte libre, max 30 caractères) |
 
-**Indexes**: `UNIQUE(name)`
+**Index** : `UNIQUE(name)`
 
 ---
 
-### FileTag (US08 — Junction Table)
+### FileTag (US08 — Table de jointure)
 
-Many-to-many relationship between File and Tag.
+Relation plusieurs-à-plusieurs entre File et Tag.
 
-| Column | Type | Constraints | Description |
+| Colonne | Type | Contraintes | Description |
 |--------|------|-------------|-------------|
-| `file_id` | UUID | FK → File.id, NOT NULL | Associated file |
-| `tag_id` | UUID | FK → Tag.id, NOT NULL | Associated tag |
+| `file_id` | UUID | FK → File.id, NOT NULL | Fichier associé |
+| `tag_id` | UUID | FK → Tag.id, NOT NULL | Tag associé |
 
-**Primary Key**: `(file_id, tag_id)` — composite
+**Clé primaire** : `(file_id, tag_id)` — composite
 
-**Business Rules**:
-- No duplicate tags per file (enforced by composite PK)
-- Cascading delete: when File is deleted, associated FileTag rows are removed
+**Règles métier** :
+- Pas de tags dupliqués par fichier (garanti par la clé primaire composite)
+- Suppression en cascade : lorsqu'un fichier est supprimé, les lignes FileTag associées sont supprimées

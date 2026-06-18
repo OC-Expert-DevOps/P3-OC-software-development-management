@@ -1,48 +1,48 @@
-# Security Audit — DataShare
+# Audit de Sécurité — DataShare
 
-## Overview
+## Aperçu
 
-This document reports the results of security scans performed on the DataShare platform as part of the final quality step.
+Ce document présente les résultats des analyses de sécurité effectuées sur la plateforme DataShare dans le cadre de l'étape finale de qualité.
 
-**Date:** 2026-06-18  
-**Tools:** `npm audit`, manual code review  
-**Scope:** Backend (NestJS), Frontend (React/Vite), Infrastructure (Docker Compose)
+**Date :** 2026-06-18  
+**Outils :** `npm audit`, revue manuelle du code  
+**Périmètre :** Backend (NestJS), Frontend (React/Vite), Infrastructure (Docker Compose)
 
 ---
 
 ## 1. npm audit — Backend
 
-### Command
+### Commande
 
 ```bash
 cd backend && npm audit
 ```
 
-### Results Summary
+### Résumé des Résultats
 
-| Severity | Count |
-|----------|-------|
-| **High** | 10 |
-| **Moderate** | 34 |
-| **Low** | 3 |
+| Sévérité | Nombre |
+|----------|--------|
+| **Élevée** | 10 |
+| **Modérée** | 34 |
+| **Faible** | 3 |
 | **Total** | 47 |
 
-### Key Vulnerabilities
+### Vulnérabilités Principales
 
-| Package | Severity | Description | Decision |
-|---------|----------|-------------|----------|
-| `@nestjs/core <=11.1.17` | Moderate | Injection via downstream component (GHSA-36xv-jgw5-4q75) | **Accepted** — Dev-only CLI dependency, not exposed in production runtime |
-| `@nestjs/platform-express` | Moderate | Depends on vulnerable `body-parser`, `express`, `multer` | **Accepted** — Transitive via NestJS, awaiting NestJS v12 upgrade |
-| `body-parser <1.20.3` | High | Prototype pollution (GHSA-qwcr-r2fm-qrc7) | **Accepted** — NestJS pins version, no direct exploit path with our validation (Pydantic-style DTOs) |
-| `express <4.21.2` | High | XSS via res.redirect(), path traversal | **Accepted** — Our routes use typed DTOs, no user-controlled redirects |
-| `multer <=1.4.4` | High | ReDoS in filename parsing | **Accepted** — File upload validates content-type, file size limited to 1GB |
-| `webpack 5.49-5.104` | Moderate | SSRF via buildHttp (GHSA-8fgc-7cc6-rx7x) | **Ignored** — Dev-only tool (@nestjs/cli), not used in production |
-| `ajv 7.0-8.17.1` | Moderate | ReDoS with `$data` option | **Ignored** — Dev-only dependency (@angular-devkit), not in runtime |
-| `uuid <11.1.1` | Moderate | Missing buffer bounds check in v3/v5 | **Accepted** — We use uuid v4 (random), no buffer parameter passed |
-| `tmp <0.2.3` | Low | Insecure temp file creation | **Ignored** — Dev-only (inquirer CLI tool) |
-| `lodash` | Moderate | Prototype pollution | **Ignored** — Transitive via @nestjs/swagger, only used at build time for OpenAPI spec |
+| Paquet | Sévérité | Description | Décision |
+|--------|----------|-------------|----------|
+| `@nestjs/core <=11.1.17` | Modérée | Injection via un composant en aval (GHSA-36xv-jgw5-4q75) | **Acceptée** — Dépendance CLI de développement uniquement, non exposée en environnement de production |
+| `@nestjs/platform-express` | Modérée | Dépend de versions vulnérables de `body-parser`, `express`, `multer` | **Acceptée** — Transitive via NestJS, en attente de la mise à jour vers NestJS v12 |
+| `body-parser <1.20.3` | Élevée | Pollution de prototype (GHSA-qwcr-r2fm-qrc7) | **Acceptée** — NestJS fixe la version, pas de chemin d'exploitation direct avec notre validation (DTOs de type Pydantic) |
+| `express <4.21.2` | Élevée | XSS via res.redirect(), traversée de chemin | **Acceptée** — Nos routes utilisent des DTOs typés, pas de redirections contrôlées par l'utilisateur |
+| `multer <=1.4.4` | Élevée | ReDoS dans l'analyse des noms de fichiers | **Acceptée** — Le téléversement valide le content-type, la taille des fichiers est limitée à 1 Go |
+| `webpack 5.49-5.104` | Modérée | SSRF via buildHttp (GHSA-8fgc-7cc6-rx7x) | **Ignorée** — Outil de développement uniquement (@nestjs/cli), non utilisé en production |
+| `ajv 7.0-8.17.1` | Modérée | ReDoS avec l'option `$data` | **Ignorée** — Dépendance de développement uniquement (@angular-devkit), absente du runtime |
+| `uuid <11.1.1` | Modérée | Vérification manquante des limites du tampon dans v3/v5 | **Acceptée** — Nous utilisons uuid v4 (aléatoire), aucun paramètre de tampon transmis |
+| `tmp <0.2.3` | Faible | Création non sécurisée de fichiers temporaires | **Ignorée** — Développement uniquement (outil CLI inquirer) |
+| `lodash` | Modérée | Pollution de prototype | **Ignorée** — Transitive via @nestjs/swagger, utilisée uniquement au moment du build pour la spécification OpenAPI |
 
-### Remediation Actions
+### Actions de Remédiation
 
 ```bash
 # Fix non-breaking vulnerabilities
@@ -51,17 +51,17 @@ npm audit fix
 # Result: fixes 0 of 47 (all require breaking changes to NestJS core)
 ```
 
-**Decision:** All 47 vulnerabilities are in **transitive dependencies** of the NestJS framework or dev-only tooling (`@nestjs/cli`, `webpack`, `@angular-devkit`). None are directly exploitable in our production deployment:
-- The backend runs behind Nginx reverse proxy with TLS
-- All user input is validated via class-validator DTOs
-- File uploads are size-limited and content-type checked
-- No user-controlled redirects or template rendering
+**Décision :** Les 47 vulnérabilités se trouvent toutes dans des **dépendances transitives** du framework NestJS ou des outils de développement (`@nestjs/cli`, `webpack`, `@angular-devkit`). Aucune n'est directement exploitable dans notre déploiement en production :
+- Le backend fonctionne derrière un proxy inverse Nginx avec TLS
+- Toutes les entrées utilisateur sont validées via des DTOs class-validator
+- Les téléversements de fichiers sont limités en taille et vérifiés par content-type
+- Pas de redirections contrôlées par l'utilisateur ni de rendu de templates
 
-**Planned fix:** Upgrade to NestJS v12 when stable (expected to resolve 40+ vulnerabilities).
+**Correctif prévu :** Mise à niveau vers NestJS v12 lorsqu'il sera stable (devrait résoudre plus de 40 vulnérabilités).
 
 ### npm audit fix --force
 
-Not applied — would introduce breaking changes to `@nestjs/core@11 → @nestjs/core@12` which requires migration effort outside MVP scope.
+Non appliqué — introduirait des changements incompatibles de `@nestjs/core@11 → @nestjs/core@12` nécessitant un effort de migration hors du périmètre du MVP.
 
 ---
 
@@ -72,72 +72,72 @@ cd frontend && npm audit
 # Error: no package-lock.json present
 ```
 
-**Status:** Frontend uses `package.json` only (no lockfile committed). `npm audit` requires a lockfile.
+**Statut :** Le frontend utilise uniquement `package.json` (pas de fichier de verrouillage commité). `npm audit` nécessite un fichier de verrouillage.
 
-**Mitigation:** Frontend is a Vite+React SPA with minimal dependencies (`react`, `react-router-dom`, `axios`). No known vulnerabilities in these direct dependencies at current versions.
+**Atténuation :** Le frontend est une SPA Vite+React avec un minimum de dépendances (`react`, `react-router-dom`, `axios`). Aucune vulnérabilité connue dans ces dépendances directes aux versions actuelles.
 
 ---
 
-## 3. Application Security Review
+## 3. Revue de Sécurité Applicative
 
-### ✅ Authentication & Authorization
+### ✅ Authentification et Autorisation
 
-| Control | Status | Details |
-|---------|--------|---------|
-| Password hashing | ✅ | bcrypt with salt rounds |
-| JWT signing | ✅ | HS256 with 32+ char secret |
-| JWT validation | ✅ | Checks `sub`, `email`, `exp` |
-| Refresh token rotation | ✅ | Old token revoked on refresh |
-| HttpOnly cookies | ✅ | Refresh token in HttpOnly/Secure/SameSite cookie |
-| Rate limiting | ⚠️ | Not implemented (MVP) — recommended for v1.0 |
+| Contrôle | Statut | Détails |
+|----------|--------|---------|
+| Hachage des mots de passe | ✅ | bcrypt avec salage |
+| Signature JWT | ✅ | HS256 avec secret de 32+ caractères |
+| Validation JWT | ✅ | Vérifie `sub`, `email`, `exp` |
+| Rotation des jetons de rafraîchissement | ✅ | L'ancien jeton est révoqué lors du rafraîchissement |
+| Cookies HttpOnly | ✅ | Jeton de rafraîchissement dans un cookie HttpOnly/Secure/SameSite |
+| Limitation de débit | ⚠️ | Non implémentée (MVP) — recommandée pour la v1.0 |
 
-### ✅ Data Protection
+### ✅ Protection des Données
 
-| Control | Status | Details |
-|---------|--------|---------|
-| TLS in transit | ✅ | Nginx reverse proxy with HTTPS |
-| Secrets externalized | ✅ | `.env` not committed, `.env.example` with dummy values |
-| No secrets in code | ✅ | Verified: no hardcoded credentials |
-| No secrets in logs | ✅ | Logs only contain action/status, no tokens/passwords |
-| Input validation | ✅ | class-validator on all DTOs |
-| SQL injection | ✅ | Prisma ORM with parameterized queries |
-| File size limit | ✅ | `MAX_FILE_SIZE_BYTES` (default 1GB) |
+| Contrôle | Statut | Détails |
+|----------|--------|---------|
+| TLS en transit | ✅ | Proxy inverse Nginx avec HTTPS |
+| Secrets externalisés | ✅ | `.env` non commité, `.env.example` avec des valeurs factices |
+| Pas de secrets dans le code | ✅ | Vérifié : aucune donnée d'identification codée en dur |
+| Pas de secrets dans les logs | ✅ | Les logs ne contiennent que l'action/statut, pas de jetons/mots de passe |
+| Validation des entrées | ✅ | class-validator sur tous les DTOs |
+| Injection SQL | ✅ | ORM Prisma avec requêtes paramétrées |
+| Limite de taille de fichier | ✅ | `MAX_FILE_SIZE_BYTES` (par défaut 1 Go) |
 
-### ⚠️ Recommendations for Production
+### ⚠️ Recommandations pour la Production
 
-| Priority | Recommendation |
+| Priorité | Recommandation |
 |----------|---------------|
-| High | Add rate limiting on auth endpoints (express-rate-limit) |
-| High | Add CORS whitelist (currently allows configured origins) |
-| Medium | Add CSP headers via Nginx |
-| Medium | Implement account lockout after N failed login attempts |
-| Low | Add request logging with correlation IDs |
-| Low | Set up automated dependency scanning in CI (Dependabot/Renovate) |
+| Élevée | Ajouter une limitation de débit sur les points d'entrée d'authentification (express-rate-limit) |
+| Élevée | Ajouter une liste blanche CORS (autorise actuellement les origines configurées) |
+| Moyenne | Ajouter des en-têtes CSP via Nginx |
+| Moyenne | Implémenter le verrouillage de compte après N tentatives de connexion échouées |
+| Faible | Ajouter la journalisation des requêtes avec des identifiants de corrélation |
+| Faible | Mettre en place une analyse automatisée des dépendances en CI (Dependabot/Renovate) |
 
 ---
 
-## 4. Infrastructure Security
+## 4. Sécurité de l'Infrastructure
 
 ### Docker Compose
 
-| Control | Status | Details |
-|---------|--------|---------|
-| Non-root containers | ⚠️ | Not enforced (MVP) |
-| Network isolation | ✅ | `datashare-net` bridge network |
-| Volume persistence | ✅ | Named volumes for PostgreSQL + MinIO |
-| Port exposure | ✅ | Only Nginx (443, 80) + MinIO (9000) exposed |
-| Secrets in compose | ✅ | Via environment variables, not hardcoded |
+| Contrôle | Statut | Détails |
+|----------|--------|---------|
+| Conteneurs non-root | ⚠️ | Non appliqué (MVP) |
+| Isolation réseau | ✅ | Réseau bridge `datashare-net` |
+| Persistance des volumes | ✅ | Volumes nommés pour PostgreSQL + MinIO |
+| Exposition des ports | ✅ | Seuls Nginx (443, 80) + MinIO (9000) sont exposés |
+| Secrets dans compose | ✅ | Via variables d'environnement, non codés en dur |
 
 ### .gitignore
 
-Verified: `.env`, `*.pem`, `certs/`, `node_modules/`, `coverage/`, `*.secret.*` all ignored.
+Vérifié : `.env`, `*.pem`, `certs/`, `node_modules/`, `coverage/`, `*.secret.*` sont tous ignorés.
 
 ---
 
-## 5. Bug Fixed — MinIO SSL Boolean Parsing
+## 5. Bug Corrigé — Analyse du Booléen SSL MinIO
 
-**Issue:** `MINIO_USE_SSL=false` in `.env` was parsed as string `'false'` (truthy in JS), causing the S3 client to connect via HTTPS to a plain HTTP MinIO server → `EPROTO` crash.
+**Problème :** `MINIO_USE_SSL=false` dans `.env` était interprété comme la chaîne `'false'` (considérée comme vraie en JS), ce qui amenait le client S3 à se connecter en HTTPS à un serveur MinIO en HTTP simple → crash `EPROTO`.
 
-**Fix:** Changed `config.get<boolean>('MINIO_USE_SSL', false)` to `config.get<string>('MINIO_USE_SSL', 'false') === 'true'` for proper string comparison.
+**Correctif :** Remplacement de `config.get<boolean>('MINIO_USE_SSL', false)` par `config.get<string>('MINIO_USE_SSL', 'false') === 'true'` pour une comparaison de chaînes correcte.
 
-**Impact:** Backend container was in restart loop. Fixed in this PR.
+**Impact :** Le conteneur backend était en boucle de redémarrage. Corrigé dans cette PR.

@@ -1,116 +1,114 @@
-# DataShare — Secure File Transfer Platform
+# DataShare — Plateforme de Transfert de Fichiers Sécurisée
 
-A secure file transfer platform for freelancers and small businesses. Upload files, generate temporary download links, and manage your files with confidence.
+Une plateforme de transfert de fichiers sécurisée pour les freelances et les petites entreprises. Téléversez des fichiers, générez des liens de téléchargement temporaires et gérez vos fichiers en toute confiance.
 
-## Prerequisites
+## Prérequis
 
-- **Node.js** 20+ (for local development)
+- **Node.js** 20+ (pour le développement local)
 - **Docker** & **Docker Compose** v2
 - **Git**
 
 ## Installation
 
 ```bash
-# Clone
+# Cloner le dépôt
 git clone git@github.com:OC-Expert-DevOps/-P3-OC-software-development-management.git
 cd P3-OC-software-development-management
 
-# Copy environment config
+# Copier la configuration d'environnement
 cp .env.example .env
-# → Edit .env with your values
+# → Modifiez .env avec vos valeurs
 
-# Generate self-signed TLS certificates (dev only)
+# Générer des certificats TLS auto-signés (développement uniquement)
 make certs
 ```
 
 ## Configuration
 
-### Environment Variables
+### Variables d'environnement
 
-| Variable | Required | Type | Default | Scope | Description | Example |
-|----------|----------|------|---------|-------|-------------|---------|
-| `DATABASE_URL` | Yes | url | — | db | PostgreSQL connection string | `postgresql://datashare:pass@postgres:5432/datashare` |
-| `POSTGRES_USER` | Yes | string | — | db | Database user | `datashare` |
-| `POSTGRES_PASSWORD` | Yes | string | — | db | Database password | `changeme` |
-| `POSTGRES_DB` | Yes | string | — | db | Database name | `datashare` |
-| `JWT_SECRET` | Yes | string | — | auth | HMAC-SHA256 secret (min 32 chars) | `a_random_string_min_32_characters` |
-| `JWT_EXPIRES_IN` | No | duration | `15m` | auth | Access token TTL | `15m` |
-| `REFRESH_TOKEN_EXPIRES_IN` | No | duration | `7d` | auth | Refresh token TTL | `7d` |
-| `MINIO_ENDPOINT` | Yes | string | `minio` | storage | MinIO hostname | `minio` |
-| `MINIO_PORT` | No | int | `9000` | storage | MinIO API port | `9000` |
-| `MINIO_ACCESS_KEY` | Yes | string | — | storage | MinIO access key | `minioadmin` |
-| `MINIO_SECRET_KEY` | Yes | string | — | storage | MinIO secret key | `minioadmin` |
-| `MINIO_BUCKET` | No | string | `datashare` | storage | S3 bucket name | `datashare` |
-| `MINIO_USE_SSL` | No | bool | `false` | storage | TLS for MinIO | `false` |
-| `APP_PORT` | No | int | `3001` | runtime | NestJS port | `3001` |
-| `APP_ENV` | No | string | `development` | runtime | Environment | `development` |
-| `MAX_FILE_SIZE_BYTES` | No | int | `1073741824` | runtime | Max upload (1 GB) | `1073741824` |
-| `FILE_EXPIRY_DAYS_DEFAULT` | No | int | `7` | runtime | Default file expiry (days) | `7` |
-| `ALLOWED_ORIGINS` | No | string | `https://localhost` | runtime | CORS origins | `https://localhost` |
+| Variable | Requis | Type | Défaut | Portée | Description | Exemple |
+|----------|--------|------|--------|--------|-------------|---------|
+| `DATABASE_URL` | Oui | url | — | db | Chaîne de connexion PostgreSQL | `postgresql://datashare:pass@postgres:5432/datashare` |
+| `POSTGRES_USER` | Oui | string | — | db | Utilisateur de la base de données | `datashare` |
+| `POSTGRES_PASSWORD` | Oui | string | — | db | Mot de passe de la base de données | `changeme` |
+| `POSTGRES_DB` | Oui | string | — | db | Nom de la base de données | `datashare` |
+| `MINIO_ENDPOINT` | Oui | string | — | stockage | Nom d'hôte MinIO | `minio` |
+| `MINIO_PORT` | Non | int | `9000` | stockage | Port de l'API MinIO | `9000` |
+| `MINIO_ACCESS_KEY` | Oui | string | — | stockage | Clé d'accès MinIO | `datashare` |
+| `MINIO_SECRET_KEY` | Oui | string | — | stockage | Clé secrète MinIO | `changeme123` |
+| `MINIO_BUCKET` | Non | string | `datashare` | stockage | Nom du bucket MinIO | `datashare` |
+| `MINIO_USE_SSL` | Non | bool | `false` | stockage | Activer SSL pour MinIO | `false` |
+| `MINIO_PUBLIC_URL` | Oui | url | — | stockage | URL MinIO publique (pour les URLs pré-signées) | `https://localhost:9000` |
+| `JWT_SECRET` | Oui | string | — | auth | Secret pour la signature JWT | `votre-secret-jwt-256-bits` |
+| `JWT_EXPIRES_IN` | Non | string | `15m` | auth | Durée de vie du token d'accès | `15m` |
+| `REFRESH_TOKEN_DAYS` | Non | int | `7` | auth | Durée de vie du token de rafraîchissement (jours) | `7` |
+| `MAX_FILE_SIZE` | Non | int | `104857600` | upload | Taille maximale de fichier en octets (100 Mo) | `104857600` |
+| `ALLOWED_ORIGINS` | Non | string | `https://localhost` | sécurité | Origines CORS autorisées | `https://localhost` |
+| `BACKEND_PORT` | Non | int | `3001` | runtime | Port du backend | `3001` |
+| `NODE_ENV` | Non | string | `development` | runtime | Environnement Node.js | `production` |
 
-## Launch
-
-### Development (Docker Compose)
+## Lancement
 
 ```bash
-# Using Makefile (recommended)
+# Démarrer tous les services (Nginx + Frontend + Backend + PostgreSQL + MinIO)
 make up
 
-# Or directly
-docker compose -f infra/docker-compose.yml up --build
+# Initialiser/migrer la base de données (première exécution)
+make prisma-push
+
+# Ou manuellement :
+docker compose -f infra/docker-compose.yml --env-file .env up -d
+docker compose -f infra/docker-compose.yml exec backend npx prisma db push
 ```
 
-Services:
-- **Frontend**: https://localhost (via Nginx)
-- **API**: https://localhost/api/health
-- **Swagger**: https://localhost/api/docs
-- **MinIO Console**: localhost:9001 (direct, dev only)
+L'application est disponible sur **https://localhost** (accepter l'avertissement du certificat auto-signé).
 
-### Production
-
-Not yet configured — MVP uses Docker Compose for local demo.
+Console MinIO : **http://localhost:9001** (identifiants depuis `.env`)
 
 ## Tests
 
+### Tests unitaires
+
 ```bash
-# Backend unit tests (68 tests, 6 suites)
-cd backend && npm test
+cd backend
+npm test              # Exécuter tous les tests (68 tests, 6 suites)
+npm run test:cov      # Exécuter avec rapport de couverture (seuil : 70%)
+```
 
-# Backend tests with coverage (threshold: 70%)
-cd backend && npm run test:cov
+### Tests de bout en bout (E2E)
 
-# E2E tests with Playwright (21 tests, requires stack running)
-cd e2e && npx playwright install --with-deps chromium
-cd e2e && npx playwright test
+```bash
+# Prérequis : les services doivent tourner (make up + make prisma-push)
+cd e2e
+npm install
+npx playwright install chromium
+npx playwright test   # 21 tests, 10 specs (US01-US10)
+```
 
-# Performance tests with k6 (requires stack running)
-brew install k6  # macOS
+### Tests de performance (k6)
+
+```bash
+# Prérequis : les services doivent tourner + k6 installé
 k6 run k6/upload-test.js
-
-# Frontend lint
-cd frontend && npm run lint
 ```
 
-### Database initialization
+## Sécurité
 
-```bash
-# After first docker compose up, initialize the database schema:
-docker exec datashare-backend npx prisma db push
-```
+- **TLS** : Nginx gère la terminaison HTTPS (certificats auto-signés en développement)
+- **Authentification** : JWT HS256 (15 min) + rotation des tokens de rafraîchissement (7 jours)
+- **Mots de passe** : Hachés avec bcrypt (10 tours de salage)
+- **Téléchargements** : Tokens crypto avec TTL + nombre maximum de téléchargements
+- **Validation** : class-validator sur tous les DTOs (requêtes entrantes)
+- **CORS** : Restreint à `ALLOWED_ORIGINS`
+- **Secrets** : Variables d'environnement uniquement (rien de codé en dur)
 
-## Security
+Voir `docs/security/SECURITY.md` pour l'audit de sécurité complet.
 
-- **Auth**: JWT access tokens (15 min) + HttpOnly refresh tokens (7 days)
-- **Passwords**: bcrypt hashed (salt rounds: 10)
-- **TLS**: HTTPS enforced via Nginx (self-signed in dev)
-- **Download links**: Cryptographic tokens with expiry
-- **File access**: Owner-only by default
-- **CORS**: Restricted to `ALLOWED_ORIGINS`
-- **Secrets**: All secrets via environment variables, never committed
+## Limitations / Points d'attention
 
-## Limitations / Known Issues
-
-- Self-signed TLS → browser warning in development
-- No rate limiting yet (planned for production)
-- No email verification on registration
-- Single-node deployment only (Docker Compose)
+- Certificats TLS auto-signés en développement (avertissement navigateur)
+- Pas de rate limiting (recommandé post-MVP)
+- Pas de vérification d'email (recommandé post-MVP)
+- Pas d'en-têtes CSP (recommandé post-MVP)
+- Pas de streaming pour les gros fichiers (limite mémoire sur l'upload)

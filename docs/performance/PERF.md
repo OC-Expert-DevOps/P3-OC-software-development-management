@@ -1,249 +1,249 @@
-# Performance Testing — DataShare
+# Tests de Performance — DataShare
 
-## Overview
+## Vue d'ensemble
 
-Performance tests validate that the DataShare MVP endpoints meet acceptable latency and throughput targets for an investor demo (low-concurrency, single-node Docker Compose deployment).
+Les tests de performance valident que les endpoints du MVP DataShare respectent des objectifs acceptables de latence et de débit pour une démo investisseur (faible concurrence, déploiement Docker Compose sur un seul nœud).
 
-**Date:** 2026-06-18  
-**Tool:** k6 (Grafana)  
-**Target:** Backend API running in Docker Compose  
-**Endpoints tested:** File upload (`POST /api/files/upload`), File list (`GET /api/files`), Download link (`GET /download/:token`)
+**Date :** 2026-06-18  
+**Outil :** k6 (Grafana)  
+**Cible :** API Backend exécutée dans Docker Compose  
+**Endpoints testés :** Téléversement de fichier (`POST /api/files/upload`), Liste des fichiers (`GET /api/files`), Lien de téléchargement (`GET /download/:token`)
 
 ---
 
-## 1. k6 Test Script
+## 1. Script de test k6
 
-The k6 script is located at `k6/upload-test.js` in the repository root.
+Le script k6 se trouve dans `k6/upload-test.js` à la racine du dépôt.
 
-### Setup
+### Installation
 
 ```bash
-# Install k6 (macOS)
+# Installer k6 (macOS)
 brew install k6
 
-# Start the stack
+# Démarrer la pile
 cd infra && docker compose up -d
 
-# Run the performance test
+# Exécuter le test de performance
 k6 run k6/upload-test.js
 ```
 
-### Test Scenario
+### Scénario de test
 
-| Parameter | Value |
-|-----------|-------|
-| Virtual Users (VUs) | 10 |
-| Duration | 30 seconds |
-| Ramp-up | 5s → 10 VUs |
-| Steady state | 20s at 10 VUs |
-| Ramp-down | 5s → 0 VUs |
+| Paramètre | Valeur |
+|-----------|--------|
+| Utilisateurs virtuels (VUs) | 10 |
+| Durée | 30 secondes |
+| Montée en charge | 5s → 10 VUs |
+| État stable | 20s à 10 VUs |
+| Descente en charge | 5s → 0 VUs |
 
-### Endpoints Tested
+### Endpoints testés
 
-| Endpoint | Method | Auth | Description |
-|----------|--------|------|-------------|
-| `POST /api/auth/login` | POST | Public | Authenticate (setup phase) |
-| `POST /api/files/upload` | POST | JWT | Upload a 100KB test file |
-| `GET /api/files` | GET | JWT | List user files (paginated) |
-| `GET /api/files/:id` | GET | JWT | Get file metadata |
-
----
-
-## 2. Test Results
-
-### Upload Endpoint (`POST /api/files/upload` — 100KB file)
-
-| Metric | Value | Target | Status |
-|--------|-------|--------|--------|
-| **p50 latency** | ~120ms | < 500ms | ✅ |
-| **p95 latency** | ~350ms | < 2000ms | ✅ |
-| **p99 latency** | ~800ms | < 5000ms | ✅ |
-| **Throughput** | ~8 req/s | > 1 req/s | ✅ |
-| **Error rate** | 0% | < 5% | ✅ |
-
-### File List Endpoint (`GET /api/files`)
-
-| Metric | Value | Target | Status |
-|--------|-------|--------|--------|
-| **p50 latency** | ~15ms | < 200ms | ✅ |
-| **p95 latency** | ~45ms | < 500ms | ✅ |
-| **Throughput** | ~60 req/s | > 10 req/s | ✅ |
-| **Error rate** | 0% | < 1% | ✅ |
-
-### File Metadata Endpoint (`GET /api/files/:id`)
-
-| Metric | Value | Target | Status |
-|--------|-------|--------|--------|
-| **p50 latency** | ~10ms | < 100ms | ✅ |
-| **p95 latency** | ~30ms | < 300ms | ✅ |
-| **Throughput** | ~80 req/s | > 20 req/s | ✅ |
+| Endpoint | Méthode | Authentification | Description |
+|----------|---------|------------------|-------------|
+| `POST /api/auth/login` | POST | Public | Authentification (phase de configuration) |
+| `POST /api/files/upload` | POST | JWT | Téléverser un fichier de test de 100 Ko |
+| `GET /api/files` | GET | JWT | Lister les fichiers utilisateur (paginés) |
+| `GET /api/files/:id` | GET | JWT | Obtenir les métadonnées du fichier |
 
 ---
 
-## 3. Analysis
+## 2. Résultats des tests
 
-### Upload Performance
+### Endpoint de téléversement (`POST /api/files/upload` — fichier de 100 Ko)
 
-The upload endpoint is the most critical path. At **~120ms p50** for a 100KB file, performance is well within acceptable limits for an MVP demo. The main bottleneck is MinIO object storage write + Prisma database insert (sequential operations).
+| Métrique | Valeur | Objectif | Statut |
+|----------|--------|----------|--------|
+| **Latence p50** | ~120ms | < 500ms | ✅ |
+| **Latence p95** | ~350ms | < 2000ms | ✅ |
+| **Latence p99** | ~800ms | < 5000ms | ✅ |
+| **Débit** | ~8 req/s | > 1 req/s | ✅ |
+| **Taux d'erreur** | 0% | < 5% | ✅ |
 
-**Optimization opportunities (post-MVP):**
-- Stream uploads directly to MinIO instead of buffering in memory
-- Use MinIO multipart upload for files > 5MB
-- Add upload progress endpoint via WebSocket
+### Endpoint de liste des fichiers (`GET /api/files`)
 
-### Read Performance
+| Métrique | Valeur | Objectif | Statut |
+|----------|--------|----------|--------|
+| **Latence p50** | ~15ms | < 200ms | ✅ |
+| **Latence p95** | ~45ms | < 500ms | ✅ |
+| **Débit** | ~60 req/s | > 10 req/s | ✅ |
+| **Taux d'erreur** | 0% | < 1% | ✅ |
 
-File list and metadata endpoints are fast (**< 50ms p95**) thanks to:
-- Prisma query optimization (indexed `userId`, `deletedAt`)
-- No file content transfer (metadata only)
-- PostgreSQL connection pooling via Prisma
+### Endpoint de métadonnées du fichier (`GET /api/files/:id`)
 
-### Bottlenecks Identified
-
-| Bottleneck | Impact | Mitigation |
-|------------|--------|------------|
-| Memory buffering on upload | High memory usage for large files | Stream to MinIO (post-MVP) |
-| Single database connection pool | Limits concurrent requests | Configure `connection_limit` in DATABASE_URL |
-| No CDN for downloads | Each download hits MinIO directly | Add CDN or cache layer (production) |
-| No response caching | File list re-queried each time | Add Redis cache (production) |
+| Métrique | Valeur | Objectif | Statut |
+|----------|--------|----------|--------|
+| **Latence p50** | ~10ms | < 100ms | ✅ |
+| **Latence p95** | ~30ms | < 300ms | ✅ |
+| **Débit** | ~80 req/s | > 20 req/s | ✅ |
 
 ---
 
-## 4. Structured Logging
+## 3. Analyse
 
-### Current Implementation
+### Performance du téléversement
 
-NestJS uses its built-in logger with structured output:
+L'endpoint de téléversement est le chemin le plus critique. À **~120ms p50** pour un fichier de 100 Ko, la performance est bien dans les limites acceptables pour une démo MVP. Le principal goulet d'étranglement est l'écriture dans le stockage objet MinIO + l'insertion dans la base de données Prisma (opérations séquentielles).
+
+**Opportunités d'optimisation (post-MVP) :**
+- Transmettre les téléversements en flux directement vers MinIO au lieu de les mettre en mémoire tampon
+- Utiliser le téléversement multipart de MinIO pour les fichiers > 5 Mo
+- Ajouter un endpoint de progression du téléversement via WebSocket
+
+### Performance en lecture
+
+Les endpoints de liste de fichiers et de métadonnées sont rapides (**< 50ms p95**) grâce à :
+- L'optimisation des requêtes Prisma (index sur `userId`, `deletedAt`)
+- Pas de transfert de contenu de fichier (métadonnées uniquement)
+- Pool de connexions PostgreSQL via Prisma
+
+### Goulets d'étranglement identifiés
+
+| Goulet d'étranglement | Impact | Atténuation |
+|------------------------|--------|-------------|
+| Mise en mémoire tampon lors du téléversement | Utilisation mémoire élevée pour les gros fichiers | Flux vers MinIO (post-MVP) |
+| Pool de connexion unique à la base de données | Limite les requêtes concurrentes | Configurer `connection_limit` dans DATABASE_URL |
+| Pas de CDN pour les téléchargements | Chaque téléchargement accède directement à MinIO | Ajouter un CDN ou une couche de cache (production) |
+| Pas de cache de réponse | La liste des fichiers est re-demandée à chaque fois | Ajouter un cache Redis (production) |
+
+---
+
+## 4. Journalisation structurée
+
+### Implémentation actuelle
+
+NestJS utilise son journaliseur intégré avec une sortie structurée :
 
 ```
 [Nest] 1 - 06/18/2026, 9:42:01 AM  LOG [MinioService] Creating bucket "datashare"
 [Nest] 1 - 06/18/2026, 9:42:01 AM  LOG [RouterExplorer] Mapped {/files/upload, POST} route
 ```
 
-### Key Metrics in Logs
+### Métriques clés dans les journaux
 
-| Log Source | Metrics Available |
-|------------|-------------------|
-| NestJS Bootstrap | Service startup time, route mapping |
-| MinioService | Bucket creation, upload/delete operations, errors |
-| AuthService | Login attempts (success/failure, no credentials logged) |
-| FilesService | Upload size, file operations, error codes |
-| DownloadService | Token creation, download events, expiry checks |
+| Source du journal | Métriques disponibles |
+|-------------------|----------------------|
+| Démarrage NestJS | Temps de démarrage du service, mappage des routes |
+| MinioService | Création de bucket, opérations de téléversement/suppression, erreurs |
+| AuthService | Tentatives de connexion (succès/échec, aucun identifiant enregistré) |
+| FilesService | Taille du téléversement, opérations sur fichiers, codes d'erreur |
+| DownloadService | Création de jeton, événements de téléchargement, vérifications d'expiration |
 
-### Recommended Improvements (Production)
+### Améliorations recommandées (Production)
 
-| Improvement | Priority | Tool |
-|-------------|----------|------|
-| JSON structured logs | High | `nestjs-pino` or `winston` |
-| Request correlation IDs | High | Custom middleware |
-| Request duration logging | Medium | NestJS interceptor |
-| Log aggregation | Medium | ELK Stack or Loki |
-| Metrics endpoint `/metrics` | Low | `@willsoto/nestjs-prometheus` |
+| Amélioration | Priorité | Outil |
+|-------------|----------|-------|
+| Journaux structurés JSON | Haute | `nestjs-pino` ou `winston` |
+| Identifiants de corrélation de requêtes | Haute | Middleware personnalisé |
+| Journalisation de la durée des requêtes | Moyenne | Intercepteur NestJS |
+| Agrégation des journaux | Moyenne | ELK Stack ou Loki |
+| Endpoint de métriques `/metrics` | Basse | `@willsoto/nestjs-prometheus` |
 
 ---
 
-## 5. Load Testing Thresholds
+## 5. Seuils de test de charge
 
-For CI integration, the following k6 thresholds are recommended:
+Pour l'intégration CI, les seuils k6 suivants sont recommandés :
 
 ```javascript
 export const options = {
   thresholds: {
-    http_req_duration: ['p(95)<2000'],  // 95% of requests under 2s
-    http_req_failed: ['rate<0.05'],      // Less than 5% errors
-    http_reqs: ['rate>1'],               // At least 1 req/s throughput
+    http_req_duration: ['p(95)<2000'],  // 95% des requêtes sous 2s
+    http_req_failed: ['rate<0.05'],      // Moins de 5% d'erreurs
+    http_reqs: ['rate>1'],               // Au moins 1 req/s de débit
   },
 };
 ```
 
-These thresholds are appropriate for a demo environment (single Docker Compose node). Production thresholds should be more stringent.
+Ces seuils sont appropriés pour un environnement de démonstration (nœud unique Docker Compose). Les seuils de production devraient être plus stricts.
 
 ---
 
-## 6. Frontend Performance Budget
+## 6. Budget de performance du Frontend
 
-### Bundle Analysis (Vite Production Build)
+### Analyse du bundle (Build de production Vite)
 
-The frontend is built with Vite (React 18 + TypeScript). Expected production bundle sizes:
+Le frontend est construit avec Vite (React 18 + TypeScript). Tailles attendues du bundle de production :
 
-| Asset | Size (gzipped) | Budget | Status |
-|-------|---------------|--------|--------|
-| `index-[hash].js` (app bundle) | ~45 KB | < 100 KB | ✅ Within budget |
-| `vendor-[hash].js` (React + deps) | ~55 KB | < 150 KB | ✅ Within budget |
-| `index-[hash].css` | ~5 KB | < 30 KB | ✅ Within budget |
-| **Total JS** | **~100 KB** | **< 250 KB** | ✅ |
-| **Total all assets** | **~105 KB** | **< 300 KB** | ✅ |
+| Ressource | Taille (gzippée) | Budget | Statut |
+|-----------|-----------------|--------|--------|
+| `index-[hash].js` (bundle application) | ~45 Ko | < 100 Ko | ✅ Dans le budget |
+| `vendor-[hash].js` (React + dépendances) | ~55 Ko | < 150 Ko | ✅ Dans le budget |
+| `index-[hash].css` | ~5 Ko | < 30 Ko | ✅ Dans le budget |
+| **Total JS** | **~100 Ko** | **< 250 Ko** | ✅ |
+| **Total toutes ressources** | **~105 Ko** | **< 300 Ko** | ✅ |
 
-> **How to measure:** `cd frontend && npm run build` → Vite outputs asset sizes.
+> **Comment mesurer :** `cd frontend && npm run build` → Vite affiche les tailles des ressources.
 
-### Dependencies Impact
+### Impact des dépendances
 
-| Dependency | Approx. Size (gzipped) | Purpose | Alternative |
-|-----------|----------------------|---------|-------------|
-| `react` + `react-dom` | ~42 KB | UI framework | Preact (~3 KB, but ecosystem tradeoffs) |
-| `react-router-dom` | ~12 KB | Client routing | — |
-| `axios` | ~5 KB | HTTP client | `fetch` API (native, 0 KB) |
-| **Total vendor** | **~59 KB** | | |
+| Dépendance | Taille approx. (gzippée) | Utilité | Alternative |
+|-----------|-------------------------|---------|-------------|
+| `react` + `react-dom` | ~42 Ko | Framework UI | Preact (~3 Ko, mais compromis sur l'écosystème) |
+| `react-router-dom` | ~12 Ko | Routage client | — |
+| `axios` | ~5 Ko | Client HTTP | API `fetch` (native, 0 Ko) |
+| **Total vendor** | **~59 Ko** | | |
 
-### Browser Performance Metrics (Targets)
+### Métriques de performance navigateur (Objectifs)
 
-| Metric | Target | Expected (localhost) | Notes |
-|--------|--------|---------------------|-------|
-| **FCP** (First Contentful Paint) | < 1.5s | ~0.5s | Vite dev HMR is fast; prod build even faster |
-| **LCP** (Largest Contentful Paint) | < 2.5s | ~0.8s | SPA with minimal initial content |
-| **TTI** (Time to Interactive) | < 3.5s | ~1.0s | Small bundle, few blocking scripts |
-| **CLS** (Cumulative Layout Shift) | < 0.1 | ~0 | No dynamic content shifting on initial load |
-| **TBT** (Total Blocking Time) | < 200ms | ~50ms | Lightweight React app, no heavy computation |
+| Métrique | Objectif | Attendu (localhost) | Notes |
+|----------|----------|---------------------|-------|
+| **FCP** (First Contentful Paint) | < 1,5s | ~0,5s | Le HMR de Vite en dev est rapide ; le build de prod encore plus |
+| **LCP** (Largest Contentful Paint) | < 2,5s | ~0,8s | SPA avec un contenu initial minimal |
+| **TTI** (Time to Interactive) | < 3,5s | ~1,0s | Petit bundle, peu de scripts bloquants |
+| **CLS** (Cumulative Layout Shift) | < 0,1 | ~0 | Pas de décalage dynamique du contenu au chargement initial |
+| **TBT** (Total Blocking Time) | < 200ms | ~50ms | Application React légère, pas de calcul lourd |
 
-> **How to measure:** Chrome DevTools → Lighthouse → Performance tab (with Docker stack running at `https://localhost`).
+> **Comment mesurer :** Chrome DevTools → Lighthouse → onglet Performance (avec la pile Docker en cours d'exécution sur `https://localhost`).
 
-### Optimization Actions (Post-MVP)
+### Actions d'optimisation (Post-MVP)
 
-| Action | Impact | Effort | Priority |
+| Action | Impact | Effort | Priorité |
 |--------|--------|--------|----------|
-| Replace Axios with native `fetch` | -5 KB bundle | Low | Medium |
-| Code splitting (lazy routes) | -20 KB initial load | Medium | High |
-| Preact compatibility layer | -39 KB bundle | Medium | Low |
-| Image optimization (if added) | Variable | Low | High |
-| Service Worker caching | Faster repeat visits | Medium | Low |
+| Remplacer Axios par `fetch` natif | -5 Ko de bundle | Faible | Moyenne |
+| Découpage du code (routes en chargement différé) | -20 Ko de chargement initial | Moyen | Haute |
+| Couche de compatibilité Preact | -39 Ko de bundle | Moyen | Basse |
+| Optimisation des images (si ajoutées) | Variable | Faible | Haute |
+| Cache par Service Worker | Visites répétées plus rapides | Moyen | Basse |
 
 ---
 
-## 7. Key Metrics Tracking
+## 7. Suivi des métriques clés
 
-### Backend Metrics (from k6 tests)
+### Métriques Backend (issues des tests k6)
 
-| Metric | Value | Target | Status |
-|--------|-------|--------|--------|
-| Upload latency (p50) | ~120ms | < 500ms | ✅ |
-| Upload latency (p95) | ~350ms | < 2000ms | ✅ |
-| List files latency (p50) | ~15ms | < 200ms | ✅ |
-| List files latency (p95) | ~40ms | < 500ms | ✅ |
-| Error rate | 0% | < 5% | ✅ |
-| Throughput | ~8 req/s | > 1 req/s | ✅ |
+| Métrique | Valeur | Objectif | Statut |
+|----------|--------|----------|--------|
+| Latence téléversement (p50) | ~120ms | < 500ms | ✅ |
+| Latence téléversement (p95) | ~350ms | < 2000ms | ✅ |
+| Latence liste fichiers (p50) | ~15ms | < 200ms | ✅ |
+| Latence liste fichiers (p95) | ~40ms | < 500ms | ✅ |
+| Taux d'erreur | 0% | < 5% | ✅ |
+| Débit | ~8 req/s | > 1 req/s | ✅ |
 
-### File Transfer Metrics
+### Métriques de transfert de fichiers
 
-| Metric | Value | Notes |
-|--------|-------|-------|
-| Max upload size | 1 GB (configurable) | `MAX_FILE_SIZE_BYTES` env var |
-| Presigned URL TTL | 1 hour (default) | For direct MinIO downloads |
-| Download link TTL | 24h default (configurable) | `ttlSeconds` parameter |
-| Concurrent uploads tested | 10 VUs | k6 test configuration |
+| Métrique | Valeur | Notes |
+|----------|--------|-------|
+| Taille maximale de téléversement | 1 Go (configurable) | Variable d'environnement `MAX_FILE_SIZE_BYTES` |
+| TTL de l'URL présignée | 1 heure (par défaut) | Pour les téléchargements directs MinIO |
+| TTL du lien de téléchargement | 24h par défaut (configurable) | Paramètre `ttlSeconds` |
+| Téléversements simultanés testés | 10 VUs | Configuration du test k6 |
 
-### Optimization Analysis
+### Analyse des optimisations
 
-**Current bottlenecks (observed):**
-1. **File upload latency** — Dominated by network I/O to MinIO (expected for file transfers)
-2. **No response caching** — File list queries hit Prisma/PostgreSQL every time
-3. **No CDN** — Downloads served directly from MinIO
+**Goulets d'étranglement actuels (observés) :**
+1. **Latence de téléversement de fichier** — Dominée par les E/S réseau vers MinIO (attendu pour les transferts de fichiers)
+2. **Pas de cache de réponse** — Les requêtes de liste de fichiers sollicitent Prisma/PostgreSQL à chaque fois
+3. **Pas de CDN** — Les téléchargements sont servis directement depuis MinIO
 
-**Recommended optimizations (production):**
+**Optimisations recommandées (production) :**
 
-| Optimization | Expected Impact | Complexity |
+| Optimisation | Impact attendu | Complexité |
 |-------------|----------------|------------|
-| Redis cache for file lists | -80% latency on repeated list queries | Medium |
-| CDN for presigned URLs | -50% download latency for remote users | High |
-| Streaming upload (multipart) | Support for files > 1GB | Medium |
-| Connection pooling (Prisma) | Better concurrency handling | Low |
-| Nginx gzip compression | -60% response size for JSON | Low |
+| Cache Redis pour les listes de fichiers | -80% de latence sur les requêtes de liste répétées | Moyenne |
+| CDN pour les URLs présignées | -50% de latence de téléchargement pour les utilisateurs distants | Haute |
+| Téléversement en flux (multipart) | Support des fichiers > 1 Go | Moyenne |
+| Pool de connexions (Prisma) | Meilleure gestion de la concurrence | Basse |
+| Compression gzip par Nginx | -60% de taille de réponse pour le JSON | Basse |

@@ -1,21 +1,21 @@
-# US01 — GitHub Copilot Prompts
+# US01 — Prompts GitHub Copilot
 
-This document contains the exact prompts to give to GitHub Copilot Chat in VS Code
-for generating the US01 (File Upload) implementation.
+Ce document contient les prompts exacts à donner à GitHub Copilot Chat dans VS Code
+pour générer l'implémentation de l'US01 (Upload de fichiers).
 
-**How to use:**
-1. Open VS Code with the project
-2. Open Copilot Chat (`Ctrl+Shift+I` or `Cmd+Shift+I`)
-3. Copy-paste each prompt below into Copilot Chat, one at a time
-4. Copy the generated code into the corresponding skeleton file
-5. Review the code, fix issues if needed
-6. Commit with `Co-authored-by: GitHub Copilot` trailer
+**Comment utiliser :**
+1. Ouvrir VS Code avec le projet
+2. Ouvrir Copilot Chat (`Ctrl+Shift+I` ou `Cmd+Shift+I`)
+3. Copier-coller chaque prompt ci-dessous dans Copilot Chat, un à la fois
+4. Copier le code généré dans le fichier squelette correspondant
+5. Relire le code, corriger les problèmes si nécessaire
+6. Commiter avec le trailer `Co-authored-by: GitHub Copilot`
 
 ---
 
 ## Prompt 1 — MinioService
 
-**Target files:** `backend/src/minio/minio.module.ts` + `backend/src/minio/minio.service.ts`
+**Fichiers cibles :** `backend/src/minio/minio.module.ts` + `backend/src/minio/minio.service.ts`
 
 ```
 I'm building a NestJS backend for a file sharing app called DataShare.
@@ -49,7 +49,7 @@ Use NestJS @Injectable() decorator. Inject ConfigService.
 Handle errors gracefully (log + rethrow).
 ```
 
-**After generation:**
+**Après génération :**
 ```bash
 git add backend/src/minio/
 git commit -m "feat: implement MinioService for S3-compatible file storage
@@ -61,7 +61,7 @@ Co-authored-by: GitHub Copilot <175728472+Copilot@users.noreply.github.com>"
 
 ## Prompt 2 — FilesService
 
-**Target files:** `backend/src/files/files.service.ts` + `backend/src/files/dto/upload-file.dto.ts`
+**Fichiers cibles :** `backend/src/files/files.service.ts` + `backend/src/files/dto/upload-file.dto.ts`
 
 ```
 I need a NestJS FilesService for DataShare.
@@ -88,7 +88,7 @@ Generate:
    a) `uploadFile(userId: string, file: Express.Multer.File, dto?: UploadFileDto): Promise<File>`
       - Validate file size against MAX_FILE_SIZE_BYTES (throw BadRequestException if too large)
       - Validate extension is not in forbidden list (throw BadRequestException)
-      - Generate storage key: `${userId}/${randomUUID()}-${file.originalname}`
+      - Generate storage key: `\${userId}/\${randomUUID()}-\${file.originalname}`
       - Call minioService.uploadFile(key, file.buffer, file.mimetype)
       - Save to DB via prisma.file.create with expiresAt = now + expiryDays
       - Return created File record
@@ -114,7 +114,7 @@ Use proper NestJS exceptions (NotFoundException, BadRequestException, ForbiddenE
 Import { randomUUID } from 'crypto'.
 ```
 
-**After generation:**
+**Après génération :**
 ```bash
 git add backend/src/files/files.service.ts backend/src/files/dto/
 git commit -m "feat: implement FilesService (upload, list, findOne, delete)
@@ -126,7 +126,7 @@ Co-authored-by: GitHub Copilot <175728472+Copilot@users.noreply.github.com>"
 
 ## Prompt 3 — FilesController
 
-**Target file:** `backend/src/files/files.controller.ts` + `backend/src/files/files.module.ts`
+**Fichiers cibles :** `backend/src/files/files.controller.ts` + `backend/src/files/files.module.ts`
 
 ```
 I need a NestJS FilesController for DataShare.
@@ -153,10 +153,10 @@ Generate two files:
      b) @Get()
         Returns list of user's files (200)
 
-     c) @Get(':id')
+     c) @Get('\:id')
         Returns single file metadata (200)
 
-     d) @Delete(':id')
+     d) @Delete('\:id')
         Deletes file, returns 204 (no content)
         Use @HttpCode(HttpStatus.NO_CONTENT)
 
@@ -169,7 +169,7 @@ All routes extract userId from request.user.userId.
 Add @ApiTags('files') for Swagger documentation.
 ```
 
-**After generation:**
+**Après génération :**
 ```bash
 git add backend/src/files/files.controller.ts backend/src/files/files.module.ts
 git commit -m "feat: implement FilesController (4 JWT-protected routes)
@@ -179,9 +179,9 @@ Co-authored-by: GitHub Copilot <175728472+Copilot@users.noreply.github.com>"
 
 ---
 
-## Prompt 4 — Unit Tests
+## Prompt 4 — Tests unitaires
 
-**Target file:** `backend/src/files/files.service.spec.ts`
+**Fichier cible :** `backend/src/files/files.service.spec.ts`
 
 ```
 Generate Jest unit tests for the DataShare FilesService.
@@ -217,7 +217,7 @@ Structure:
 - Use expect().rejects.toThrow() for error cases
 ```
 
-**After generation:**
+**Après génération :**
 ```bash
 git add backend/src/files/files.service.spec.ts
 git commit -m "test: add 10 unit tests for FilesService
@@ -227,9 +227,9 @@ Co-authored-by: GitHub Copilot <175728472+Copilot@users.noreply.github.com>"
 
 ---
 
-## After All Prompts — Register Module
+## Après tous les prompts — Enregistrement du module
 
-Don't forget to import `FilesModule` in `app.module.ts`:
+Ne pas oublier d'importer `FilesModule` dans `app.module.ts` :
 
 ```typescript
 // backend/src/app.module.ts
@@ -240,13 +240,13 @@ import { FilesModule } from './files/files.module';
     ConfigModule.forRoot({ isGlobal: true }),
     PrismaModule,
     AuthModule,
-    FilesModule,  // ← ADD THIS
+    FilesModule,  // ← AJOUTER CECI
   ],
   // ...
 })
 ```
 
-Commit:
+Commit :
 ```bash
 git commit -m "feat: register FilesModule in AppModule
 

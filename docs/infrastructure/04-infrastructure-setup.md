@@ -1,13 +1,13 @@
-# Infrastructure Setup — Docker Compose
+# Configuration de l'infrastructure — Docker Compose
 
-## Architecture Overview
+## Vue d'ensemble de l'architecture
 
 ```mermaid
 graph TD
-    Browser["🌐 Browser"]
+    Browser["🌐 Navigateur"]
     
     subgraph DockerCompose["Docker Compose — datashare-net"]
-        Nginx["Nginx<br/>:443 → host"]
+        Nginx["Nginx<br/>:443 → hôte"]
         Frontend["React/Vite<br/>:3000"]
         Backend["NestJS<br/>:3001"]
         Postgres["PostgreSQL 16<br/>:5432"]
@@ -18,79 +18,79 @@ graph TD
     Nginx -->|"proxy /"| Frontend
     Nginx -->|"proxy /api/"| Backend
     Backend -->|"Prisma / SQL"| Postgres
-    Backend -->|"S3 API"| MinIO
+    Backend -->|"API S3"| MinIO
     
-    Postgres ---|"volume: postgres-data"| PGVol["📁 postgres-data"]
-    MinIO ---|"volume: minio-data"| MINVol["📁 minio-data"]
+    Postgres ---|"volume : postgres-data"| PGVol["📁 postgres-data"]
+    MinIO ---|"volume : minio-data"| MINVol["📁 minio-data"]
 ```
 
 ## Services
 
-| Service | Image | Internal Port | Exposed Port | Depends On |
+| Service | Image | Port interne | Port exposé | Dépend de |
 |---------|-------|--------------|--------------|------------|
 | nginx | nginx:alpine | 80, 443 | 443, 80 | frontend, backend |
-| frontend | local build | 3000 | — | — |
-| backend | local build | 3001 | — | postgres, minio |
+| frontend | build local | 3000 | — | — |
+| backend | build local | 3001 | — | postgres, minio |
 | postgres | postgres:16-alpine | 5432 | — | — |
 | minio | minio/minio:latest | 9000, 9001 | — | — |
 
-## Quick Start
+## Démarrage rapide
 
 ```bash
-# 1. Clone the repo
+# 1. Cloner le dépôt
 git clone git@github.com:OC-Expert-DevOps/-P3-OC-software-development-management.git
 cd P3-OC-software-development-management
 
-# 2. Copy environment file
+# 2. Copier le fichier d'environnement
 cp .env.example .env
-# Edit .env with your values (especially secrets)
+# Modifier .env avec vos valeurs (surtout les secrets)
 
-# 3. Generate self-signed TLS certificates (dev only)
+# 3. Générer les certificats TLS auto-signés (dev uniquement)
 make certs
 
-# 4. Start all services
+# 4. Démarrer tous les services
 make up
-# Or: docker compose -f infra/docker-compose.yml up --build
+# Ou : docker compose -f infra/docker-compose.yml up --build
 
-# 5. Verify
+# 5. Vérifier
 curl -k https://localhost/api/health
 # → {"status":"ok","timestamp":"..."}
 ```
 
-## Data Persistence
+## Persistance des données
 
-| Volume | Mount Point | Purpose |
+| Volume | Point de montage | Objectif |
 |--------|------------|---------|
-| `postgres-data` | `/var/lib/postgresql/data` | Database tables, indexes |
-| `minio-data` | `/data` | Uploaded files (S3 objects) |
+| `postgres-data` | `/var/lib/postgresql/data` | Tables et index de la base de données |
+| `minio-data` | `/data` | Fichiers uploadés (objets S3) |
 
-- `docker compose down` → data **preserved**
-- `docker compose down -v` → data **deleted** (full reset)
+- `docker compose down` → données **conservées**
+- `docker compose down -v` → données **supprimées** (réinitialisation complète)
 
-## Network
+## Réseau
 
-All services communicate on the `datashare-net` bridge network. Only Nginx is exposed to the host (ports 80/443). All other services are internal only.
+Tous les services communiquent sur le réseau bridge `datashare-net`. Seul Nginx est exposé à l'hôte (ports 80/443). Tous les autres services sont uniquement internes.
 
-## Environment Variables
+## Variables d'environnement
 
-See `.env.example` for the full list. Key variables:
+Voir `.env.example` pour la liste complète. Variables principales :
 
-| Variable | Required | Type | Default | Description |
+| Variable | Obligatoire | Type | Par défaut | Description |
 |----------|----------|------|---------|-------------|
-| `DATABASE_URL` | Yes | url | — | PostgreSQL connection string |
-| `POSTGRES_USER` | Yes | string | — | Database user |
-| `POSTGRES_PASSWORD` | Yes | string | — | Database password |
-| `POSTGRES_DB` | Yes | string | — | Database name |
-| `JWT_SECRET` | Yes | string | — | HMAC-SHA256 signing secret (min 32 chars) |
-| `JWT_EXPIRES_IN` | No | duration | `15m` | Access token TTL |
-| `REFRESH_TOKEN_EXPIRES_IN` | No | duration | `7d` | Refresh token TTL |
-| `MINIO_ENDPOINT` | Yes | string | `minio` | MinIO hostname |
-| `MINIO_PORT` | No | int | `9000` | MinIO API port |
-| `MINIO_ACCESS_KEY` | Yes | string | — | MinIO access key |
-| `MINIO_SECRET_KEY` | Yes | string | — | MinIO secret key |
-| `MINIO_BUCKET` | No | string | `datashare` | S3 bucket name |
-| `MINIO_USE_SSL` | No | bool | `false` | TLS for MinIO (dev=false) |
-| `APP_PORT` | No | int | `3001` | NestJS listen port |
-| `MAX_FILE_SIZE_BYTES` | No | int | `1073741824` | Max upload size (1 GB) |
-| `FILE_EXPIRY_DAYS_DEFAULT` | No | int | `7` | Default file expiry |
-| `ALLOWED_ORIGINS` | No | string | `https://localhost` | CORS origins (comma-separated) |
+| `DATABASE_URL` | Oui | url | — | Chaîne de connexion PostgreSQL |
+| `POSTGRES_USER` | Oui | string | — | Utilisateur de la base de données |
+| `POSTGRES_PASSWORD` | Oui | string | — | Mot de passe de la base de données |
+| `POSTGRES_DB` | Oui | string | — | Nom de la base de données |
+| `JWT_SECRET` | Oui | string | — | Secret de signature HMAC-SHA256 (min 32 caractères) |
+| `JWT_EXPIRES_IN` | Non | duration | `15m` | Durée de vie du jeton d'accès |
+| `REFRESH_TOKEN_EXPIRES_IN` | Non | duration | `7d` | Durée de vie du jeton de rafraîchissement |
+| `MINIO_ENDPOINT` | Oui | string | `minio` | Nom d'hôte MinIO |
+| `MINIO_PORT` | Non | int | `9000` | Port API MinIO |
+| `MINIO_ACCESS_KEY` | Oui | string | — | Clé d'accès MinIO |
+| `MINIO_SECRET_KEY` | Oui | string | — | Clé secrète MinIO |
+| `MINIO_BUCKET` | Non | string | `datashare` | Nom du bucket S3 |
+| `MINIO_USE_SSL` | Non | bool | `false` | TLS pour MinIO (dev=false) |
+| `APP_PORT` | Non | int | `3001` | Port d'écoute NestJS |
+| `MAX_FILE_SIZE_BYTES` | Non | int | `1073741824` | Taille maximale d'upload (1 Go) |
+| `FILE_EXPIRY_DAYS_DEFAULT` | Non | int | `7` | Expiration par défaut des fichiers |
+| `ALLOWED_ORIGINS` | Non | string | `https://localhost` | Origines CORS (séparées par des virgules) |

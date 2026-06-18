@@ -1,56 +1,56 @@
-# Authentication Module — US03 & US04
+# Module d'authentification — US03 & US04
 
-## Overview
+## Vue d'ensemble
 
-The AuthModule handles user registration (US03) and authentication (US04) for the DataShare platform. It implements a JWT-based authentication strategy with refresh token rotation.
+Le AuthModule gère l'inscription des utilisateurs (US03) et l'authentification (US04) pour la plateforme DataShare. Il implémente une stratégie d'authentification basée sur JWT avec rotation des jetons de rafraîchissement.
 
 ## Architecture
 
 ```
 backend/src/auth/
-├── auth.module.ts          ← NestJS module declaration
-├── auth.controller.ts      ← 4 REST endpoints
-├── auth.service.ts         ← Business logic (register, login, logout, refresh)
+├── auth.module.ts          ← Déclaration du module NestJS
+├── auth.controller.ts      ← 4 points de terminaison REST
+├── auth.service.ts         ← Logique métier (register, login, logout, refresh)
 ├── dto/
-│   ├── register.dto.ts     ← Input validation for registration
-│   └── login.dto.ts        ← Input validation for login
+│   ├── register.dto.ts     ← Validation des entrées pour l'inscription
+│   └── login.dto.ts        ← Validation des entrées pour la connexion
 └── guards/
-    └── jwt.guard.ts        ← Reusable guard for protected routes
+    └── jwt.guard.ts        ← Guard réutilisable pour les routes protégées
 ```
 
-## API Routes
+## Routes API
 
-| Method | Path | Auth | Description |
-|--------|------|------|-------------|
-| `POST` | `/api/auth/register` | No | Create a new account |
-| `POST` | `/api/auth/login` | No | Authenticate, get tokens |
-| `POST` | `/api/auth/logout` | Yes (JWT) | Revoke refresh token |
-| `POST` | `/api/auth/refresh` | No (cookie) | Renew access token |
+| Méthode | Chemin | Auth | Description |
+|---------|--------|------|-------------|
+| `POST` | `/api/auth/register` | Non | Créer un nouveau compte |
+| `POST` | `/api/auth/login` | Non | S'authentifier, obtenir les jetons |
+| `POST` | `/api/auth/logout` | Oui (JWT) | Révoquer le jeton de rafraîchissement |
+| `POST` | `/api/auth/refresh` | Non (cookie) | Renouveler le jeton d'accès |
 
-## Token Strategy
+## Stratégie de jetons
 
-### Access Token (JWT)
-- **Algorithm**: HS256
-- **Payload**: `{ sub: user_id, email: user_email }`
-- **TTL**: 15 minutes (configurable via `JWT_EXPIRES_IN`)
-- **Transport**: `Authorization: Bearer <token>` header
+### Jeton d'accès (JWT)
+- **Algorithme** : HS256
+- **Charge utile** : `{ sub: user_id, email: user_email }`
+- **Durée de vie** : 15 minutes (configurable via `JWT_EXPIRES_IN`)
+- **Transport** : En-tête `Authorization: Bearer <token>`
 
-### Refresh Token
-- **Format**: UUID v4 (raw value)
-- **Storage**: bcrypt hash in `refresh_tokens` table
-- **TTL**: 7 days (configurable via `REFRESH_TOKEN_EXPIRES_IN`)
-- **Transport**: HttpOnly cookie (`refresh_token`)
-- **Cookie flags**: `HttpOnly`, `Secure`, `SameSite=Strict`, path `/api/auth`
-- **Rotation**: Each refresh invalidates the old token and issues a new one
+### Jeton de rafraîchissement
+- **Format** : UUID v4 (valeur brute)
+- **Stockage** : Hachage bcrypt dans la table `refresh_tokens`
+- **Durée de vie** : 7 jours (configurable via `REFRESH_TOKEN_EXPIRES_IN`)
+- **Transport** : Cookie HttpOnly (`refresh_token`)
+- **Options du cookie** : `HttpOnly`, `Secure`, `SameSite=Strict`, path `/api/auth`
+- **Rotation** : Chaque rafraîchissement invalide l'ancien jeton et en émet un nouveau
 
-### Password Hashing
-- **Algorithm**: bcrypt
-- **Salt rounds**: 10
-- **Minimum length**: 8 characters (validated in DTO)
+### Hachage du mot de passe
+- **Algorithme** : bcrypt
+- **Tours de salage** : 10
+- **Longueur minimale** : 8 caractères (validé dans le DTO)
 
-## Sequence Diagrams
+## Diagrammes de séquence
 
-### Registration (US03)
+### Inscription (US03)
 
 ```mermaid
 sequenceDiagram
@@ -62,7 +62,7 @@ sequenceDiagram
     C->>A: POST /api/auth/register {email, password}
     A->>S: register(dto)
     S->>DB: findUnique(email)
-    DB-->>S: null (no duplicate)
+    DB-->>S: null (pas de doublon)
     S->>S: bcrypt.hash(password, 10)
     S->>DB: create(User)
     DB-->>S: user
@@ -72,7 +72,7 @@ sequenceDiagram
     A->>C: 201 + Set-Cookie: refresh_token
 ```
 
-### Login (US04)
+### Connexion (US04)
 
 ```mermaid
 sequenceDiagram
@@ -84,7 +84,7 @@ sequenceDiagram
     C->>A: POST /api/auth/login {email, password}
     A->>S: login(dto)
     S->>DB: findUnique(email)
-    DB-->>S: user (with passwordHash)
+    DB-->>S: user (avec passwordHash)
     S->>S: bcrypt.compare(password, hash)
     S->>S: jwt.sign({sub, email})
     S->>DB: create(RefreshToken hash)
@@ -94,7 +94,7 @@ sequenceDiagram
 
 ## JwtGuard
 
-Reusable guard for any protected route in future modules (Files, Download, Tags):
+Guard réutilisable pour toute route protégée dans les futurs modules (Files, Download, Tags) :
 
 ```typescript
 @UseGuards(JwtGuard)
@@ -104,52 +104,52 @@ async handler(@Req() req) {
 }
 ```
 
-The guard:
-1. Extracts `Bearer <token>` from `Authorization` header
-2. Verifies JWT signature + expiration using `JWT_SECRET`
-3. Attaches decoded payload to `request.user`
-4. Throws `401 Unauthorized` if token is missing/invalid/expired
+Le guard :
+1. Extrait `Bearer <token>` de l'en-tête `Authorization`
+2. Vérifie la signature JWT + l'expiration en utilisant `JWT_SECRET`
+3. Attache la charge utile décodée à `request.user`
+4. Lève une erreur `401 Unauthorized` si le jeton est manquant/invalide/expiré
 
-## Error Responses
+## Réponses d'erreur
 
-| Code | Error | When |
-|------|-------|------|
-| 201 | — | Account created successfully |
-| 200 | — | Login / refresh successful |
-| 204 | — | Logout successful |
-| 401 | `Unauthorized` | Invalid credentials, expired/invalid token |
-| 409 | `Conflict` | Email already registered |
-| 422 | `ValidationError` | Invalid email format, password too short |
+| Code | Erreur | Quand |
+|------|--------|-------|
+| 201 | — | Compte créé avec succès |
+| 200 | — | Connexion / rafraîchissement réussi |
+| 204 | — | Déconnexion réussie |
+| 401 | `Unauthorized` | Identifiants invalides, jeton expiré/invalide |
+| 409 | `Conflict` | E-mail déjà enregistré |
+| 422 | `ValidationError` | Format d'e-mail invalide, mot de passe trop court |
 
 ## Tests
 
-**File**: `backend/src/auth/auth.service.spec.ts`
+**Fichier** : `backend/src/auth/auth.service.spec.ts`
 
-| Test | Scenario |
+| Test | Scénario |
 |------|----------|
-| register — success | Creates user, returns tokens |
-| register — duplicate email | Throws ConflictException |
-| register — password hashing | Verifies bcrypt hash stored |
-| login — success | Returns tokens for valid credentials |
-| login — unknown email | Throws UnauthorizedException |
-| login — wrong password | Throws UnauthorizedException |
-| logout — success | Revokes matching refresh token |
-| logout — unknown token | Does nothing (no error) |
-| refresh — success | Issues new tokens, rotates old |
-| refresh — invalid token | Throws UnauthorizedException |
+| register — succès | Crée un utilisateur, retourne les jetons |
+| register — e-mail en double | Lève une ConflictException |
+| register — hachage du mot de passe | Vérifie que le hachage bcrypt est stocké |
+| login — succès | Retourne les jetons pour des identifiants valides |
+| login — e-mail inconnu | Lève une UnauthorizedException |
+| login — mauvais mot de passe | Lève une UnauthorizedException |
+| logout — succès | Révoque le jeton de rafraîchissement correspondant |
+| logout — jeton inconnu | Ne fait rien (pas d'erreur) |
+| refresh — succès | Émet de nouveaux jetons, effectue la rotation de l'ancien |
+| refresh — jeton invalide | Lève une UnauthorizedException |
 
-Run tests:
+Exécuter les tests :
 ```bash
 make test-backend
-# or
+# ou
 cd backend && npx jest --coverage
 ```
 
-## Environment Variables
+## Variables d'environnement
 
-| Name | Required | Default | Description |
-|------|----------|---------|-------------|
-| `JWT_SECRET` | Yes | — | HMAC-SHA256 signing key (min 32 chars) |
-| `JWT_EXPIRES_IN` | No | `15m` | Access token TTL |
-| `REFRESH_TOKEN_EXPIRES_IN` | No | `7d` | Refresh token TTL |
-| `DATABASE_URL` | Yes | — | PostgreSQL connection string |
+| Nom | Requis | Par défaut | Description |
+|-----|--------|------------|-------------|
+| `JWT_SECRET` | Oui | — | Clé de signature HMAC-SHA256 (min 32 caractères) |
+| `JWT_EXPIRES_IN` | Non | `15m` | Durée de vie du jeton d'accès |
+| `REFRESH_TOKEN_EXPIRES_IN` | Non | `7d` | Durée de vie du jeton de rafraîchissement |
+| `DATABASE_URL` | Oui | — | Chaîne de connexion PostgreSQL |

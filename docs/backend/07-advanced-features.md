@@ -1,89 +1,89 @@
-# US07-US10 — Advanced Features
+# US07-US10 — Fonctionnalités avancées
 
-## Overview
+## Vue d'ensemble
 
-Advanced file management features: password protection, anonymous upload, tagging, download history.
+Fonctionnalités avancées de gestion de fichiers : protection par mot de passe, téléversement anonyme, étiquetage, historique des téléchargements.
 
-## US07: Password-Protected Files
+## US07 : Fichiers protégés par mot de passe
 
 ### Routes
 
-| Method | Path | Auth | Description |
-|--------|------|------|-------------|
-| PUT | /api/files/:id/password | JWT | Set/update file password |
-| DELETE | /api/files/:id/password | JWT | Remove password protection |
+| Méthode | Chemin | Auth | Description |
+|---------|--------|------|-------------|
+| PUT | /api/files/:id/password | JWT | Définir/mettre à jour le mot de passe du fichier |
+| DELETE | /api/files/:id/password | JWT | Supprimer la protection par mot de passe |
 
-### Flow
+### Flux
 
-1. Owner sets password via `PUT /api/files/:id/password` with `{ "password": "..." }`
-2. Password is bcrypt-hashed (salt rounds 10) and stored in `files.password_hash`
-3. Download flow checks `file.passwordHash` — if set, requires password verification
-4. Owner can remove password via `DELETE /api/files/:id/password`
+1. Le propriétaire définit un mot de passe via `PUT /api/files/:id/password` avec `{ "password": "..." }`
+2. Le mot de passe est haché avec bcrypt (10 tours de salage) et stocké dans `files.password_hash`
+3. Le flux de téléchargement vérifie `file.passwordHash` — si défini, nécessite une vérification du mot de passe
+4. Le propriétaire peut supprimer le mot de passe via `DELETE /api/files/:id/password`
 
 ### DTOs
 
 ```typescript
 // SetPasswordDto
 {
-  password: string  // min 4 characters
+  password: string  // minimum 4 caractères
 }
 ```
 
-## US08: Anonymous Upload
+## US08 : Téléversement anonyme
 
 ### Routes
 
-| Method | Path | Auth | Description |
-|--------|------|------|-------------|
-| POST | /api/files/anonymous | Public | Upload file without auth |
+| Méthode | Chemin | Auth | Description |
+|---------|--------|------|-------------|
+| POST | /api/files/anonymous | Public | Téléverser un fichier sans authentification |
 
-### Flow
+### Flux
 
-1. No JWT required — `userId` is set to `null`
-2. Files stored under `anonymous/` prefix in MinIO
-3. Default expiry: 1 day (vs 7 days for authenticated uploads)
-4. Same validation: file size limit, forbidden extensions
+1. Pas de JWT requis — `userId` est défini à `null`
+2. Les fichiers sont stockés sous le préfixe `anonymous/` dans MinIO
+3. Expiration par défaut : 1 jour (contre 7 jours pour les téléversements authentifiés)
+4. Même validation : limite de taille de fichier, extensions interdites
 
-## US09: File Tagging
+## US09 : Étiquetage de fichiers
 
 ### Routes
 
-| Method | Path | Auth | Description |
-|--------|------|------|-------------|
-| PUT | /api/files/:id/tags | JWT | Set tags (replaces all) |
-| GET | /api/files/:id/tags | JWT | Get file tags |
+| Méthode | Chemin | Auth | Description |
+|---------|--------|------|-------------|
+| PUT | /api/files/:id/tags | JWT | Définir les étiquettes (remplace toutes) |
+| GET | /api/files/:id/tags | JWT | Obtenir les étiquettes du fichier |
 
-### Flow
+### Flux
 
-1. Tags are normalized to lowercase, trimmed
-2. Tags are upserted (created if not existing)
-3. `PUT` replaces all existing file-tag associations
-4. Max 10 tags per file, max 30 chars per tag
+1. Les étiquettes sont normalisées en minuscules, espaces supprimés
+2. Les étiquettes sont upsertées (créées si inexistantes)
+3. `PUT` remplace toutes les associations fichier-étiquette existantes
+4. Maximum 10 étiquettes par fichier, maximum 30 caractères par étiquette
 
 ### DTOs
 
 ```typescript
 // ManageTagsDto
 {
-  tags: string[]  // max 10 items, each max 30 chars
+  tags: string[]  // max 10 éléments, chacun max 30 caractères
 }
 ```
 
-## US10: Download History
+## US10 : Historique des téléchargements
 
 ### Routes
 
-| Method | Path | Auth | Description |
-|--------|------|------|-------------|
-| GET | /api/files/:id/history | JWT | Get download history (last 100) |
+| Méthode | Chemin | Auth | Description |
+|---------|--------|------|-------------|
+| GET | /api/files/:id/history | JWT | Obtenir l'historique des téléchargements (100 derniers) |
 
-### Flow
+### Flux
 
-1. Each download via `GET /api/download/:token` records an entry
-2. Stored: fileId, tokenId, downloadedAt, ipAddress, userAgent
-3. Owner can view last 100 downloads via history endpoint
+1. Chaque téléchargement via `GET /api/download/:token` enregistre une entrée
+2. Données stockées : fileId, tokenId, downloadedAt, ipAddress, userAgent
+3. Le propriétaire peut consulter les 100 derniers téléchargements via le point de terminaison historique
 
-### Database Schema
+### Schéma de base de données
 
 ```
 DownloadHistory:
@@ -95,6 +95,6 @@ DownloadHistory:
   userAgent    VARCHAR(500) (nullable)
 ```
 
-## Environment Variables
+## Variables d'environnement
 
-No new environment variables required for US07-US10.
+Aucune nouvelle variable d'environnement requise pour US07-US10.

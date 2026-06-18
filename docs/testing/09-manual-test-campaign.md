@@ -1,4 +1,4 @@
-# Manual Test Campaign — DataShare Platform v0.5.2
+# Campagne de tests manuels — Plateforme DataShare v0.5.2
 
 **Date :** 2026-06-07
 **Testeur :**
@@ -168,7 +168,7 @@ open https://localhost
 | 13.3 | `curl -k https://localhost/api/files/stats` (sans token) | Réponse 401 Unauthorized | | |
 | 13.4 | `curl -k https://localhost/api/auth/register -X POST -H "Content-Type: application/json" -d '{"email":"sec@test.com","password":"12345678"}'` | Réponse 201 (inscription autorisée sans token) | | |
 | 13.5 | Vérifier HTTPS : `curl http://localhost/api/health` (sans TLS) | Redirection vers HTTPS ou erreur connexion | | |
-| 13.6 | Vérifier Health endpoint : `curl -k https://localhost/api/health` | Réponse 200 avec status "ok" | | |
+| 13.6 | Vérifier le endpoint Health : `curl -k https://localhost/api/health` | Réponse 200 avec status "ok" | | |
 
 ---
 
@@ -178,10 +178,10 @@ open https://localhost
 |---|--------|-------------------|-------|-----------|
 | 14.1 | `docker compose ps` (dans `infra/`) | 5 services UP (nginx, frontend, backend, postgres, minio) | | |
 | 14.2 | `docker compose exec postgres pg_isready` | Message "accepting connections" | | |
-| 14.3 | Accéder à MinIO console : `http://localhost:9001` (login: minioadmin/minioadmin) | Console MinIO accessible, bucket `datashare` visible | | |
+| 14.3 | Accéder à la console MinIO : `http://localhost:9001` (login : minioadmin/minioadmin) | Console MinIO accessible, bucket `datashare` visible | | |
 | 14.4 | Vérifier les fichiers uploadés dans le bucket MinIO | Fichiers présents dans le bucket `datashare` | | |
-| 14.5 | `docker compose down && docker compose up -d` (restart complet) | Tous les services redémarrent, données persistées (volumes) | | |
-| 14.6 | Après restart, se connecter et vérifier les fichiers | Fichiers toujours présents (volumes PostgreSQL + MinIO) | | |
+| 14.5 | `docker compose down && docker compose up -d` (redémarrage complet) | Tous les services redémarrent, données persistées (volumes) | | |
+| 14.6 | Après redémarrage, se connecter et vérifier les fichiers | Fichiers toujours présents (volumes PostgreSQL + MinIO) | | |
 
 ---
 
@@ -197,7 +197,7 @@ open https://localhost
 | CT-06 Lien téléchargement | 4 | | | |
 | CT-07 Suppression | 3 | | | |
 | CT-08 Statistiques | 3 | | | |
-| CT-09 Password | 3 | | | |
+| CT-09 Mot de passe | 3 | | | |
 | CT-10 Upload anonyme | 3 | | | |
 | CT-11 Tags | 4 | | | |
 | CT-12 Historique | 3 | | | |
@@ -211,7 +211,7 @@ open https://localhost
 
 **Date de fin :**
 **Testeur :**
-**Verdict global :** ✅ PASS / ❌ FAIL
+**Verdict global :** ✅ RÉUSSI / ❌ ÉCHOUÉ
 
 **Anomalies détectées :**
 

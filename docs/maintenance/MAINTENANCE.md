@@ -1,81 +1,81 @@
-# Maintenance Guide — DataShare
+# Guide de Maintenance — DataShare
 
-## Overview
+## Vue d'ensemble
 
-This document describes the maintenance procedures for the DataShare platform, including dependency updates, backups, rollback, monitoring, and incident response.
+Ce document décrit les procédures de maintenance de la plateforme DataShare, incluant les mises à jour des dépendances, les sauvegardes, le rollback, la surveillance et la réponse aux incidents.
 
 ---
 
-## 1. Dependency Management
+## 1. Gestion des dépendances
 
 ### Backend (NestJS)
 
 ```bash
 cd backend
 
-# Check for outdated packages
+# Vérifier les paquets obsolètes
 npm outdated
 
-# Security audit
+# Audit de sécurité
 npm audit
 
-# Fix non-breaking vulnerabilities
+# Corriger les vulnérabilités non-cassantes
 npm audit fix
 
-# Update all dependencies (minor/patch)
+# Mettre à jour toutes les dépendances (mineures/correctifs)
 npm update
 
-# Update a specific package
+# Mettre à jour un paquet spécifique
 npm install @nestjs/core@latest
 ```
 
-**Schedule:** Run `npm audit` weekly. Apply security patches within 48h for critical/high severity.
+**Planification :** Exécuter `npm audit` chaque semaine. Appliquer les correctifs de sécurité dans les 48h pour les sévérités critiques/hautes.
 
-### Dependency Update Frequency & Risks
+### Fréquence de mise à jour des dépendances et risques
 
-| Dependency | Current Version | Update Frequency | Risk Level | Notes |
-|-----------|----------------|-----------------|------------|-------|
-| **NestJS** (`@nestjs/*`) | 10.x | Minor: monthly, Major: ~yearly | 🟡 Medium | Major versions may require migration guide. Test all routes after update. |
-| **Prisma** | 5.x | Minor: bi-weekly, Major: ~yearly | 🔴 High | Schema changes may require `prisma generate` + migration. Always backup DB first. |
-| **React** | 18.x | Minor: monthly, Major: ~2 years | 🟡 Medium | Major upgrades (e.g. 18→19) can break hooks/lifecycle. Test all pages. |
-| **Vite** | 5.x | Minor: monthly, Major: ~yearly | 🟢 Low | Usually non-breaking. Config changes possible on major. |
-| **@aws-sdk/client-s3** | 3.x | Patch: weekly, Minor: monthly | 🟢 Low | Stable API. Watch for deprecation notices. |
-| **bcrypt** | 5.x | Rare | 🟢 Low | Native module — may need rebuild on Node.js major upgrade. |
-| **class-validator** | 0.14.x | Irregular | 🟡 Medium | Pre-1.0 — decorators may change. Pin version. |
-| **Playwright** | 1.x | Minor: bi-weekly | 🟢 Low | Dev-only. Browser binaries auto-downloaded. |
-| **Jest** | 29.x | Minor: monthly | 🟢 Low | Dev-only. Rarely breaking. |
+| Dépendance | Version actuelle | Fréquence de mise à jour | Niveau de risque | Notes |
+|-----------|-----------------|-------------------------|-----------------|-------|
+| **NestJS** (`@nestjs/*`) | 10.x | Mineure : mensuelle, Majeure : ~annuelle | 🟡 Moyen | Les versions majeures peuvent nécessiter un guide de migration. Tester toutes les routes après mise à jour. |
+| **Prisma** | 5.x | Mineure : bimensuelle, Majeure : ~annuelle | 🔴 Élevé | Les changements de schéma peuvent nécessiter `prisma generate` + migration. Toujours sauvegarder la BDD avant. |
+| **React** | 18.x | Mineure : mensuelle, Majeure : ~2 ans | 🟡 Moyen | Les mises à jour majeures (ex. 18→19) peuvent casser les hooks/cycle de vie. Tester toutes les pages. |
+| **Vite** | 5.x | Mineure : mensuelle, Majeure : ~annuelle | 🟢 Faible | Généralement non-cassant. Changements de config possibles en majeure. |
+| **@aws-sdk/client-s3** | 3.x | Correctif : hebdomadaire, Mineure : mensuelle | 🟢 Faible | API stable. Surveiller les avis de dépréciation. |
+| **bcrypt** | 5.x | Rare | 🟢 Faible | Module natif — peut nécessiter une recompilation lors d'une mise à jour majeure de Node.js. |
+| **class-validator** | 0.14.x | Irrégulière | 🟡 Moyen | Pré-1.0 — les décorateurs peuvent changer. Figer la version. |
+| **Playwright** | 1.x | Mineure : bimensuelle | 🟢 Faible | Dev uniquement. Binaires navigateur téléchargés automatiquement. |
+| **Jest** | 29.x | Mineure : mensuelle | 🟢 Faible | Dev uniquement. Rarement cassant. |
 
-### Update Policy
+### Politique de mise à jour
 
-| Type | Frequency | Procedure | Approval |
-|------|-----------|-----------|----------|
-| **Security patches** (critical/high) | Within 48h | `npm audit fix` → run tests → deploy | Tech lead |
-| **Patch updates** (x.y.Z) | Weekly | `npm update` → run tests | Developer |
-| **Minor updates** (x.Y.0) | Monthly | Update one by one → full test suite | Developer |
-| **Major updates** (X.0.0) | Quarterly review | Dedicated branch → migration guide → full E2E | Tech lead + review |
+| Type | Fréquence | Procédure | Approbation |
+|------|-----------|-----------|-------------|
+| **Correctifs de sécurité** (critique/élevé) | Sous 48h | `npm audit fix` → exécuter les tests → déployer | Responsable technique |
+| **Mises à jour correctives** (x.y.Z) | Hebdomadaire | `npm update` → exécuter les tests | Développeur |
+| **Mises à jour mineures** (x.Y.0) | Mensuelle | Mettre à jour une par une → suite de tests complète | Développeur |
+| **Mises à jour majeures** (X.0.0) | Revue trimestrielle | Branche dédiée → guide de migration → E2E complet | Responsable technique + revue |
 
-### Risks to Watch
+### Risques à surveiller
 
-| Risk | Impact | Mitigation |
-|------|--------|------------|
-| Prisma schema incompatibility | DB corruption, data loss | Always backup before migration, test on staging |
-| Node.js major upgrade | Native modules (bcrypt) may break | Test in Docker first, rebuild native deps |
-| React breaking changes | UI regression | Run full E2E suite (Playwright 21 tests) |
-| npm supply chain attack | Compromised dependency | Pin versions in `package-lock.json`, run `npm audit` |
-| TLS certificate expiry | HTTPS breaks | Set calendar reminder, automate with certbot (prod) |
+| Risque | Impact | Atténuation |
+|--------|--------|-------------|
+| Incompatibilité du schéma Prisma | Corruption de la BDD, perte de données | Toujours sauvegarder avant la migration, tester en staging |
+| Mise à jour majeure de Node.js | Les modules natifs (bcrypt) peuvent casser | Tester d'abord dans Docker, recompiler les dépendances natives |
+| Changements cassants de React | Régression de l'interface | Exécuter la suite E2E complète (21 tests Playwright) |
+| Attaque de la chaîne d'approvisionnement npm | Dépendance compromise | Figer les versions dans `package-lock.json`, exécuter `npm audit` |
+| Expiration du certificat TLS | HTTPS cassé | Mettre un rappel dans le calendrier, automatiser avec certbot (prod) |
 
 ### Frontend (React/Vite)
 
 ```bash
 cd frontend
 
-# Generate lockfile if missing
+# Générer le lockfile s'il est manquant
 npm i --package-lock-only
 
-# Check vulnerabilities
+# Vérifier les vulnérabilités
 npm audit
 
-# Update dependencies
+# Mettre à jour les dépendances
 npm update
 ```
 
@@ -84,225 +84,225 @@ npm update
 ```bash
 cd backend
 
-# Update Prisma CLI + client
+# Mettre à jour le CLI Prisma + le client
 npm install prisma@latest @prisma/client@latest
 
-# Regenerate client after schema changes
+# Régénérer le client après des changements de schéma
 npx prisma generate
 
-# Apply schema changes to database
-npx prisma db push        # Development (no migration files)
-npx prisma migrate dev    # Production (creates migration files)
+# Appliquer les changements de schéma à la base de données
+npx prisma db push        # Développement (pas de fichiers de migration)
+npx prisma migrate dev    # Production (crée des fichiers de migration)
 ```
 
-**⚠️ Important:** Always back up the database before running migrations in production.
+**⚠️ Important :** Toujours sauvegarder la base de données avant d'exécuter des migrations en production.
 
 ---
 
-## 2. Database Backup & Restore
+## 2. Sauvegarde et restauration de la base de données
 
-### PostgreSQL Backup
+### Sauvegarde PostgreSQL
 
 ```bash
-# Full database dump (from Docker)
+# Dump complet de la base de données (depuis Docker)
 docker exec datashare-postgres pg_dump -U datashare datashare > backup_$(date +%Y%m%d_%H%M%S).sql
 
-# Compressed backup
+# Sauvegarde compressée
 docker exec datashare-postgres pg_dump -U datashare datashare | gzip > backup_$(date +%Y%m%d).sql.gz
 ```
 
-### PostgreSQL Restore
+### Restauration PostgreSQL
 
 ```bash
-# Restore from dump
+# Restaurer depuis un dump
 cat backup_20260618.sql | docker exec -i datashare-postgres psql -U datashare datashare
 
-# Restore from compressed backup
+# Restaurer depuis une sauvegarde compressée
 gunzip -c backup_20260618.sql.gz | docker exec -i datashare-postgres psql -U datashare datashare
 ```
 
-### MinIO Backup
+### Sauvegarde MinIO
 
 ```bash
-# Using mc (MinIO Client)
+# En utilisant mc (Client MinIO)
 docker run --rm -v $(pwd)/minio-backup:/backup \
   --network infra_datashare-net \
   minio/mc mirror minio/datashare /backup/
 
-# Or copy the Docker volume directly
+# Ou copier directement le volume Docker
 docker cp datashare-minio:/data ./minio-backup
 ```
 
-### Backup Schedule (Recommended)
+### Planification des sauvegardes (Recommandée)
 
-| Data | Frequency | Retention | Method |
-|------|-----------|-----------|--------|
-| PostgreSQL | Daily | 30 days | `pg_dump` + cron |
-| MinIO files | Daily | 30 days | `mc mirror` + cron |
-| `.env` config | On change | Git history | Encrypted backup |
+| Données | Fréquence | Rétention | Méthode |
+|---------|-----------|-----------|---------|
+| PostgreSQL | Quotidienne | 30 jours | `pg_dump` + cron |
+| Fichiers MinIO | Quotidienne | 30 jours | `mc mirror` + cron |
+| Configuration `.env` | À chaque changement | Historique Git | Sauvegarde chiffrée |
 
 ---
 
-## 3. Deployment & Rollback
+## 3. Déploiement et rollback
 
-### Standard Deployment
+### Déploiement standard
 
 ```bash
 cd infra
 
-# Pull latest images / rebuild
+# Récupérer les dernières images / reconstruire
 docker compose build --no-cache
 
-# Deploy with zero-downtime (recreate one at a time)
+# Déployer sans interruption (recréer un par un)
 docker compose up -d --force-recreate
 
-# Verify health
+# Vérifier la santé
 curl -k https://localhost/api/health
 ```
 
-### Rollback Procedure
+### Procédure de rollback
 
 ```bash
-# 1. Identify the last working version
+# 1. Identifier la dernière version fonctionnelle
 git log --oneline -5
 
-# 2. Checkout the working version
-git checkout v0.5.4  # or specific commit hash
+# 2. Basculer sur la version fonctionnelle
+git checkout v0.5.4  # ou un hash de commit spécifique
 
-# 3. Rebuild and redeploy
+# 3. Reconstruire et redéployer
 cd infra && docker compose build && docker compose up -d
 
-# 4. Verify
+# 4. Vérifier
 curl -k https://localhost/api/health
 
-# 5. If rollback is stable, create a hotfix branch
+# 5. Si le rollback est stable, créer une branche de correctif
 git checkout -b hotfix/rollback-from-v0.6.0
 ```
 
-### Database Rollback
+### Rollback de la base de données
 
 ```bash
-# If a Prisma migration caused issues
-cd backend && npx prisma migrate reset  # ⚠️ DESTROYS DATA
+# Si une migration Prisma a causé des problèmes
+cd backend && npx prisma migrate reset  # ⚠️ DÉTRUIT LES DONNÉES
 
-# Safer: restore from backup
+# Plus sûr : restaurer depuis une sauvegarde
 cat backup_before_migration.sql | docker exec -i datashare-postgres psql -U datashare datashare
 ```
 
 ---
 
-## 4. Monitoring & Health Checks
+## 4. Surveillance et vérifications de santé
 
-### Health Endpoint
+### Endpoint de santé
 
 ```bash
-# Backend health check
+# Vérification de santé du backend
 curl -k https://localhost/api/health
-# Expected: {"status": "ok"}
+# Attendu : {"status": "ok"}
 ```
 
-### Docker Container Health
+### Santé des conteneurs Docker
 
 ```bash
-# Check all container statuses
+# Vérifier le statut de tous les conteneurs
 docker compose -f infra/docker-compose.yml ps
 
-# Check specific service logs
+# Vérifier les journaux d'un service spécifique
 docker compose -f infra/docker-compose.yml logs --tail=50 backend
 docker compose -f infra/docker-compose.yml logs --tail=50 postgres
 docker compose -f infra/docker-compose.yml logs --tail=50 minio
 
-# Follow logs in real-time
+# Suivre les journaux en temps réel
 docker compose -f infra/docker-compose.yml logs -f backend
 ```
 
-### Key Metrics to Monitor
+### Métriques clés à surveiller
 
-| Metric | Source | Alert Threshold |
-|--------|--------|-----------------|
-| Container restarts | `docker ps` | > 3 in 5 minutes |
-| API response time | Access logs / k6 | p95 > 2000ms |
-| Disk usage (MinIO) | `docker system df` | > 80% |
-| Database connections | PostgreSQL logs | > 80% of `max_connections` |
-| Error rate | Backend logs | > 5% of requests |
-| Memory usage | `docker stats` | > 90% of limit |
+| Métrique | Source | Seuil d'alerte |
+|----------|--------|-----------------|
+| Redémarrages de conteneurs | `docker ps` | > 3 en 5 minutes |
+| Temps de réponse de l'API | Journaux d'accès / k6 | p95 > 2000ms |
+| Utilisation disque (MinIO) | `docker system df` | > 80% |
+| Connexions à la base de données | Journaux PostgreSQL | > 80% de `max_connections` |
+| Taux d'erreur | Journaux backend | > 5% des requêtes |
+| Utilisation mémoire | `docker stats` | > 90% de la limite |
 
-### Quick Diagnostic Commands
+### Commandes de diagnostic rapide
 
 ```bash
-# Container resource usage
+# Utilisation des ressources par conteneur
 docker stats --no-stream
 
-# Disk usage by volume
+# Utilisation disque par volume
 docker system df -v
 
-# PostgreSQL active connections
+# Connexions actives PostgreSQL
 docker exec datashare-postgres psql -U datashare -c "SELECT count(*) FROM pg_stat_activity;"
 
-# MinIO bucket size
+# Taille du bucket MinIO
 docker exec datashare-minio mc du local/datashare
 ```
 
 ---
 
-## 5. Common Issues & Fixes
+## 5. Problèmes courants et corrections
 
-### Backend in Restart Loop
+### Backend en boucle de redémarrage
 
-**Symptom:** `docker ps` shows backend with status "Restarting"
+**Symptôme :** `docker ps` affiche le backend avec le statut "Restarting"
 
-**Diagnostic:**
+**Diagnostic :**
 ```bash
 docker compose -f infra/docker-compose.yml logs --tail=30 backend
 ```
 
-**Common causes:**
+**Causes courantes :**
 
-| Error | Cause | Fix |
-|-------|-------|-----|
-| `EPROTO ssl3_get_record` | `MINIO_USE_SSL=false` parsed as truthy string | Set to string `'false'`, fix in code: `=== 'true'` comparison |
-| `ECONNREFUSED postgres:5432` | PostgreSQL not ready yet | Add `depends_on` + healthcheck in docker-compose |
-| `JWT_SECRET must be configured` | Missing `.env` file | Copy `.env.example` to `.env` and fill values |
-| `Prisma: table not found` | Database not initialized | Run `npx prisma db push` inside backend container |
+| Erreur | Cause | Correction |
+|--------|-------|------------|
+| `EPROTO ssl3_get_record` | `MINIO_USE_SSL=false` interprété comme chaîne vraie | Définir comme chaîne `'false'`, corriger dans le code : comparaison `=== 'true'` |
+| `ECONNREFUSED postgres:5432` | PostgreSQL pas encore prêt | Ajouter `depends_on` + healthcheck dans docker-compose |
+| `JWT_SECRET must be configured` | Fichier `.env` manquant | Copier `.env.example` vers `.env` et remplir les valeurs |
+| `Prisma: table not found` | Base de données non initialisée | Exécuter `npx prisma db push` dans le conteneur backend |
 
-### File Upload Fails
+### Échec du téléversement de fichier
 
-| Error | Cause | Fix |
-|-------|-------|-----|
-| 413 Payload Too Large | Nginx body size limit | Set `client_max_body_size 1g;` in nginx.conf |
-| MinIO connection refused | MinIO container not running | `docker compose up -d minio` |
-| `SignatureDoesNotMatch` | Internal vs public URL mismatch | Set `MINIO_PUBLIC_URL` correctly |
+| Erreur | Cause | Correction |
+|--------|-------|------------|
+| 413 Payload Too Large | Limite de taille du corps Nginx | Définir `client_max_body_size 1g;` dans nginx.conf |
+| MinIO connection refused | Conteneur MinIO non démarré | `docker compose up -d minio` |
+| `SignatureDoesNotMatch` | Incompatibilité URL interne vs publique | Définir `MINIO_PUBLIC_URL` correctement |
 
-### Authentication Issues
+### Problèmes d'authentification
 
-| Error | Cause | Fix |
-|-------|-------|-----|
-| 401 on all routes | Expired JWT | Re-login or check `JWT_EXPIRES_IN` |
-| Refresh token fails | Token revoked or expired | Re-login |
-| Cookie not sent | SameSite/Secure mismatch | Ensure HTTPS + correct cookie config |
-
----
-
-## 6. Deployment Checklist
-
-Before each deployment, verify:
-
-- [ ] All unit tests pass: `cd backend && npm test`
-- [ ] E2E tests pass (if stack running): `cd e2e && npx playwright test`
-- [ ] `.env` file has all required variables (compare with `.env.example`)
-- [ ] Database backup taken
-- [ ] `CHANGELOG.md` updated
-- [ ] Docker images rebuild: `docker compose build`
-- [ ] Health endpoint responds: `curl -k https://localhost/api/health`
-- [ ] File upload/download flow works manually
-- [ ] No secrets committed (`git diff --cached` check)
+| Erreur | Cause | Correction |
+|--------|-------|------------|
+| 401 sur toutes les routes | JWT expiré | Se reconnecter ou vérifier `JWT_EXPIRES_IN` |
+| Échec du rafraîchissement du jeton | Jeton révoqué ou expiré | Se reconnecter |
+| Cookie non envoyé | Incompatibilité SameSite/Secure | S'assurer que HTTPS + configuration correcte des cookies |
 
 ---
 
-## 7. Contact & Escalation
+## 6. Liste de vérification du déploiement
 
-| Level | Action | Who |
-|-------|--------|-----|
-| L1 | Check logs, restart containers | On-call developer |
-| L2 | Database restore, rollback deployment | Tech lead |
-| L3 | Infrastructure changes, security incident | CTO / Infra team |
+Avant chaque déploiement, vérifier :
+
+- [ ] Tous les tests unitaires passent : `cd backend && npm test`
+- [ ] Les tests E2E passent (si la pile est en cours d'exécution) : `cd e2e && npx playwright test`
+- [ ] Le fichier `.env` contient toutes les variables requises (comparer avec `.env.example`)
+- [ ] Sauvegarde de la base de données effectuée
+- [ ] `CHANGELOG.md` mis à jour
+- [ ] Images Docker reconstruites : `docker compose build`
+- [ ] L'endpoint de santé répond : `curl -k https://localhost/api/health`
+- [ ] Le flux de téléversement/téléchargement de fichier fonctionne manuellement
+- [ ] Aucun secret commité (vérification `git diff --cached`)
+
+---
+
+## 7. Contact et escalade
+
+| Niveau | Action | Qui |
+|--------|--------|-----|
+| N1 | Vérifier les journaux, redémarrer les conteneurs | Développeur d'astreinte |
+| N2 | Restauration de la base de données, rollback du déploiement | Responsable technique |
+| N3 | Changements d'infrastructure, incident de sécurité | CTO / Équipe infrastructure |

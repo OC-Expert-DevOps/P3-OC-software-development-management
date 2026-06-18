@@ -1,46 +1,46 @@
-# DataShare — Project Brief
+# DataShare — Résumé du Projet
 
-## Purpose
+## Objectif
 
-DataShare is a secure file transfer platform designed for freelancers and small businesses. It allows users to upload files and generate temporary, secure download links with expiration and optional password protection.
+DataShare est une plateforme sécurisée de transfert de fichiers conçue pour les freelances et les petites entreprises. Elle permet aux utilisateurs de téléverser des fichiers et de générer des liens de téléchargement temporaires et sécurisés avec expiration et protection optionnelle par mot de passe.
 
-## Target Users
+## Utilisateurs Cibles
 
-- **Registered users**: freelancers and small businesses who need to share files securely
-- **Anonymous uploaders** (optional US07): anyone needing quick file sharing without an account
-- **Download recipients**: anyone with a valid download link (no account required)
+- **Utilisateurs inscrits** : freelances et petites entreprises ayant besoin de partager des fichiers de manière sécurisée
+- **Téléverseurs anonymes** (optionnel US07) : toute personne ayant besoin d'un partage rapide de fichiers sans compte
+- **Destinataires de téléchargement** : toute personne disposant d'un lien de téléchargement valide (aucun compte requis)
 
-## MVP Scope (US01–US06)
+## Périmètre MVP (US01–US06)
 
-| US | Feature | Priority |
-|----|---------|----------|
-| US01 | Upload with account — generate unique download link | MVP |
-| US02 | Download via link — public access with optional password | MVP |
-| US03 | User registration — email + password, JWT | MVP |
-| US04 | User login — email + password → JWT | MVP |
-| US05 | File history — list uploaded files with status | MVP |
-| US06 | File deletion — physical deletion, irreversible | MVP |
+| US | Fonctionnalité | Priorité |
+|----|----------------|----------|
+| US01 | Téléversement avec compte — génération d'un lien de téléchargement unique | MVP |
+| US02 | Téléchargement via lien — accès public avec mot de passe optionnel | MVP |
+| US03 | Inscription utilisateur — email + mot de passe, JWT | MVP |
+| US04 | Connexion utilisateur — email + mot de passe → JWT | MVP |
+| US05 | Historique des fichiers — liste des fichiers téléversés avec statut | MVP |
+| US06 | Suppression de fichier — suppression physique, irréversible | MVP |
 
-## Advanced Features (US07–US10, optional)
+## Fonctionnalités Avancées (US07–US10, optionnelles)
 
-| US | Feature | Priority |
-|----|---------|----------|
-| US07 | Anonymous upload — no account, no history | Optional |
-| US08 | Tag management — organize files with tags | Optional |
-| US09 | File password — protect downloads with a password | Optional |
-| US10 | Auto-expiration — cron job purges expired files daily | Optional |
+| US | Fonctionnalité | Priorité |
+|----|----------------|----------|
+| US07 | Téléversement anonyme — sans compte, sans historique | Optionnel |
+| US08 | Gestion des tags — organiser les fichiers avec des tags | Optionnel |
+| US09 | Mot de passe de fichier — protéger les téléchargements par mot de passe | Optionnel |
+| US10 | Expiration automatique — tâche cron purgeant les fichiers expirés quotidiennement | Optionnel |
 
-## Out of Scope
+## Hors Périmètre
 
-- Payment / billing
-- Admin roles or admin dashboard
-- Real-time collaboration
-- Email confirmation on registration
-- Multi-file upload in single request (MVP = one file at a time)
-- File preview / online viewing
+- Paiement / facturation
+- Rôles administrateur ou tableau de bord administrateur
+- Collaboration en temps réel
+- Confirmation par email à l'inscription
+- Téléversement multi-fichiers en une seule requête (MVP = un fichier à la fois)
+- Aperçu / visualisation en ligne des fichiers
 
-## Business Context
+## Contexte Métier
 
-- **Timeline**: 4-week MVP for investor demo
-- **Deployment**: Docker Compose (local demo)
-- **Repository**: GitHub with conventional commits, branch protection on `main`
+- **Calendrier** : MVP en 4 semaines pour démo investisseur
+- **Déploiement** : Docker Compose (démo locale)
+- **Dépôt** : GitHub avec commits conventionnels, protection de branche sur `main`

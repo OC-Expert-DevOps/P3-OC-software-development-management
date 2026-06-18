@@ -1,438 +1,438 @@
-# Changelog
+# Journal des modifications
 
-All notable changes to this project will be documented in this file.
+Tous les changements notables de ce projet seront documentés dans ce fichier.
 
-Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
-Versioning follows [Semantic Versioning](https://semver.org/).
+Le format suit [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
+Le versionnement suit [Semantic Versioning](https://semver.org/).
 
-## [0.8.0] - 2026-06-18 — Final Documentation & Presentation
+## [0.8.0] - 2026-06-18 — Documentation finale et présentation
 
-### Added
-
-**Documentation:**
-- `docs/technical-documentation.md` — Complete OC template (8 sections: architecture, tech choices, data model, API, security, quality/tests, installation, AI usage)
-- `docs/presentation.md` — Soutenance slides (10 slides: context, architecture, stack, features, quality, security, difficulties, AI, workflow, roadmap)
-
-### Changed
-
-**Documentation:**
-- `docs/performance/PERF.md` — Added frontend bundle budget (Vite ~105KB gzipped), browser performance metrics (FCP/LCP/TTI/CLS/TBT targets), key metrics tracking, optimization analysis
-- `docs/maintenance/MAINTENANCE.md` — Added dependency frequency/risks table (9 deps), update policy (security/patch/minor/major), risks to watch
-- `README.md` — Added E2E Playwright commands, k6 performance test commands, Prisma DB initialization
-
-**GitHub:** Issue #38 → PR #39 (squash merged)
-
----
-
-## [0.7.0] - 2026-06-18 — Quality Docs + MinIO SSL Fix
-
-### Added
-
-**Documentation:**
-- `docs/security/SECURITY.md` — npm audit results (47 vulns, all transitive/dev-only), application security review
-- `docs/performance/PERF.md` — k6 test plan, results analysis, structured logging recommendations
-- `docs/maintenance/MAINTENANCE.md` — backup/restore, rollback, monitoring, troubleshooting guide
-- `k6/upload-test.js` — executable k6 performance test script (upload + list endpoints)
-
-### Fixed
-
-- **MinIO SSL crash (EPROTO):** `MINIO_USE_SSL=false` (string) was truthy in JS → changed to `=== 'true'` comparison
-  - Backend was in restart loop due to HTTPS connection to plain HTTP MinIO
-
-**GitHub:** Issue #36 → PR #37 (squash merged)
-
----
-
-## [0.6.0] - 2026-06-07 — Unit Tests & Coverage
-
-### Added
-
-**Tests:**
-- `auth.service.spec.ts` — 14 tests (register, login, logout, refresh, JWT)
-- `auth.controller.spec.ts` — 4 tests (register, login, logout, refresh endpoints)
-- `jwt.guard.spec.ts` — 5 tests (token extraction, validation, error handling)
-- `files.service.spec.ts` — 28 tests (upload, list, delete, password, anonymous, tags, history)
-- `download.service.spec.ts` — 13 tests (link creation, token usage, revocation)
-- `download.controller.spec.ts` — 4 tests (CRUD + public download)
-
-**Documentation:**
-- `docs/testing/TESTING.md` — Full testing strategy document
-
-### Changed
-
-**Configuration:**
-- `backend/package.json`: `collectCoverageFrom` now targets business logic (`*.service.ts`, `*.controller.ts`, `*.guard.ts`)
-- `backend/package.json`: `coverageThreshold` set to 70% statements/lines, 50% branches, 60% functions
-
-**Metrics:**
-- 68 tests, 6 suites, all passing
-- 72.82% statement coverage (threshold: 70%)
-
-## [0.5.4] - 2026-06-07 — Fix Presigned URL Signature
-
-### Fixed
-
-**Backend:**
-- Fix `SignatureDoesNotMatch` error on download links: v0.5.3 replaced hostname AFTER signature computation
-- Create separate `publicClient: S3Client` configured with `MINIO_PUBLIC_URL` for presigned URL generation
-- Signature now computed with correct public hostname (`localhost:9000`) from the start
-
-**Architecture:**
-- `client` (internal) → upload, delete, bucket ops via `minio:9000`
-- `publicClient` (public) → presigned URLs via `localhost:9000`
-
-### Tests
-- ✅ 21/21 E2E tests pass (Playwright)
-
-**GitHub:** Issue #31 → PR #32 (squash merged)
-
----
-
-## [0.5.3] - 2026-06-07 — Fix NaN MB + Broken Download Links
-
-### Fixed
-
-**Frontend:**
-- Fix file size display "NaN MB": use `sizeBytes` field instead of `size`, convert BigInt string via `Number()`
-
-**Backend:**
-- Fix broken download links: presigned URLs used Docker internal hostname `minio:9000`
-- Add `MINIO_PUBLIC_URL` env var to replace internal hostname with public URL in presigned URLs
-
-**Infrastructure:**
-- Expose MinIO S3 API port `9000` in docker-compose for browser-accessible presigned URLs
-
-**Variables d'environnement:**
-- `MINIO_PUBLIC_URL` (optional, default: none) — Public URL for MinIO presigned URLs (e.g. `http://localhost:9000`)
-
-### Tests
-- ✅ 21/21 E2E tests pass (Playwright)
-
----
-
-## [0.5.2] - 2026-06-07 — JWT userId Fix + E2E 21/21
-
-### Fixed
-
-**Backend:**
-- Fix JWT guard: map `payload.sub` → `request.user.userId` (uploaded files had `userId: null`)
-
-**Frontend:**
-- Fix `expiresInSeconds` → `ttlSeconds` in `DashboardPage.tsx` (matching `CreateLinkDto` backend DTO)
-
-**E2E Tests:**
-- Dashboard page object: add `waitForLoaded()` to avoid race conditions on file list rendering
-- US02: use API-based approach for link generation test + `maxRedirects: 0` for download (MinIO internal hostname)
-- US05: add `waitForLoaded()` before checking table headers
-- US10: use `maxRedirects: 0` to avoid following redirect to internal MinIO hostname
-- Fix `expiresInSeconds` → `ttlSeconds` in US02 and US10
-
-### Added
-
-**Documentation:**
-- Add `docs/testing/08-e2e-testing.md` — complete E2E test plan (US01–US10, 21 test cases)
-
-**Test Results:** 17/21 → **21/21 passing** ✅
-
-**GitHub:** Issue #27, PR #28 (squash merged, labels: bug, testing)
-
-## [0.5.1] - 2026-06-07 — E2E Infra Fixes
-
-### Fixed
-
-**Backend:**
-- Fix BigInt JSON serialization in `main.ts` (Prisma returns BigInt for `sizeBytes` field, crashed `JSON.stringify`)
-- Add optional `name` field to `RegisterDto` (frontend sends it, backend was rejecting with 400)
-
-**E2E Tests:**
-- Fix auth fixture: register redirects to `/login`, not `/dashboard`
-- Add `registerAndLogin` helper for tests needing authenticated user
-- Replace `registerUser` → `registerAndLogin` in all 10 specs
-- Fix US06 stats test to use proper auth flow
-
-**Infrastructure:**
-- Prisma `db push`: created missing database tables (no migrations directory existed)
-
-**Test Results:** 2/20 → **17/21 passing**
-
-**GitHub:** PR #25 (squash merged, labels: fix, testing)
-
-## [0.5.0] - 2026-05-31 — E2E Tests Playwright
-
-### Added
-
-**Features:**
-- 10 Playwright test specs covering US01-US10 (21 test cases total)
-- Page objects: LoginPage, RegisterPage, DashboardPage, UploadPage
-- Auth fixture with unique-email user generation
-- Playwright config targeting https://localhost with self-signed cert bypass
-
-**Tests:**
-- US01: File upload (authenticated) + redirect guard (2 tests)
-- US02: Download link generation + public access (2 tests)
-- US03: Registration + duplicate email + short password (3 tests)
-- US04: Login + wrong password + logout (3 tests)
-- US05: File list empty state + file display + metadata (3 tests)
-- US06: User statistics via API (1 test)
-- US07: Password protection set/remove (2 tests)
-- US08: Anonymous upload via API (1 test)
-- US09: Tags add/normalize/reject >10 (3 tests)
-- US10: Download history recording (1 test)
-
-**Dépendances:**
-- `@playwright/test` >= 1.x (e2e directory)
-
-**GitHub:** Issue #23 → PR #24 (squash merged, label: testing)
-
-## [0.4.4] - 2026-05-31 — Frontend UI Pages
-
-### Added
-
-**Features:**
-- 5 functional pages: Login, Register, Dashboard, Upload, Download
-- Axios client with JWT interceptor + auto-refresh on 401
-- AuthProvider context + useAuth hook
-- Navbar + PrivateRoute components
-- Protected routes (dashboard, upload) redirect to login
-
-**GitHub:** Issue #21 → PR #22 (squash merged, label: feature)
-
-## [0.4.3] - 2026-05-31 — US07-US10: Advanced Features
-
-### Added
-
-**Features :**
-- US07: Password-protected files (bcrypt hash, set/remove via PUT/DELETE)
-- US08: Anonymous upload (POST /api/files/anonymous, public, 1-day expiry)
-- US09: File tagging (upsert tags, max 10 per file, normalized lowercase)
-- US10: Download history (last 100 events with IP + User-Agent)
-
-**Routes :**
-- `PUT /api/files/:id/password` — Set file password (JWT required)
-- `DELETE /api/files/:id/password` — Remove file password (JWT required)
-- `POST /api/files/anonymous` — Anonymous upload (public)
-- `PUT /api/files/:id/tags` — Set file tags (JWT required)
-- `GET /api/files/:id/tags` — Get file tags (JWT required)
-- `GET /api/files/:id/history` — Download history (JWT required)
-
-**Database :**
-- `DownloadHistory` model (id, fileId, tokenId, downloadedAt, ipAddress, userAgent)
-- Relations: File → DownloadHistory, DownloadToken → DownloadHistory
+### Ajouté
 
 **Documentation :**
-- `docs/backend/07-advanced-features.md` — Full US07-US10 documentation
+- `docs/technical-documentation.md` — Modèle OC complet (8 sections : architecture, choix techniques, modèle de données, API, sécurité, qualité/tests, installation, utilisation de l'IA)
+- `docs/presentation.md` — Diapositives de soutenance (10 diapositives : contexte, architecture, stack, fonctionnalités, qualité, sécurité, difficultés, IA, workflow, feuille de route)
 
-**GitHub :** Issue #13 → PR #17 (squash merged)
+### Modifié
 
-## [0.4.2] - 2026-05-31 — US05+US06: Paginated File List & Stats
+**Documentation :**
+- `docs/performance/PERF.md` — Ajout du budget de bundle frontend (Vite ~105Ko gzippé), métriques de performance navigateur (objectifs FCP/LCP/TTI/CLS/TBT), suivi des métriques clés, analyse d'optimisation
+- `docs/maintenance/MAINTENANCE.md` — Ajout du tableau de fréquence/risques des dépendances (9 dép.), politique de mise à jour (sécurité/patch/mineur/majeur), risques à surveiller
+- `README.md` — Ajout des commandes E2E Playwright, commandes de tests de performance k6, initialisation de la base de données Prisma
 
-### Added
+**GitHub :** Issue #38 → PR #39 (squash merge)
 
-**Features :**
-- US05: Paginated file list with sorting (page, limit, sortBy, order)
-- US06: User file statistics endpoint (fileCount, deletedCount, totalSizeBytes, activeLinks)
-- ListFilesDto with class-validator + class-transformer validation
+---
 
-**Routes :**
-- `GET /api/files?page=1&limit=20&sortBy=createdAt&order=desc` — Paginated list (JWT required)
-- `GET /api/files/stats` — User file statistics (JWT required)
+## [0.7.0] - 2026-06-18 — Documentation qualité + Correctif SSL MinIO
 
-**GitHub :** Issue #12 → PR #16 (squash merged)
+### Ajouté
 
-## [0.4.1] - 2026-05-31 — US02: Download Links
+**Documentation :**
+- `docs/security/SECURITY.md` — Résultats npm audit (47 vulnérabilités, toutes transitives/dev uniquement), revue de sécurité applicative
+- `docs/performance/PERF.md` — Plan de tests k6, analyse des résultats, recommandations de journalisation structurée
+- `docs/maintenance/MAINTENANCE.md` — Sauvegarde/restauration, rollback, surveillance, guide de dépannage
+- `k6/upload-test.js` — Script de test de performance k6 exécutable (endpoints upload + liste)
 
-### Added
+### Corrigé
 
-**Features :**
-- US02: Temporary secure download links for file sharing without authentication
-- DownloadService: createLink, findByFile, revokeLink, useToken (302 redirect to MinIO presigned URL)
-- DownloadController: 3 JWT-protected routes + 1 public route
-- Prisma schema: `maxDownloads` field added to DownloadToken
+- **Crash SSL MinIO (EPROTO) :** `MINIO_USE_SSL=false` (chaîne) était évalué comme vrai en JS → changé en comparaison `=== 'true'`
+  - Le backend était en boucle de redémarrage à cause d'une connexion HTTPS vers un MinIO en HTTP simple
 
-**Routes :**
-- `POST /api/files/:id/links` — Generate download token (JWT required)
-- `GET /api/files/:id/links` — List active tokens (JWT required)
-- `DELETE /api/files/:id/links/:tokenId` — Revoke token (JWT required)
-- `GET /api/download/:token` — Public download (302 → MinIO presigned URL)
+**GitHub :** Issue #36 → PR #37 (squash merge)
 
-**Variables d'environnement :**
-- `DOWNLOAD_LINK_TTL_SECONDS` (optionnelle, défaut: `86400`)
+---
+
+## [0.6.0] - 2026-06-07 — Tests unitaires et couverture
+
+### Ajouté
 
 **Tests :**
-- 10 unit tests for DownloadService (create, TTL, expiry, revoke, maxDownloads, file deleted)
+- `auth.service.spec.ts` — 14 tests (inscription, connexion, déconnexion, rafraîchissement, JWT)
+- `auth.controller.spec.ts` — 4 tests (endpoints inscription, connexion, déconnexion, rafraîchissement)
+- `jwt.guard.spec.ts` — 5 tests (extraction du token, validation, gestion des erreurs)
+- `files.service.spec.ts` — 28 tests (upload, liste, suppression, mot de passe, anonyme, tags, historique)
+- `download.service.spec.ts` — 13 tests (création de lien, utilisation du token, révocation)
+- `download.controller.spec.ts` — 4 tests (CRUD + téléchargement public)
 
 **Documentation :**
-- `docs/backend/06-download-links.md` — Full DownloadModule documentation
+- `docs/testing/TESTING.md` — Document complet de stratégie de tests
 
-**GitHub :** Issue #11 → PR #15 (squash merged)
+### Modifié
 
-## [0.4.0] - 2026-05-31 — US01: File Upload (GitHub Copilot + Human Review)
+**Configuration :**
+- `backend/package.json` : `collectCoverageFrom` cible maintenant la logique métier (`*.service.ts`, `*.controller.ts`, `*.guard.ts`)
+- `backend/package.json` : `coverageThreshold` défini à 70% instructions/lignes, 50% branches, 60% fonctions
 
-### Added
+**Métriques :**
+- 68 tests, 6 suites, tous passants
+- 72,82% de couverture des instructions (seuil : 70%)
 
-**Features :**
-- US01: File upload with MinIO (S3-compatible) storage
-- MinioService: upload, delete, getPresignedUrl, auto bucket creation
-- FilesService: uploadFile, findAllByUser, findOne, remove (soft-delete)
-- FilesController: 4 JWT-protected REST routes
+## [0.5.4] - 2026-06-07 — Correctif signature URL présignée
 
-**Routes :**
-- `POST /api/files/upload` — Upload file (multipart/form-data, JWT required)
-- `GET /api/files` — List user files (JWT required)
-- `GET /api/files/:id` — File metadata (JWT required)
-- `DELETE /api/files/:id` — Delete file from MinIO + soft-delete in DB (JWT required)
+### Corrigé
+
+**Backend :**
+- Correction de l'erreur `SignatureDoesNotMatch` sur les liens de téléchargement : la v0.5.3 remplaçait le nom d'hôte APRÈS le calcul de la signature
+- Création d'un `publicClient: S3Client` séparé configuré avec `MINIO_PUBLIC_URL` pour la génération des URL présignées
+- La signature est maintenant calculée avec le bon nom d'hôte public (`localhost:9000`) dès le départ
+
+**Architecture :**
+- `client` (interne) → upload, suppression, opérations sur les buckets via `minio:9000`
+- `publicClient` (public) → URL présignées via `localhost:9000`
+
+### Tests
+- ✅ 21/21 tests E2E réussis (Playwright)
+
+**GitHub :** Issue #31 → PR #32 (squash merge)
+
+---
+
+## [0.5.3] - 2026-06-07 — Correctif NaN Mo + Liens de téléchargement cassés
+
+### Corrigé
+
+**Frontend :**
+- Correction de l'affichage de la taille des fichiers "NaN MB" : utilisation du champ `sizeBytes` au lieu de `size`, conversion de la chaîne BigInt via `Number()`
+
+**Backend :**
+- Correction des liens de téléchargement cassés : les URL présignées utilisaient le nom d'hôte interne Docker `minio:9000`
+- Ajout de la variable d'environnement `MINIO_PUBLIC_URL` pour remplacer le nom d'hôte interne par l'URL publique dans les URL présignées
+
+**Infrastructure :**
+- Exposition du port API S3 de MinIO `9000` dans docker-compose pour les URL présignées accessibles depuis le navigateur
 
 **Variables d'environnement :**
-- `MINIO_ENDPOINT` (obligatoire, défaut: `minio`)
-- `MINIO_PORT` (optionnelle, défaut: `9000`)
+- `MINIO_PUBLIC_URL` (optionnelle, défaut : aucun) — URL publique pour les URL présignées MinIO (ex. `http://localhost:9000`)
+
+### Tests
+- ✅ 21/21 tests E2E réussis (Playwright)
+
+---
+
+## [0.5.2] - 2026-06-07 — Correctif JWT userId + E2E 21/21
+
+### Corrigé
+
+**Backend :**
+- Correction du guard JWT : mapping `payload.sub` → `request.user.userId` (les fichiers uploadés avaient `userId: null`)
+
+**Frontend :**
+- Correction de `expiresInSeconds` → `ttlSeconds` dans `DashboardPage.tsx` (correspondance avec le DTO backend `CreateLinkDto`)
+
+**Tests E2E :**
+- Page object Dashboard : ajout de `waitForLoaded()` pour éviter les conditions de concurrence sur le rendu de la liste des fichiers
+- US02 : utilisation d'une approche basée sur l'API pour le test de génération de lien + `maxRedirects: 0` pour le téléchargement (nom d'hôte interne MinIO)
+- US05 : ajout de `waitForLoaded()` avant la vérification des en-têtes du tableau
+- US10 : utilisation de `maxRedirects: 0` pour éviter de suivre la redirection vers le nom d'hôte interne MinIO
+- Correction de `expiresInSeconds` → `ttlSeconds` dans US02 et US10
+
+### Ajouté
+
+**Documentation :**
+- Ajout de `docs/testing/08-e2e-testing.md` — Plan de tests E2E complet (US01–US10, 21 cas de test)
+
+**Résultats des tests :** 17/21 → **21/21 réussis** ✅
+
+**GitHub :** Issue #27, PR #28 (squash merge, labels : bug, testing)
+
+## [0.5.1] - 2026-06-07 — Correctifs d'infrastructure E2E
+
+### Corrigé
+
+**Backend :**
+- Correction de la sérialisation JSON BigInt dans `main.ts` (Prisma retourne BigInt pour le champ `sizeBytes`, ce qui faisait planter `JSON.stringify`)
+- Ajout du champ optionnel `name` à `RegisterDto` (le frontend l'envoie, le backend le rejetait avec une erreur 400)
+
+**Tests E2E :**
+- Correction de la fixture d'authentification : l'inscription redirige vers `/login`, pas vers `/dashboard`
+- Ajout du helper `registerAndLogin` pour les tests nécessitant un utilisateur authentifié
+- Remplacement de `registerUser` → `registerAndLogin` dans les 10 specs
+- Correction du test de statistiques US06 pour utiliser le bon flux d'authentification
+
+**Infrastructure :**
+- Prisma `db push` : création des tables manquantes dans la base de données (aucun répertoire de migrations n'existait)
+
+**Résultats des tests :** 2/20 → **17/21 réussis**
+
+**GitHub :** PR #25 (squash merge, labels : fix, testing)
+
+## [0.5.0] - 2026-05-31 — Tests E2E Playwright
+
+### Ajouté
+
+**Fonctionnalités :**
+- 10 specs de tests Playwright couvrant US01-US10 (21 cas de test au total)
+- Page objects : LoginPage, RegisterPage, DashboardPage, UploadPage
+- Fixture d'authentification avec génération d'utilisateur à email unique
+- Configuration Playwright ciblant https://localhost avec contournement du certificat auto-signé
+
+**Tests :**
+- US01 : Upload de fichier (authentifié) + garde de redirection (2 tests)
+- US02 : Génération de lien de téléchargement + accès public (2 tests)
+- US03 : Inscription + email en double + mot de passe trop court (3 tests)
+- US04 : Connexion + mauvais mot de passe + déconnexion (3 tests)
+- US05 : Liste de fichiers état vide + affichage de fichier + métadonnées (3 tests)
+- US06 : Statistiques utilisateur via API (1 test)
+- US07 : Protection par mot de passe définir/supprimer (2 tests)
+- US08 : Upload anonyme via API (1 test)
+- US09 : Tags ajout/normalisation/rejet >10 (3 tests)
+- US10 : Enregistrement de l'historique de téléchargement (1 test)
+
+**Dépendances :**
+- `@playwright/test` >= 1.x (répertoire e2e)
+
+**GitHub :** Issue #23 → PR #24 (squash merge, label : testing)
+
+## [0.4.4] - 2026-05-31 — Pages UI Frontend
+
+### Ajouté
+
+**Fonctionnalités :**
+- 5 pages fonctionnelles : Connexion, Inscription, Tableau de bord, Upload, Téléchargement
+- Client Axios avec intercepteur JWT + rafraîchissement automatique sur 401
+- Contexte AuthProvider + hook useAuth
+- Composants Navbar + PrivateRoute
+- Routes protégées (tableau de bord, upload) redirigent vers la connexion
+
+**GitHub :** Issue #21 → PR #22 (squash merge, label : feature)
+
+## [0.4.3] - 2026-05-31 — US07-US10 : Fonctionnalités avancées
+
+### Ajouté
+
+**Fonctionnalités :**
+- US07 : Fichiers protégés par mot de passe (hash bcrypt, définir/supprimer via PUT/DELETE)
+- US08 : Upload anonyme (POST /api/files/anonymous, public, expiration 1 jour)
+- US09 : Étiquetage de fichiers (upsert des tags, max 10 par fichier, normalisé en minuscules)
+- US10 : Historique de téléchargement (100 derniers événements avec IP + User-Agent)
+
+**Routes :**
+- `PUT /api/files/:id/password` — Définir le mot de passe du fichier (JWT requis)
+- `DELETE /api/files/:id/password` — Supprimer le mot de passe du fichier (JWT requis)
+- `POST /api/files/anonymous` — Upload anonyme (public)
+- `PUT /api/files/:id/tags` — Définir les tags du fichier (JWT requis)
+- `GET /api/files/:id/tags` — Obtenir les tags du fichier (JWT requis)
+- `GET /api/files/:id/history` — Historique de téléchargement (JWT requis)
+
+**Base de données :**
+- Modèle `DownloadHistory` (id, fileId, tokenId, downloadedAt, ipAddress, userAgent)
+- Relations : File → DownloadHistory, DownloadToken → DownloadHistory
+
+**Documentation :**
+- `docs/backend/07-advanced-features.md` — Documentation complète US07-US10
+
+**GitHub :** Issue #13 → PR #17 (squash merge)
+
+## [0.4.2] - 2026-05-31 — US05+US06 : Liste paginée des fichiers et statistiques
+
+### Ajouté
+
+**Fonctionnalités :**
+- US05 : Liste paginée des fichiers avec tri (page, limit, sortBy, order)
+- US06 : Endpoint de statistiques de fichiers utilisateur (fileCount, deletedCount, totalSizeBytes, activeLinks)
+- ListFilesDto avec validation class-validator + class-transformer
+
+**Routes :**
+- `GET /api/files?page=1&limit=20&sortBy=createdAt&order=desc` — Liste paginée (JWT requis)
+- `GET /api/files/stats` — Statistiques de fichiers utilisateur (JWT requis)
+
+**GitHub :** Issue #12 → PR #16 (squash merge)
+
+## [0.4.1] - 2026-05-31 — US02 : Liens de téléchargement
+
+### Ajouté
+
+**Fonctionnalités :**
+- US02 : Liens de téléchargement temporaires sécurisés pour le partage de fichiers sans authentification
+- DownloadService : createLink, findByFile, revokeLink, useToken (redirection 302 vers URL présignée MinIO)
+- DownloadController : 3 routes protégées par JWT + 1 route publique
+- Schéma Prisma : champ `maxDownloads` ajouté à DownloadToken
+
+**Routes :**
+- `POST /api/files/:id/links` — Générer un token de téléchargement (JWT requis)
+- `GET /api/files/:id/links` — Lister les tokens actifs (JWT requis)
+- `DELETE /api/files/:id/links/:tokenId` — Révoquer un token (JWT requis)
+- `GET /api/download/:token` — Téléchargement public (302 → URL présignée MinIO)
+
+**Variables d'environnement :**
+- `DOWNLOAD_LINK_TTL_SECONDS` (optionnelle, défaut : `86400`)
+
+**Tests :**
+- 10 tests unitaires pour DownloadService (création, TTL, expiration, révocation, maxDownloads, fichier supprimé)
+
+**Documentation :**
+- `docs/backend/06-download-links.md` — Documentation complète du DownloadModule
+
+**GitHub :** Issue #11 → PR #15 (squash merge)
+
+## [0.4.0] - 2026-05-31 — US01 : Upload de fichier (GitHub Copilot + Revue humaine)
+
+### Ajouté
+
+**Fonctionnalités :**
+- US01 : Upload de fichier avec stockage MinIO (compatible S3)
+- MinioService : upload, delete, getPresignedUrl, création automatique du bucket
+- FilesService : uploadFile, findAllByUser, findOne, remove (suppression douce)
+- FilesController : 4 routes REST protégées par JWT
+
+**Routes :**
+- `POST /api/files/upload` — Upload de fichier (multipart/form-data, JWT requis)
+- `GET /api/files` — Lister les fichiers de l'utilisateur (JWT requis)
+- `GET /api/files/:id` — Métadonnées du fichier (JWT requis)
+- `DELETE /api/files/:id` — Supprimer le fichier de MinIO + suppression douce en base de données (JWT requis)
+
+**Variables d'environnement :**
+- `MINIO_ENDPOINT` (obligatoire, défaut : `minio`)
+- `MINIO_PORT` (optionnelle, défaut : `9000`)
 - `MINIO_ACCESS_KEY` (obligatoire)
 - `MINIO_SECRET_KEY` (obligatoire)
-- `MINIO_BUCKET` (optionnelle, défaut: `datashare`)
-- `MINIO_USE_SSL` (optionnelle, défaut: `false`)
-- `MAX_FILE_SIZE_BYTES` (optionnelle, défaut: `1073741824` = 1GB)
-- `FILE_EXPIRY_DAYS_DEFAULT` (optionnelle, défaut: `7`)
+- `MINIO_BUCKET` (optionnelle, défaut : `datashare`)
+- `MINIO_USE_SSL` (optionnelle, défaut : `false`)
+- `MAX_FILE_SIZE_BYTES` (optionnelle, défaut : `1073741824` = 1 Go)
+- `FILE_EXPIRY_DAYS_DEFAULT` (optionnelle, défaut : `7`)
 
 **Dépendances :**
 - `@aws-sdk/client-s3` >= 3.x
 - `@aws-sdk/s3-request-presigner` >= 3.x
 - `@types/multer` (dev)
 
-**AI Usage :**
-- Code generated by GitHub Copilot (4 prompts)
-- 5 human review corrections documented in `docs/ai-usage/us01-supervision-log.md`
+**Utilisation de l'IA :**
+- Code généré par GitHub Copilot (4 prompts)
+- 5 corrections de revue humaine documentées dans `docs/ai-usage/us01-supervision-log.md`
 
 **Tests :**
-- 10 unit tests for FilesService (upload, list, findOne, remove + error cases)
+- 10 tests unitaires pour FilesService (upload, liste, findOne, suppression + cas d'erreur)
 
 **Documentation :**
-- `docs/ai-usage/us01-copilot-prompts.md` — Prompts used
-- `docs/ai-usage/us01-supervision-log.md` — Supervision & corrections log
+- `docs/ai-usage/us01-copilot-prompts.md` — Prompts utilisés
+- `docs/ai-usage/us01-supervision-log.md` — Journal de supervision et corrections
 
-**GitHub :** Issue #10 → PR #14 (squash merged)
+**GitHub :** Issue #10 → PR #14 (squash merge)
 
-## [0.3.1] - 2026-05-31 — Fix: TypeScript strict typing for auth
+## [0.3.1] - 2026-05-31 — Correctif : Typage strict TypeScript pour l'authentification
 
-### Fixed
-- `auth.service.ts`: non-null assertion on `config.get<string>('JWT_SECRET')!` (TS2769)
-- `jwt.guard.ts`: same fix for `jwt.verify()` call
-- Added `@nestjs/config` as explicit dependency in `package.json`
-- All 10 auth tests pass — `auth.service.ts` at 100% statement coverage
+### Corrigé
+- `auth.service.ts` : assertion non-null sur `config.get<string>('JWT_SECRET')!` (TS2769)
+- `jwt.guard.ts` : même correction pour l'appel `jwt.verify()`
+- Ajout de `@nestjs/config` comme dépendance explicite dans `package.json`
+- Les 10 tests d'authentification passent — `auth.service.ts` à 100% de couverture des instructions
 
-## [0.3.0] - 2026-05-31 — Step 3: US03+US04 Authentication
+## [0.3.0] - 2026-05-31 — Étape 3 : US03+US04 Authentification
 
-### Added
+### Ajouté
 
-**Backend Modules:**
-- `PrismaModule`: global DB service (`prisma.service.ts`, `prisma.module.ts`)
-- `AuthModule`: 4 REST endpoints (register, login, logout, refresh)
-- `JwtGuard`: reusable guard for protected routes (extracts + validates JWT)
+**Modules backend :**
+- `PrismaModule` : service de base de données global (`prisma.service.ts`, `prisma.module.ts`)
+- `AuthModule` : 4 endpoints REST (inscription, connexion, déconnexion, rafraîchissement)
+- `JwtGuard` : garde réutilisable pour les routes protégées (extraction + validation du JWT)
 
-**Auth Routes:**
-- `POST /api/auth/register` — create account (bcrypt hash, email validation)
-- `POST /api/auth/login` — authenticate, emit JWT access token + HttpOnly refresh cookie
-- `POST /api/auth/logout` — revoke refresh token (requires JWT)
-- `POST /api/auth/refresh` — renew access token via cookie (token rotation)
+**Routes d'authentification :**
+- `POST /api/auth/register` — Créer un compte (hash bcrypt, validation de l'email)
+- `POST /api/auth/login` — Authentifier, émettre un token d'accès JWT + cookie HttpOnly de rafraîchissement
+- `POST /api/auth/logout` — Révoquer le token de rafraîchissement (JWT requis)
+- `POST /api/auth/refresh` — Renouveler le token d'accès via cookie (rotation des tokens)
 
-**DTOs & Validation:**
-- `RegisterDto`: email (IsEmail), password (MinLength 8)
-- `LoginDto`: email (IsEmail), password (IsString)
-- class-validator + class-transformer for input validation
+**DTOs et validation :**
+- `RegisterDto` : email (IsEmail), password (MinLength 8)
+- `LoginDto` : email (IsEmail), password (IsString)
+- class-validator + class-transformer pour la validation des entrées
 
-**Token Strategy:**
-- Access token: JWT HS256, payload `{sub, email}`, TTL 15min
-- Refresh token: UUID v4, bcrypt hash in DB, HttpOnly cookie, TTL 7 days
-- Token rotation on each refresh (old token revoked)
+**Stratégie de tokens :**
+- Token d'accès : JWT HS256, payload `{sub, email}`, TTL 15min
+- Token de rafraîchissement : UUID v4, hash bcrypt en base de données, cookie HttpOnly, TTL 7 jours
+- Rotation des tokens à chaque rafraîchissement (ancien token révoqué)
 
-**Tests:**
-- `auth.service.spec.ts`: 10 unit tests (register, login, logout, refresh)
-- Covers: success paths, duplicate email, wrong password, token expiry
+**Tests :**
+- `auth.service.spec.ts` : 10 tests unitaires (inscription, connexion, déconnexion, rafraîchissement)
+- Couvre : chemins de succès, email en double, mauvais mot de passe, expiration du token
 
-**Documentation:**
-- `docs/backend/05-auth.md`: full AuthModule documentation (routes, strategy, diagrams, tests)
+**Documentation :**
+- `docs/backend/05-auth.md` : documentation complète du AuthModule (routes, stratégie, diagrammes, tests)
 
-**GitHub:**
-- Issue #6: `[AUTH] Step 3 — US03+US04 : User registration & authentication`
-- PR: `feature/step3-auth` → `main`
+**GitHub :**
+- Issue #6 : `[AUTH] Step 3 — US03+US04 : User registration & authentication`
+- PR : `feature/step3-auth` → `main`
 
-## [0.2.0] - 2026-05-31 — Step 2: Infrastructure & App Init
+## [0.2.0] - 2026-05-31 — Étape 2 : Infrastructure et initialisation de l'application
 
-### Added
+### Ajouté
 
-**Infrastructure:**
-- `infra/docker-compose.yml`: 5 services (nginx, frontend, backend, postgres, minio)
-- `infra/nginx/nginx.conf`: Reverse proxy with TLS termination, routing `/` → React, `/api/` → NestJS
-- Named volumes: `postgres-data`, `minio-data` (data persistence)
-- Bridge network: `datashare-net` (internal communication)
-- Healthchecks: `postgres` (pg_isready), `minio` (mc ready)
-- `Makefile`: shortcuts (`make up`, `make down`, `make reset`, `make certs`, `make logs`)
+**Infrastructure :**
+- `infra/docker-compose.yml` : 5 services (nginx, frontend, backend, postgres, minio)
+- `infra/nginx/nginx.conf` : Reverse proxy avec terminaison TLS, routage `/` → React, `/api/` → NestJS
+- Volumes nommés : `postgres-data`, `minio-data` (persistance des données)
+- Réseau bridge : `datashare-net` (communication interne)
+- Healthchecks : `postgres` (pg_isready), `minio` (mc ready)
+- `Makefile` : raccourcis (`make up`, `make down`, `make reset`, `make certs`, `make logs`)
 
-**Backend (NestJS):**
-- `backend/Dockerfile`: Node 20 Alpine, npm install, Prisma generate, build
-- `backend/package.json`: NestJS 10.x + Prisma 5.x + bcrypt + JWT deps
-- `backend/src/main.ts`: Bootstrap with CORS, global prefix `/api`, Swagger docs
-- `backend/src/app.controller.ts`: `GET /health` endpoint
-- `backend/prisma/schema.prisma`: 6 entities (User, File, DownloadToken, RefreshToken, Tag, FileTag)
+**Backend (NestJS) :**
+- `backend/Dockerfile` : Node 20 Alpine, npm install, Prisma generate, build
+- `backend/package.json` : NestJS 10.x + Prisma 5.x + bcrypt + dépendances JWT
+- `backend/src/main.ts` : Bootstrap avec CORS, préfixe global `/api`, documentation Swagger
+- `backend/src/app.controller.ts` : Endpoint `GET /health`
+- `backend/prisma/schema.prisma` : 6 entités (User, File, DownloadToken, RefreshToken, Tag, FileTag)
 
-**Frontend (React/Vite):**
-- `frontend/Dockerfile`: Node 20 Alpine, Vite dev server
-- `frontend/package.json`: React 18 + React Router 6 + Axios
-- `frontend/src/App.tsx`: Router with 5 routes (/, /login, /register, /dashboard, /upload)
+**Frontend (React/Vite) :**
+- `frontend/Dockerfile` : Node 20 Alpine, serveur de développement Vite
+- `frontend/package.json` : React 18 + React Router 6 + Axios
+- `frontend/src/App.tsx` : Routeur avec 5 routes (/, /login, /register, /dashboard, /upload)
 
-**Configuration:**
-- `.env.example`: 18 environment variables documented
+**Configuration :**
+- `.env.example` : 18 variables d'environnement documentées
 
-**Variables d'environnement ajoutées:**
-- `DATABASE_URL` (obligatoire) — PostgreSQL connection string
-- `POSTGRES_USER` (obligatoire) — Database user
-- `POSTGRES_PASSWORD` (obligatoire) — Database password
-- `POSTGRES_DB` (obligatoire) — Database name
-- `JWT_SECRET` (obligatoire) — HMAC-SHA256 signing secret (min 32 chars)
-- `JWT_EXPIRES_IN` (optionnelle, défaut: `15m`) — Access token TTL
-- `REFRESH_TOKEN_EXPIRES_IN` (optionnelle, défaut: `7d`) — Refresh token TTL
-- `MINIO_ENDPOINT` (obligatoire) — MinIO hostname
-- `MINIO_PORT` (optionnelle, défaut: `9000`) — MinIO API port
-- `MINIO_ACCESS_KEY` (obligatoire) — MinIO access key
-- `MINIO_SECRET_KEY` (obligatoire) — MinIO secret key
-- `MINIO_BUCKET` (optionnelle, défaut: `datashare`) — S3 bucket name
-- `MINIO_USE_SSL` (optionnelle, défaut: `false`) — TLS for MinIO
-- `APP_PORT` (optionnelle, défaut: `3001`) — NestJS listen port
-- `APP_ENV` (optionnelle, défaut: `development`) — Environment
-- `MAX_FILE_SIZE_BYTES` (optionnelle, défaut: `1073741824`) — Max upload 1 GB
-- `FILE_EXPIRY_DAYS_DEFAULT` (optionnelle, défaut: `7`) — Default file expiry
-- `ALLOWED_ORIGINS` (optionnelle, défaut: `https://localhost`) — CORS origins
+**Variables d'environnement ajoutées :**
+- `DATABASE_URL` (obligatoire) — Chaîne de connexion PostgreSQL
+- `POSTGRES_USER` (obligatoire) — Utilisateur de la base de données
+- `POSTGRES_PASSWORD` (obligatoire) — Mot de passe de la base de données
+- `POSTGRES_DB` (obligatoire) — Nom de la base de données
+- `JWT_SECRET` (obligatoire) — Secret de signature HMAC-SHA256 (min 32 caractères)
+- `JWT_EXPIRES_IN` (optionnelle, défaut : `15m`) — TTL du token d'accès
+- `REFRESH_TOKEN_EXPIRES_IN` (optionnelle, défaut : `7d`) — TTL du token de rafraîchissement
+- `MINIO_ENDPOINT` (obligatoire) — Nom d'hôte MinIO
+- `MINIO_PORT` (optionnelle, défaut : `9000`) — Port API MinIO
+- `MINIO_ACCESS_KEY` (obligatoire) — Clé d'accès MinIO
+- `MINIO_SECRET_KEY` (obligatoire) — Clé secrète MinIO
+- `MINIO_BUCKET` (optionnelle, défaut : `datashare`) — Nom du bucket S3
+- `MINIO_USE_SSL` (optionnelle, défaut : `false`) — TLS pour MinIO
+- `APP_PORT` (optionnelle, défaut : `3001`) — Port d'écoute NestJS
+- `APP_ENV` (optionnelle, défaut : `development`) — Environnement
+- `MAX_FILE_SIZE_BYTES` (optionnelle, défaut : `1073741824`) — Upload max 1 Go
+- `FILE_EXPIRY_DAYS_DEFAULT` (optionnelle, défaut : `7`) — Expiration par défaut des fichiers
+- `ALLOWED_ORIGINS` (optionnelle, défaut : `https://localhost`) — Origines CORS
 
-**Documentation:**
-- `README.md`: 8 sections (Prerequisites, Installation, Configuration, Launch, Tests, Security, Limitations)
-- `docs/infrastructure/04-infrastructure-setup.md`: Docker Compose architecture, services, quick start
-- `.gitignore`: updated for full stack (node_modules, .env, certs, coverage, volumes)
+**Documentation :**
+- `README.md` : 8 sections (Prérequis, Installation, Configuration, Lancement, Tests, Sécurité, Limitations)
+- `docs/infrastructure/04-infrastructure-setup.md` : Architecture Docker Compose, services, démarrage rapide
+- `.gitignore` : mis à jour pour le stack complet (node_modules, .env, certs, coverage, volumes)
 
-**GitHub:**
-- Issue #3: `[INFRA] Step 2 — Infrastructure Docker Compose & App Init`
-- PR #4: `feature/step2-infrastructure` → `main`
+**GitHub :**
+- Issue #3 : `[INFRA] Step 2 — Infrastructure Docker Compose & App Init`
+- PR #4 : `feature/step2-infrastructure` → `main`
 
-## [0.1.0] - 2026-05-31 — Step 1: Architecture & Technical Design
+## [0.1.0] - 2026-05-31 — Étape 1 : Architecture et conception technique
 
-### Added
+### Ajouté
 
-**Architecture:**
-- Architecture overview diagram (Mermaid) — 5 services, protocols on each link
-- 12 technology choices justified (NestJS, React, Prisma, MinIO, JWT, etc.)
+**Architecture :**
+- Diagramme de vue d'ensemble de l'architecture (Mermaid) — 5 services, protocoles sur chaque liaison
+- 12 choix technologiques justifiés (NestJS, React, Prisma, MinIO, JWT, etc.)
 
-**Database:**
-- MCD (Mermaid erDiagram): 6 entities (User, File, DownloadToken, RefreshToken, Tag, FileTag)
-- All attributes with types, PKs, FKs, cardinalities
+**Base de données :**
+- MCD (Mermaid erDiagram) : 6 entités (User, File, DownloadToken, RefreshToken, Tag, FileTag)
+- Tous les attributs avec types, clés primaires, clés étrangères, cardinalités
 
-**API Design:**
-- OpenAPI 3.0 contract: 14 REST routes
-- 8 sequence diagrams (register, login, upload, download, anonymous, history, deletion, tags)
+**Conception de l'API :**
+- Contrat OpenAPI 3.0 : 14 routes REST
+- 8 diagrammes de séquence (inscription, connexion, upload, téléchargement, anonyme, historique, suppression, tags)
 
-**Documentation:**
+**Documentation :**
 - `docs/architecture/01-architecture-overview.md`
 - `docs/architecture/02-database-schema.md`
 - `docs/architecture/03-sequence-diagrams.md`
 - `docs/architecture/openapi.yaml`
-- Memory bank initialized (5 files: projectbrief, techContext, systemPatterns, activeContext, progress)
+- Memory bank initialisé (5 fichiers : projectbrief, techContext, systemPatterns, activeContext, progress)
 
-**GitHub:**
-- Issue #1: `[ARCH] Step 1 — Architecture & Technical Design`
-- PR #2: `feature/step1-architecture-mvp` → `main` (squash merged)
+**GitHub :**
+- Issue #1 : `[ARCH] Step 1 — Architecture & Technical Design`
+- PR #2 : `feature/step1-architecture-mvp` → `main` (squash merge)

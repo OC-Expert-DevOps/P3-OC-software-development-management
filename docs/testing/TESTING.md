@@ -1,12 +1,12 @@
-# Testing Strategy — DataShare
+# Stratégie de Tests — DataShare
 
-## Overview
+## Aperçu
 
-DataShare uses a multi-layer testing approach combining unit tests, integration tests (via Docker Compose), and end-to-end (E2E) tests with Playwright.
+DataShare utilise une approche de test multi-couches combinant des tests unitaires, des tests d'intégration (via Docker Compose) et des tests de bout en bout (E2E) avec Playwright.
 
-## Unit Tests (Backend — Jest)
+## Tests Unitaires (Backend — Jest)
 
-### Running Tests
+### Exécution des Tests
 
 ```bash
 cd backend
@@ -14,43 +14,43 @@ npm test              # Run all tests
 npm run test:cov      # Run with coverage report
 ```
 
-### Coverage Threshold
+### Seuils de Couverture
 
-| Metric     | Threshold | Current |
-|------------|-----------|---------|
-| Statements | 70%       | 72.82%  |
-| Branches   | 50%       | 80%     |
-| Functions  | 60%       | 66.66%  |
-| Lines      | 70%       | 72.31%  |
+| Métrique     | Seuil   | Actuel  |
+|--------------|---------|---------|
+| Statements   | 70%     | 72.82%  |
+| Branches     | 50%     | 80%     |
+| Functions    | 60%     | 66.66%  |
+| Lines        | 70%     | 72.31%  |
 
-Coverage is collected from business logic files (`*.service.ts`, `*.controller.ts`, `*.guard.ts`), excluding module wiring and DTOs.
+La couverture est collectée à partir des fichiers de logique métier (`*.service.ts`, `*.controller.ts`, `*.guard.ts`), en excluant le câblage des modules et les DTOs.
 
-### Test Structure
+### Structure des Tests
 
-| File | Tests | Description |
-|------|-------|-------------|
-| `auth.service.spec.ts` | 14 | Registration, login, logout, refresh, JWT generation |
-| `auth.controller.spec.ts` | 4 | Controller endpoints (register, login, logout, refresh) |
-| `jwt.guard.spec.ts` | 5 | Bearer token extraction, validation, error handling |
-| `files.service.spec.ts` | 28 | Upload, list, delete, password, anonymous upload, tags, history |
-| `download.service.spec.ts` | 13 | Link creation, token usage, revocation, expiry |
-| `download.controller.spec.ts` | 4 | Controller endpoints (create, list, revoke, download) |
+| Fichier | Tests | Description |
+|---------|-------|-------------|
+| `auth.service.spec.ts` | 14 | Inscription, connexion, déconnexion, rafraîchissement, génération JWT |
+| `auth.controller.spec.ts` | 4 | Points d'entrée du contrôleur (inscription, connexion, déconnexion, rafraîchissement) |
+| `jwt.guard.spec.ts` | 5 | Extraction du jeton Bearer, validation, gestion des erreurs |
+| `files.service.spec.ts` | 28 | Téléversement, listage, suppression, mot de passe, téléversement anonyme, tags, historique |
+| `download.service.spec.ts` | 13 | Création de liens, utilisation des jetons, révocation, expiration |
+| `download.controller.spec.ts` | 4 | Points d'entrée du contrôleur (création, listage, révocation, téléchargement) |
 
-### Testing Patterns
+### Patrons de Test
 
-- **Service tests** mock `PrismaService`, `MinioService`, and `ConfigService`
-- **Controller tests** mock their respective services + `ConfigService` (for JwtGuard)
-- **Guard tests** mock `jsonwebtoken` module and test token extraction/validation
-- All tests use `@nestjs/testing` `TestingModule` for proper DI
+- **Tests de services** : simulent `PrismaService`, `MinioService` et `ConfigService` via des mocks
+- **Tests de contrôleurs** : simulent leurs services respectifs + `ConfigService` (pour JwtGuard)
+- **Tests de garde** : simulent le module `jsonwebtoken` et testent l'extraction/validation des jetons
+- Tous les tests utilisent `TestingModule` de `@nestjs/testing` pour une injection de dépendances correcte
 
-## E2E Tests (Playwright)
+## Tests E2E (Playwright)
 
-### Prerequisites
+### Prérequis
 
-- Docker Compose stack running: `make up`
-- Frontend accessible at `http://localhost:3000`
+- La pile Docker Compose doit être en cours d'exécution : `make up`
+- Le frontend doit être accessible à `http://localhost:3000`
 
-### Running E2E Tests
+### Exécution des Tests E2E
 
 ```bash
 cd e2e
@@ -60,29 +60,29 @@ npx playwright test --ui      # Interactive mode
 npx playwright show-report    # View HTML report
 ```
 
-### E2E Test Coverage
+### Couverture des Tests E2E
 
-| Test File | User Story | Description |
-|-----------|-----------|-------------|
-| `us01-upload.spec.ts` | US01 | File upload flow |
-| `us02-download-links.spec.ts` | US02 | Download link generation |
-| `us03-register.spec.ts` | US03 | User registration |
-| `us04-login.spec.ts` | US04 | User login |
-| `us05-file-list.spec.ts` | US05 | File listing/dashboard |
-| `us06-stats.spec.ts` | US06 | Usage statistics |
-| `us07-password.spec.ts` | US07 | File password protection |
-| `us08-anonymous-upload.spec.ts` | US08 | Anonymous upload |
-| `us09-tags.spec.ts` | US09 | File tagging |
-| `us10-history.spec.ts` | US10 | Download history |
+| Fichier de Test | User Story | Description |
+|-----------------|-----------|-------------|
+| `us01-upload.spec.ts` | US01 | Flux de téléversement de fichier |
+| `us02-download-links.spec.ts` | US02 | Génération de lien de téléchargement |
+| `us03-register.spec.ts` | US03 | Inscription d'utilisateur |
+| `us04-login.spec.ts` | US04 | Connexion d'utilisateur |
+| `us05-file-list.spec.ts` | US05 | Listage de fichiers / tableau de bord |
+| `us06-stats.spec.ts` | US06 | Statistiques d'utilisation |
+| `us07-password.spec.ts` | US07 | Protection par mot de passe des fichiers |
+| `us08-anonymous-upload.spec.ts` | US08 | Téléversement anonyme |
+| `us09-tags.spec.ts` | US09 | Étiquetage de fichiers |
+| `us10-history.spec.ts` | US10 | Historique des téléchargements |
 
-### Page Object Pattern
+### Patron Page Object
 
-E2E tests use the Page Object pattern (`e2e/pages/`) for maintainable selectors:
+Les tests E2E utilisent le patron Page Object (`e2e/pages/`) pour des sélecteurs maintenables :
 - `LoginPage`, `RegisterPage`, `DashboardPage`, `UploadPage`
 
-## CI Integration
+## Intégration CI
 
-Tests are intended to run in CI with:
+Les tests sont prévus pour être exécutés en CI avec :
 
 ```bash
 # Unit tests (fast, no dependencies)
@@ -93,8 +93,8 @@ make up
 cd e2e && npx playwright test
 ```
 
-## Adding New Tests
+## Ajout de Nouveaux Tests
 
-1. **Service test**: Create `*.service.spec.ts` alongside the service, mock dependencies via `TestingModule`
-2. **Controller test**: Create `*.controller.spec.ts`, mock the service + `ConfigService`
-3. **E2E test**: Create `e2e/tests/usXX-*.spec.ts`, use Page Objects for interactions
+1. **Test de service** : Créer `*.service.spec.ts` à côté du service, simuler les dépendances via `TestingModule`
+2. **Test de contrôleur** : Créer `*.controller.spec.ts`, simuler le service + `ConfigService`
+3. **Test E2E** : Créer `e2e/tests/usXX-*.spec.ts`, utiliser les Page Objects pour les interactions

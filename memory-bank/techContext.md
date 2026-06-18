@@ -1,100 +1,100 @@
-# DataShare — Technical Context
+# DataShare — Contexte Technique
 
-## Technology Stack
+## Pile Technologique
 
-| Layer | Technology | Version | Role |
-|-------|-----------|---------|------|
-| Back-end | NestJS (TypeScript) | 10.x | REST API, auth, business logic |
-| Front-end | React + Vite (TypeScript) | React 18.x | SPA, user interface |
-| Database | PostgreSQL | 16-alpine | Relational data storage |
-| ORM | Prisma | 5.x | Type-safe ORM, migrations, schema |
-| Storage | MinIO | latest | S3-compatible object storage |
-| Auth | JWT (jsonwebtoken) | — | Access tokens (15min) + refresh tokens (7d) |
-| Password hashing | bcrypt | — | Salt rounds: 10 |
-| Reverse Proxy | Nginx | alpine | HTTPS termination, routing |
-| Deployment | Docker Compose | v2 | Local demo orchestration (5 services) |
-| Testing (unit) | Jest | — | NestJS native, backend unit tests |
-| Testing (E2E) | Cypress | — | End-to-end scenarios (required by specs) |
-| Lint/Format | ESLint + Prettier | — | TypeScript code quality |
-| Scheduler | @nestjs/schedule (cron) | — | Auto-expiration of files (US10) |
-| API Docs | @nestjs/swagger | — | Swagger UI at /api/docs |
+| Couche | Technologie | Version | Rôle |
+|--------|------------|---------|------|
+| Back-end | NestJS (TypeScript) | 10.x | API REST, authentification, logique métier |
+| Front-end | React + Vite (TypeScript) | React 18.x | SPA, interface utilisateur |
+| Base de données | PostgreSQL | 16-alpine | Stockage de données relationnelles |
+| ORM | Prisma | 5.x | ORM type-safe, migrations, schéma |
+| Stockage | MinIO | latest | Stockage objet compatible S3 |
+| Authentification | JWT (jsonwebtoken) | — | Jetons d'accès (15min) + jetons de rafraîchissement (7j) |
+| Hachage de mot de passe | bcrypt | — | Salt rounds : 10 |
+| Proxy inverse | Nginx | alpine | Terminaison HTTPS, routage |
+| Déploiement | Docker Compose | v2 | Orchestration de démo locale (5 services) |
+| Tests (unitaires) | Jest | — | Natif NestJS, tests unitaires backend |
+| Tests (E2E) | Cypress | — | Scénarios de bout en bout (requis par le cahier des charges) |
+| Lint/Formatage | ESLint + Prettier | — | Qualité du code TypeScript |
+| Planificateur | @nestjs/schedule (cron) | — | Expiration automatique des fichiers (US10) |
+| Documentation API | @nestjs/swagger | — | Swagger UI sur /api/docs |
 
-## Docker Compose Architecture
+## Architecture Docker Compose
 
 ### Services (infra/docker-compose.yml)
 
-| Service | Image | Internal Port | Exposed Port | Depends On | Healthcheck |
-|---------|-------|--------------|--------------|------------|-------------|
+| Service | Image | Port Interne | Port Exposé | Dépend De | Healthcheck |
+|---------|-------|-------------|-------------|-----------|-------------|
 | nginx | nginx:alpine | 80, 443 | 80, 443 | frontend, backend | — |
-| frontend | local build (../frontend) | 3000 | — | — | — |
-| backend | local build (../backend) | 3001 | — | postgres (healthy), minio (healthy) | — |
+| frontend | build local (../frontend) | 3000 | — | — | — |
+| backend | build local (../backend) | 3001 | — | postgres (healthy), minio (healthy) | — |
 | postgres | postgres:16-alpine | 5432 | — | — | pg_isready |
 | minio | minio/minio:latest | 9000, 9001 | — | — | mc ready |
 
-### Network & Volumes
+### Réseau & Volumes
 
-- **Network**: `datashare-net` (bridge) — all services internal
-- **Exposed**: Only Nginx on host ports 80/443
-- **Volumes**: `postgres-data` (DB), `minio-data` (files)
-- **Data persistence**: `make down` preserves, `make reset` destroys
+- **Réseau** : `datashare-net` (bridge) — tous les services internes
+- **Exposé** : Uniquement Nginx sur les ports hôte 80/443
+- **Volumes** : `postgres-data` (BDD), `minio-data` (fichiers)
+- **Persistance des données** : `make down` préserve, `make reset` détruit
 
-### Nginx Routing
+### Routage Nginx
 
-| Request Path | Target | Protocol |
-|-------------|--------|----------|
+| Chemin de Requête | Cible | Protocole |
+|-------------------|-------|-----------|
 | `/` | frontend:3000 | HTTP |
-| `/api/` | backend:3001 | HTTP (strip nothing) |
+| `/api/` | backend:3001 | HTTP (pas de réécriture) |
 
-TLS: Self-signed certificates (`infra/nginx/certs/`, gitignored).
+TLS : Certificats auto-signés (`infra/nginx/certs/`, gitignored).
 
-## Project Structure
+## Structure du Projet
 
 ```
-├── backend/              ← NestJS app (with Dockerfile)
-│   ├── src/              ← Application source
-│   └── prisma/           ← Schema + migrations
-├── frontend/             ← React/Vite app (with Dockerfile)
-│   └── src/              ← Application source
-├── infra/                ← Infrastructure files
+├── backend/              ← Application NestJS (avec Dockerfile)
+│   ├── src/              ← Code source de l'application
+│   └── prisma/           ← Schéma + migrations
+├── frontend/             ← Application React/Vite (avec Dockerfile)
+│   └── src/              ← Code source de l'application
+├── infra/                ← Fichiers d'infrastructure
 │   ├── docker-compose.yml
 │   └── nginx/nginx.conf
-├── docs/                 ← Architecture + infrastructure docs
-├── memory-bank/          ← Implementation documentation
-├── Makefile              ← Dev shortcuts
-├── .env.example          ← 18 variables documented
+├── docs/                 ← Documentation d'architecture + infrastructure
+├── memory-bank/          ← Documentation d'implémentation
+├── Makefile              ← Raccourcis de développement
+├── .env.example          ← 18 variables documentées
 └── README.md             ← 8 sections
 ```
 
-## Makefile Commands
+## Commandes Makefile
 
-| Command | Action |
-|---------|--------|
-| `make up` | Build + start all services |
-| `make up-d` | Build + start in background |
-| `make down` | Stop (data preserved) |
-| `make reset` | Stop + delete all data |
-| `make logs` | Follow all logs |
-| `make certs` | Generate self-signed TLS certs |
-| `make test-backend` | Run backend tests |
-| `make test-backend-cov` | Backend tests + coverage |
-| `make lint-frontend` | Frontend ESLint |
+| Commande | Action |
+|----------|--------|
+| `make up` | Construire + démarrer tous les services |
+| `make up-d` | Construire + démarrer en arrière-plan |
+| `make down` | Arrêter (données préservées) |
+| `make reset` | Arrêter + supprimer toutes les données |
+| `make logs` | Suivre tous les logs |
+| `make certs` | Générer des certificats TLS auto-signés |
+| `make test-backend` | Lancer les tests backend |
+| `make test-backend-cov` | Tests backend + couverture |
+| `make lint-frontend` | ESLint frontend |
 
-## Constraints
+## Contraintes
 
-- **Timeline**: 4 weeks to MVP demo
-- **Audience**: investor demo — must look polished and professional
-- **Stack constraints** (from specs):
-  - Back-end: must be one of Spring Boot / .NET Core / NestJS / Symfony → **NestJS chosen**
-  - Front-end: must be one of Angular / React / VueJS → **React chosen**
-  - Database: must be PostgreSQL or MongoDB → **PostgreSQL chosen**
-  - Storage: must be local filesystem or AWS S3 → **MinIO (S3-compatible) chosen**
-- **Testing**: Jest for unit tests (70% coverage target), Cypress for E2E (2-3 critical scenarios minimum)
-- **Git**: conventional commits, branch protection on `main`
+- **Calendrier** : 4 semaines jusqu'à la démo MVP
+- **Public** : démo investisseur — doit paraître soigné et professionnel
+- **Contraintes de pile** (du cahier des charges) :
+  - Back-end : doit être Spring Boot / .NET Core / NestJS / Symfony → **NestJS choisi**
+  - Front-end : doit être Angular / React / VueJS → **React choisi**
+  - Base de données : doit être PostgreSQL ou MongoDB → **PostgreSQL choisi**
+  - Stockage : doit être système de fichiers local ou AWS S3 → **MinIO (compatible S3) choisi**
+- **Tests** : Jest pour les tests unitaires (objectif 70% de couverture), Cypress pour E2E (minimum 2-3 scénarios critiques)
+- **Git** : commits conventionnels, protection de branche sur `main`
 
-## Development Environment
+## Environnement de Développement
 
-- **Package manager**: npm
-- **Node.js**: 20.x LTS (Alpine in Docker)
-- **TypeScript**: 5.x (strict mode)
-- **IDE**: VS Code with ESLint + Prettier extensions
-- **Prisma schema**: snake_case mapping (`@@map`, `@map`) for DB tables/columns
+- **Gestionnaire de paquets** : npm
+- **Node.js** : 20.x LTS (Alpine dans Docker)
+- **TypeScript** : 5.x (mode strict)
+- **IDE** : VS Code avec extensions ESLint + Prettier
+- **Schéma Prisma** : mapping snake_case (`@@map`, `@map`) pour les tables/colonnes de la BDD

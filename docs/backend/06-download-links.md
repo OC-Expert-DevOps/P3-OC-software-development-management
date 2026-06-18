@@ -1,60 +1,60 @@
-# US02 — Download Links
+# US02 — Liens de téléchargement
 
-## Overview
+## Vue d'ensemble
 
-Temporary, secure download links for shared file access without authentication.
+Liens de téléchargement temporaires et sécurisés pour l'accès aux fichiers partagés sans authentification.
 
 ## Routes
 
-| Method | Path | Auth | Description |
-|--------|------|------|-------------|
-| `POST` | `/api/files/:id/links` | JWT | Generate a download token |
-| `GET` | `/api/files/:id/links` | JWT | List active tokens for a file |
-| `DELETE` | `/api/files/:id/links/:tokenId` | JWT | Revoke a token |
-| `GET` | `/api/download/:token` | **Public** | Use token → HTTP 302 to MinIO presigned URL |
+| Méthode | Chemin | Auth | Description |
+|---------|--------|------|-------------|
+| `POST` | `/api/files/:id/links` | JWT | Générer un jeton de téléchargement |
+| `GET` | `/api/files/:id/links` | JWT | Lister les jetons actifs pour un fichier |
+| `DELETE` | `/api/files/:id/links/:tokenId` | JWT | Révoquer un jeton |
+| `GET` | `/api/download/:token` | **Public** | Utiliser le jeton → HTTP 302 vers l'URL présignée MinIO |
 
-## How It Works
+## Fonctionnement
 
-### Link Generation (`POST /api/files/:id/links`)
+### Génération de lien (`POST /api/files/:id/links`)
 
-1. Verify file exists and belongs to authenticated user
-2. Generate UUID v4 token
-3. Store in `download_tokens` table with TTL and optional `maxDownloads`
-4. Return token object (id, token, expiresAt, maxDownloads)
+1. Vérifier que le fichier existe et appartient à l'utilisateur authentifié
+2. Générer un jeton UUID v4
+3. Stocker dans la table `download_tokens` avec une durée de vie et un `maxDownloads` optionnel
+4. Retourner l'objet jeton (id, token, expiresAt, maxDownloads)
 
-**Request body:**
+**Corps de la requête :**
 ```json
 {
   "ttlSeconds": 3600,
   "maxDownloads": 10
 }
 ```
-Both fields optional. Defaults: `DOWNLOAD_LINK_TTL_SECONDS` env (86400s) and unlimited downloads.
+Les deux champs sont optionnels. Valeurs par défaut : variable d'environnement `DOWNLOAD_LINK_TTL_SECONDS` (86400s) et téléchargements illimités.
 
-### Public Download (`GET /api/download/:token`)
+### Téléchargement public (`GET /api/download/:token`)
 
-1. Look up token in DB (include file relation)
-2. Check: token exists → expired? → file deleted? → maxDownloads reached?
-3. Increment `downloadCount`
-4. Generate MinIO presigned URL (5 min TTL)
-5. HTTP 302 redirect to presigned URL
+1. Rechercher le jeton en base de données (inclure la relation fichier)
+2. Vérifier : le jeton existe → expiré ? → fichier supprimé ? → limite de téléchargements atteinte ?
+3. Incrémenter `downloadCount`
+4. Générer une URL présignée MinIO (durée de vie de 5 min)
+5. Redirection HTTP 302 vers l'URL présignée
 
-### Error Responses
+### Réponses d'erreur
 
 | Code | Condition |
 |------|-----------|
-| 404 | Token not found |
-| 404 | File deleted (`isDeleted = true`) |
-| 410 Gone | Token expired (`expiresAt < now`) |
-| 410 Gone | Download limit reached (`downloadCount >= maxDownloads`) |
+| 404 | Jeton non trouvé |
+| 404 | Fichier supprimé (`isDeleted = true`) |
+| 410 Gone | Jeton expiré (`expiresAt < now`) |
+| 410 Gone | Limite de téléchargements atteinte (`downloadCount >= maxDownloads`) |
 
-## Environment Variables
+## Variables d'environnement
 
-| Name | Required | Default | Description |
-|------|----------|---------|-------------|
-| `DOWNLOAD_LINK_TTL_SECONDS` | No | `86400` | Default TTL for download links (seconds) |
+| Nom | Requis | Par défaut | Description |
+|-----|--------|------------|-------------|
+| `DOWNLOAD_LINK_TTL_SECONDS` | Non | `86400` | Durée de vie par défaut des liens de téléchargement (secondes) |
 
-## Database Schema
+## Schéma de base de données
 
 ```
 DownloadToken:
@@ -63,41 +63,41 @@ DownloadToken:
   token         VARCHAR(255) UNIQUE
   expiresAt     TIMESTAMP
   downloadCount INT (default 0)
-  maxDownloads  INT (default 0, 0 = unlimited)
+  maxDownloads  INT (default 0, 0 = illimité)
   createdAt     TIMESTAMP
 ```
 
 ## Tests
 
-10 unit tests in `download.service.spec.ts`:
-- createLink: valid creation, custom TTL, file not found, wrong owner
-- findByFile: returns active tokens
-- revokeLink: sets expiresAt to now, token not belonging to file
-- useToken: valid download, token not found, expired, file deleted, maxDownloads reached
+10 tests unitaires dans `download.service.spec.ts` :
+- createLink : création valide, durée de vie personnalisée, fichier non trouvé, mauvais propriétaire
+- findByFile : retourne les jetons actifs
+- revokeLink : définit expiresAt à maintenant, jeton n'appartenant pas au fichier
+- useToken : téléchargement valide, jeton non trouvé, expiré, fichier supprimé, limite de téléchargements atteinte
 
-## Sequence Diagram
+## Diagramme de séquence
 
 ```mermaid
 sequenceDiagram
-    participant U as User (JWT)
+    participant U as Utilisateur (JWT)
     participant API as Backend
     participant DB as PostgreSQL
     participant M as MinIO
 
-    Note over U,M: Link Generation
+    Note over U,M: Génération de lien
     U->>API: POST /api/files/:id/links {ttlSeconds, maxDownloads}
-    API->>DB: Verify file ownership
+    API->>DB: Vérifier la propriété du fichier
     API->>DB: INSERT download_token
     API-->>U: 201 {id, token, expiresAt}
 
-    Note over U,M: Public Download
-    participant P as Public User
+    Note over U,M: Téléchargement public
+    participant P as Utilisateur public
     P->>API: GET /api/download/:token
     API->>DB: SELECT download_token + file
     API->>DB: UPDATE downloadCount + 1
     API->>M: getPresignedUrl(storageKey, 300s)
-    M-->>API: presigned URL
-    API-->>P: 302 Redirect → presigned URL
-    P->>M: GET presigned URL
-    M-->>P: File content
+    M-->>API: URL présignée
+    API-->>P: 302 Redirection → URL présignée
+    P->>M: GET URL présignée
+    M-->>P: Contenu du fichier
 ```
