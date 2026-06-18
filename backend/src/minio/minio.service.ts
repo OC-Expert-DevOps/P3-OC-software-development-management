@@ -14,6 +14,7 @@ import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 export class MinioService implements OnModuleInit {
   private readonly logger = new Logger(MinioService.name);
   private readonly client: S3Client;
+  private readonly publicClient: S3Client;
   private readonly bucket: string;
 
   constructor(private readonly config: ConfigService) {
@@ -29,10 +30,23 @@ export class MinioService implements OnModuleInit {
     }
 
     const protocol = useSsl ? 'https' : 'http';
-    const url = `${protocol}://${endpoint}:${port}`;
+    const internalUrl = `${protocol}://${endpoint}:${port}`;
 
+    // Internal client: used for upload, delete, bucket operations (Docker network)
     this.client = new S3Client({
-      endpoint: url,
+      endpoint: internalUrl,
+      region: 'us-east-1',
+      forcePathStyle: true,
+      credentials: {
+        accessKeyId,
+        secretAccessKey,
+      },
+    });
+
+    // Public client: used for presigned URLs (accessible from the browser)
+    const publicUrl = this.config.get<string>('MINIO_PUBLIC_URL', `http://localhost:${port}`);
+    this.publicClient = new S3Client({
+      endpoint: publicUrl,
       region: 'us-east-1',
       forcePathStyle: true,
       credentials: {
@@ -91,7 +105,8 @@ export class MinioService implements OnModuleInit {
   async getPresignedUrl(key: string, ttlSeconds = 300): Promise<string> {
     try {
       const cmd = new GetObjectCommand({ Bucket: this.bucket, Key: key });
-      const url = await getSignedUrl(this.client, cmd, { expiresIn: ttlSeconds });
+      // Use publicClient so the presigned URL is accessible from the browser
+      const url = await getSignedUrl(this.publicClient, cmd, { expiresIn: ttlSeconds });
       return url;
     } catch (err) {
       this.logger.error(`Failed to create presigned url for ${key}`, err as any);
