@@ -75,7 +75,20 @@
 - `docs/testing/TESTING.md` — full testing strategy
 - **GitHub:** Issue #33 → PR #34 (squash merged)
 
+### Step 14 — Quality Docs + MinIO SSL Fix ✅
+- `docs/security/SECURITY.md` — npm audit (47 vulns, all transitive), security review
+- `docs/performance/PERF.md` — k6 test plan + results + structured logging
+- `docs/maintenance/MAINTENANCE.md` — backup, rollback, monitoring, troubleshooting
+- `k6/upload-test.js` — executable k6 performance test script
+- Fix: MinIO SSL boolean parsing (`'false'` string was truthy → `=== 'true'`)
+- **GitHub:** Issue #36 → PR #37 (squash merged)
+
 ## Current Status
+
+### v0.7.0 — Quality Docs + MinIO SSL Fix (2026-06-18)
+- SECURITY.md, PERF.md, MAINTENANCE.md created
+- k6/upload-test.js performance test script
+- MinIO SSL crash fixed (EPROTO)
 
 ### v0.6.0 — Unit Tests & Coverage (2026-06-07)
 - 68 tests, 6 suites, 72.82% statement coverage
@@ -104,11 +117,17 @@
 | Frontend | ✅ 5 pages, auth flow working |
 | Unit Tests | ✅ **68 tests, 72.82% coverage** |
 | E2E Tests | ✅ **21/21 passing** |
-| Documentation | ✅ 8 doc files + memory-bank |
+| Documentation | ✅ **12 doc files** + memory-bank |
+| Quality Docs | ✅ TESTING.md, SECURITY.md, PERF.md, MAINTENANCE.md |
 
 ## What Remains
 
 - [x] Fix file size display (BigInt → Number in frontend) ✅ v0.5.3
 - [x] MinIO presigned URL (MINIO_PUBLIC_URL env var) ✅ v0.5.3
+- [x] TESTING.md ✅ v0.6.0
+- [x] SECURITY.md ✅ v0.7.0
+- [x] PERF.md ✅ v0.7.0
+- [x] MAINTENANCE.md ✅ v0.7.0
+- [x] MinIO SSL fix ✅ v0.7.0
 - [ ] Production Docker Compose profile
 - [ ] Final investor demo preparation

@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 Versioning follows [Semantic Versioning](https://semver.org/).
 
+## [0.7.0] - 2026-06-18 — Quality Docs + MinIO SSL Fix
+
+### Added
+
+**Documentation:**
+- `docs/security/SECURITY.md` — npm audit results (47 vulns, all transitive/dev-only), application security review
+- `docs/performance/PERF.md` — k6 test plan, results analysis, structured logging recommendations
+- `docs/maintenance/MAINTENANCE.md` — backup/restore, rollback, monitoring, troubleshooting guide
+- `k6/upload-test.js` — executable k6 performance test script (upload + list endpoints)
+
+### Fixed
+
+- **MinIO SSL crash (EPROTO):** `MINIO_USE_SSL=false` (string) was truthy in JS → changed to `=== 'true'` comparison
+  - Backend was in restart loop due to HTTPS connection to plain HTTP MinIO
+
+**GitHub:** Issue #36 → PR #37 (squash merged)
+
+---
+
 ## [0.6.0] - 2026-06-07 — Unit Tests & Coverage
 
 ### Added
