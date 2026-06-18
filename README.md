@@ -73,14 +73,29 @@ Not yet configured — MVP uses Docker Compose for local demo.
 ## Tests
 
 ```bash
-# Backend unit tests
+# Backend unit tests (68 tests, 6 suites)
 cd backend && npm test
 
-# Backend tests with coverage
+# Backend tests with coverage (threshold: 70%)
 cd backend && npm run test:cov
+
+# E2E tests with Playwright (21 tests, requires stack running)
+cd e2e && npx playwright install --with-deps chromium
+cd e2e && npx playwright test
+
+# Performance tests with k6 (requires stack running)
+brew install k6  # macOS
+k6 run k6/upload-test.js
 
 # Frontend lint
 cd frontend && npm run lint
+```
+
+### Database initialization
+
+```bash
+# After first docker compose up, initialize the database schema:
+docker exec datashare-backend npx prisma db push
 ```
 
 ## Security
