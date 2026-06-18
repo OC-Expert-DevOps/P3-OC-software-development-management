@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DataShare — Soutenance P3</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/black.css">
+    <style>
+        :root {
+            --r-background-color: #0a0a1a;
+            --r-main-font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            --r-heading-font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            --r-main-color: #e8e8f0;
+            --r-heading-color: #ffffff;
+            --r-link-color: #6cb4ee;
+            --r-link-color-hover: #a0d4ff;
+            --r-selection-background-color: #3b82f6;
+        }
+        .reveal { font-size: 28px; }
+        .reveal h1 { font-size: 2.2em; font-weight: 700; margin-bottom: 0.3em; }
+        .reveal h2 { font-size: 1.6em; font-weight: 600; color: #6cb4ee; margin-bottom: 0.5em; }
+        .reveal h3 { font-size: 1.2em; font-weight: 500; color: #94a3b8; }
+        .reveal .subtitle { color: #94a3b8; font-size: 0.9em; margin-top: -0.3em; }
+        .reveal table { margin: 0.5em auto; font-size: 0.75em; border-collapse: collapse; }
+        .reveal table th { background: #1e293b; color: #6cb4ee; padding: 8px 14px; text-align: left; }
+        .reveal table td { padding: 6px 14px; border-bottom: 1px solid #1e293b; }
+        .reveal table tr:hover td { background: rgba(59,130,246,0.08); }
+        .reveal .highlight { color: #3b82f6; font-weight: 600; }
+        .reveal .success { color: #22c55e; }
+        .reveal .warning { color: #f59e0b; }
+        .reveal .badge {
+            display: inline-block; padding: 3px 10px; border-radius: 12px;
+            font-size: 0.7em; font-weight: 600; margin: 2px;
+        }
+        .badge-green { background: rgba(34,197,94,0.2); color: #22c55e; }
+        .badge-blue { background: rgba(59,130,246,0.2); color: #6cb4ee; }
+        .badge-orange { background: rgba(245,158,11,0.2); color: #f59e0b; }
+        .reveal .arch-box {
+            background: #0f172a; border: 1px solid #1e293b; border-radius: 12px;
+            padding: 18px; margin: 8px; display: inline-block; text-align: center;
+            min-width: 120px;
+        }
+        .reveal .arch-box .icon { font-size: 1.8em; display: block; margin-bottom: 4px; }
+        .reveal .arch-box .label { font-size: 0.7em; color: #94a3b8; }
+        .reveal .arch-box .tech { font-size: 0.85em; font-weight: 600; color: #e8e8f0; }
+        .reveal .arrow { color: #3b82f6; font-size: 1.4em; margin: 0 6px; }
+        .reveal .stat-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+            max-width: 700px; margin: 0.5em auto;
+        }
+        .reveal .stat-card {
+            background: #0f172a; border: 1px solid #1e293b; border-radius: 12px;
+            padding: 16px; text-align: center;
+        }
+        .reveal .stat-card .number { font-size: 2em; font-weight: 700; color: #3b82f6; }
+        .reveal .stat-card .desc { font-size: 0.75em; color: #94a3b8; margin-top: 4px; }
+        .reveal .timeline { text-align: left; max-width: 600px; margin: 0 auto; }
+        .reveal .timeline-item {
+            padding: 8px 0 8px 24px; border-left: 2px solid #1e293b; position: relative;
+        }
+        .reveal .timeline-item::before {
+            content: ''; position: absolute; left: -5px; top: 14px;
+            width: 8px; height: 8px; border-radius: 50%; background: #3b82f6;
+        }
+        .reveal .timeline-item .version { font-weight: 600; color: #6cb4ee; font-size: 0.85em; }
+        .reveal .timeline-item .detail { color: #94a3b8; font-size: 0.75em; }
+        .reveal ul { text-align: left; }
+        .reveal li { margin-bottom: 0.3em; font-size: 0.85em; }
+        .reveal .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; text-align: left; }
+        .slide-number { color: #475569 !important; font-size: 14px !important; }
+        .reveal .progress { color: #3b82f6; }
+    </style>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+
+    <!-- SLIDE 1: Title -->
+    <section>
+        <h1>🔒 DataShare</h1>
+        <h3>Plateforme de transfert sécurisé de fichiers</h3>
+        <p class="subtitle">Projet P3 — Gestion du développement logiciel</p>
+        <br>
+        <p style="font-size:0.7em; color:#475569;">
+            MVP pour freelances & petites entreprises<br>
+            <span class="badge badge-blue">NestJS</span>
+            <span class="badge badge-blue">React</span>
+            <span class="badge badge-blue">PostgreSQL</span>
+            <span class="badge badge-blue">MinIO</span>
+            <span class="badge badge-blue">Docker</span>
+        </p>
+    </section>
+
+    <!-- SLIDE 2: Context -->
+    <section>
+        <h2>📋 Contexte & Problème</h2>
+        <div class="two-col">
+            <div>
+                <h3 style="color:#f59e0b;">Problème</h3>
+                <ul>
+                    <li>Freelances partagent des fichiers <br>par email / WeTransfer</li>
+                    <li>Pas de contrôle sur les liens</li>
+                    <li>Pas de traçabilité des téléchargements</li>
+                    <li>Dépendance services cloud tiers</li>
+                </ul>
+            </div>
+            <div>
+                <h3 style="color:#22c55e;">Solution DataShare</h3>
+                <ul>
+                    <li>Upload sécurisé (auth JWT)</li>
+                    <li>Liens temporaires + mot de passe</li>
+                    <li>Historique des téléchargements</li>
+                    <li>Self-hosted (Docker Compose)</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 3: Architecture -->
+    <section>
+        <h2>🏗️ Architecture</h2>
+        <div style="margin-top:20px;">
+            <div class="arch-box"><span class="icon">🌐</span><span class="tech">Browser</span><span class="label">Client</span></div>
+            <span class="arrow">→ HTTPS →</span>
+            <div class="arch-box"><span class="icon">🔒</span><span class="tech">Nginx</span><span class="label">TLS Proxy</span></div>
+        </div>
+        <div style="margin-top:12px;">
+            <span class="arrow" style="margin-left:200px;">↙</span>
+            <span style="display:inline-block;width:80px;"></span>
+            <span class="arrow">↘</span>
+        </div>
+        <div style="margin-top:8px;">
+            <div class="arch-box"><span class="icon">⚛️</span><span class="tech">React/Vite</span><span class="label">Frontend SPA</span></div>
+            <span style="display:inline-block;width:30px;"></span>
+            <div class="arch-box"><span class="icon">🟢</span><span class="tech">NestJS</span><span class="label">REST API</span></div>
+        </div>
+        <div style="margin-top:12px;">
+            <span style="display:inline-block;width:230px;"></span>
+            <span class="arrow">↙</span>
+            <span style="display:inline-block;width:40px;"></span>
+            <span class="arrow">↘</span>
+        </div>
+        <div style="margin-top:8px;">
+            <span style="display:inline-block;width:140px;"></span>
+            <div class="arch-box"><span class="icon">🐘</span><span class="tech">PostgreSQL</span><span class="label">SQL / Prisma</span></div>
+            <span style="display:inline-block;width:10px;"></span>
+            <div class="arch-box"><span class="icon">📦</span><span class="tech">MinIO</span><span class="label">S3 Storage</span></div>
+        </div>
+        <p style="font-size:0.6em; color:#475569; margin-top:16px;">5 services Docker Compose — <code>make up</code> pour tout démarrer</p>
+    </section>
+
+    <!-- SLIDE 4: Tech Stack -->
+    <section>
+        <h2>⚙️ Stack technique</h2>
+        <table>
+            <thead><tr><th>Couche</th><th>Choix</th><th>Justification</th></tr></thead>
+            <tbody>
+                <tr><td>Backend</td><td><strong>NestJS</strong> (TypeScript)</td><td>Architecture modulaire, DI, Swagger auto</td></tr>
+                <tr><td>Frontend</td><td><strong>React 18</strong> + Vite</td><td>Écosystème large, build ultra-rapide</td></tr>
+                <tr><td>BDD</td><td><strong>PostgreSQL 16</strong></td><td>Robustesse, types avancés (UUID, BigInt)</td></tr>
+                <tr><td>ORM</td><td><strong>Prisma 5</strong></td><td>Schema-first, client typé auto-généré</td></tr>
+                <tr><td>Stockage</td><td><strong>MinIO</strong> (S3)</td><td>Self-hosted, zero vendor lock-in</td></tr>
+                <tr><td>Auth</td><td><strong>JWT + Refresh</strong></td><td>Stateless, rotation de tokens</td></tr>
+                <tr><td>Proxy</td><td><strong>Nginx</strong></td><td>TLS termination, routing, mature</td></tr>
+                <tr><td>Tests</td><td><strong>Jest + Playwright</strong></td><td>Unitaires + E2E couvrant tous les US</td></tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- SLIDE 5: Features -->
+    <section>
+        <h2>✨ Fonctionnalités (US01–US10)</h2>
+        <div class="two-col">
+            <div>
+                <table>
+                    <tbody>
+                        <tr><td><span class="success">✅</span> US01</td><td>Upload fichier (auth)</td></tr>
+                        <tr><td><span class="success">✅</span> US02</td><td>Liens temporaires</td></tr>
+                        <tr><td><span class="success">✅</span> US03</td><td>Inscription</td></tr>
+                        <tr><td><span class="success">✅</span> US04</td><td>Connexion / déconnexion</td></tr>
+                        <tr><td><span class="success">✅</span> US05</td><td>Liste paginée</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div>
+                <table>
+                    <tbody>
+                        <tr><td><span class="success">✅</span> US06</td><td>Statistiques</td></tr>
+                        <tr><td><span class="success">✅</span> US07</td><td>Mot de passe fichier</td></tr>
+                        <tr><td><span class="success">✅</span> US08</td><td>Upload anonyme</td></tr>
+                        <tr><td><span class="success">✅</span> US09</td><td>Tags fichiers</td></tr>
+                        <tr><td><span class="success">✅</span> US10</td><td>Historique downloads</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <p style="margin-top:16px;"><span class="highlight">14 routes API REST</span> — toutes documentées en <span class="badge badge-blue">OpenAPI 3.0</span></p>
+    </section>
+
+    <!-- SLIDE 6: Quality -->
+    <section>
+        <h2>🧪 Qualité & Tests</h2>
+        <div class="stat-grid">
+            <div class="stat-card">
+                <div class="number">68</div>
+                <div class="desc">Tests unitaires (Jest)</div>
+            </div>
+            <div class="stat-card">
+                <div class="number">72.8%</div>
+                <div class="desc">Couverture de code</div>
+            </div>
+            <div class="stat-card">
+                <div class="number">21/21</div>
+                <div class="desc">Tests E2E (Playwright)</div>
+            </div>
+            <div class="stat-card">
+                <div class="number">~350ms</div>
+                <div class="desc">Upload p95 (k6)</div>
+            </div>
+        </div>
+        <p style="margin-top:16px; font-size:0.75em; color:#94a3b8;">
+            <span class="badge badge-green">TESTING.md</span>
+            <span class="badge badge-green">SECURITY.md</span>
+            <span class="badge badge-green">PERF.md</span>
+            <span class="badge badge-green">MAINTENANCE.md</span>
+        </p>
+    </section>
+
+    <!-- SLIDE 7: Security -->
+    <section>
+        <h2>🛡️ Sécurité</h2>
+        <table>
+            <thead><tr><th>Mesure</th><th>Implémentation</th></tr></thead>
+            <tbody>
+                <tr><td>Mots de passe</td><td>bcrypt (10 salt rounds)</td></tr>
+                <tr><td>TLS</td><td>Nginx HTTPS (certifs auto-signés dev)</td></tr>
+                <tr><td>JWT</td><td>HS256, 15min TTL, rotation refresh tokens</td></tr>
+                <tr><td>Injection SQL</td><td>Prisma (requêtes paramétrées)</td></tr>
+                <tr><td>Validation</td><td>class-validator sur tous les DTOs</td></tr>
+                <tr><td>Secrets</td><td>Variables d'env (.env non commité)</td></tr>
+                <tr><td>CORS</td><td>Restreint à <code>ALLOWED_ORIGINS</code></td></tr>
+                <tr><td>Downloads</td><td>Tokens crypto + TTL + max downloads</td></tr>
+            </tbody>
+        </table>
+        <p style="font-size:0.65em; color:#f59e0b; margin-top:12px;">
+            npm audit : 47 vulnérabilités — toutes transitives / dev-only
+        </p>
+    </section>
+
+    <!-- SLIDE 8: Difficulties -->
+    <section>
+        <h2>🔧 Difficultés & Solutions</h2>
+        <table>
+            <thead><tr><th>Problème</th><th>Cause</th><th>Solution</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td><span class="warning">MinIO SSL crash</span></td>
+                    <td><code>'false'</code> string truthy en JS</td>
+                    <td>Comparaison <code>=== 'true'</code></td>
+                </tr>
+                <tr>
+                    <td><span class="warning">URL signature cassée</span></td>
+                    <td>HMAC sur hostname Docker</td>
+                    <td>2e client S3 pour URLs publiques</td>
+                </tr>
+                <tr>
+                    <td><span class="warning">BigInt JSON crash</span></td>
+                    <td>Prisma retourne BigInt</td>
+                    <td>Override <code>toJSON()</code></td>
+                </tr>
+                <tr>
+                    <td><span class="warning">JWT userId null</span></td>
+                    <td>Guard mal mappé</td>
+                    <td>Fix <code>sub → userId</code></td>
+                </tr>
+            </tbody>
+        </table>
+        <br>
+        <p style="font-size:0.8em;">💡 <em>Leçon : toujours partir du message d'erreur exact dans les logs</em></p>
+    </section>
+
+    <!-- SLIDE 9: AI Usage -->
+    <section>
+        <h2>🤖 Utilisation de l'IA</h2>
+        <div class="two-col">
+            <div>
+                <h3 style="color:#6cb4ee;">Approche</h3>
+                <ul>
+                    <li><strong>Binômage supervisé</strong></li>
+                    <li>IA = développeur junior</li>
+                    <li>Chaque livrable revu + validé</li>
+                    <li>Architecture → décision humaine</li>
+                </ul>
+                <p style="font-size:0.7em; margin-top:12px;">
+                    <span class="badge badge-blue">Cline/Claude</span>
+                    <span class="badge badge-blue">GitHub Copilot</span>
+                </p>
+            </div>
+            <div>
+                <h3 style="color:#22c55e;">Résultats</h3>
+                <ul>
+                    <li><span class="success">~60%</span> plus rapide (scaffolding)</li>
+                    <li><span class="warning">5 corrections</span> humaines (US01)</li>
+                    <li>Debugging efficace (logs réels)</li>
+                    <li>Ne remplace pas la revue sécu</li>
+                </ul>
+                <p style="font-size:0.7em; color:#94a3b8; margin-top:12px;">
+                    📖 docs/ai-usage/ — prompts + supervision log
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 10: Workflow -->
+    <section>
+        <h2>📊 Gestion de projet</h2>
+        <div class="two-col">
+            <div>
+                <h3 style="color:#6cb4ee;">Workflow</h3>
+                <ul>
+                    <li><strong>Trunk-based</strong> sur <code>main</code></li>
+                    <li>Branches <code>feature/step*</code></li>
+                    <li>Conventional Commits</li>
+                    <li>Issues + PRs squash-merge</li>
+                    <li>CHANGELOG maintenu</li>
+                </ul>
+            </div>
+            <div>
+                <h3 style="color:#6cb4ee;">Versions</h3>
+                <div class="timeline">
+                    <div class="timeline-item"><span class="version">v0.1.0</span> <span class="detail">Architecture</span></div>
+                    <div class="timeline-item"><span class="version">v0.2.0</span> <span class="detail">Infrastructure Docker</span></div>
+                    <div class="timeline-item"><span class="version">v0.3.0</span> <span class="detail">Auth JWT</span></div>
+                    <div class="timeline-item"><span class="version">v0.4.x</span> <span class="detail">Upload + Download + Features</span></div>
+                    <div class="timeline-item"><span class="version">v0.5.x</span> <span class="detail">E2E tests + fixes</span></div>
+                    <div class="timeline-item"><span class="version">v0.6.0</span> <span class="detail">Unit tests 72%</span></div>
+                    <div class="timeline-item"><span class="version">v0.7.0</span> <span class="detail">Quality docs</span></div>
+                    <div class="timeline-item"><span class="version">v0.8.0</span> <span class="detail">Final docs</span></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 11: Conclusion -->
+    <section>
+        <h2>🎯 Conclusion</h2>
+        <div class="stat-grid" style="grid-template-columns:1fr 1fr 1fr;">
+            <div class="stat-card">
+                <div class="number" style="font-size:1.5em;">10</div>
+                <div class="desc">User Stories</div>
+            </div>
+            <div class="stat-card">
+                <div class="number" style="font-size:1.5em;">14</div>
+                <div class="desc">Routes API</div>
+            </div>
+            <div class="stat-card">
+                <div class="number" style="font-size:1.5em;">89</div>
+                <div class="desc">Tests (unit + E2E)</div>
+            </div>
+        </div>
+        <br>
+        <p>
+            <span class="badge badge-green">✅ Code complet</span>
+            <span class="badge badge-green">✅ Tests passants</span>
+            <span class="badge badge-green">✅ Docs complètes</span>
+            <span class="badge badge-green">✅ Git propre</span>
+        </p>
+        <br>
+        <h3 style="color:#3b82f6;">Roadmap post-MVP</h3>
+        <p style="font-size:0.7em; color:#94a3b8;">
+            Rate limiting · Email verification · CSP headers · Streaming upload · Redis cache · CDN
+        </p>
+        <br>
+        <h2 style="color:#ffffff; margin-top:20px;">Questions ?</h2>
+    </section>
+
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script>
+    Reveal.initialize({
+        hash: true,
+        slideNumber: 'c/t',
+        transition: 'slide',
+        transitionSpeed: 'default',
+        backgroundTransition: 'fade',
+        center: true,
+        width: 1280,
+        height: 720,
+        margin: 0.08,
+    });
+</script>
+</body>
+</html>
