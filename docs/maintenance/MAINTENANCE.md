@@ -31,6 +31,39 @@ npm install @nestjs/core@latest
 
 **Schedule:** Run `npm audit` weekly. Apply security patches within 48h for critical/high severity.
 
+### Dependency Update Frequency & Risks
+
+| Dependency | Current Version | Update Frequency | Risk Level | Notes |
+|-----------|----------------|-----------------|------------|-------|
+| **NestJS** (`@nestjs/*`) | 10.x | Minor: monthly, Major: ~yearly | 🟡 Medium | Major versions may require migration guide. Test all routes after update. |
+| **Prisma** | 5.x | Minor: bi-weekly, Major: ~yearly | 🔴 High | Schema changes may require `prisma generate` + migration. Always backup DB first. |
+| **React** | 18.x | Minor: monthly, Major: ~2 years | 🟡 Medium | Major upgrades (e.g. 18→19) can break hooks/lifecycle. Test all pages. |
+| **Vite** | 5.x | Minor: monthly, Major: ~yearly | 🟢 Low | Usually non-breaking. Config changes possible on major. |
+| **@aws-sdk/client-s3** | 3.x | Patch: weekly, Minor: monthly | 🟢 Low | Stable API. Watch for deprecation notices. |
+| **bcrypt** | 5.x | Rare | 🟢 Low | Native module — may need rebuild on Node.js major upgrade. |
+| **class-validator** | 0.14.x | Irregular | 🟡 Medium | Pre-1.0 — decorators may change. Pin version. |
+| **Playwright** | 1.x | Minor: bi-weekly | 🟢 Low | Dev-only. Browser binaries auto-downloaded. |
+| **Jest** | 29.x | Minor: monthly | 🟢 Low | Dev-only. Rarely breaking. |
+
+### Update Policy
+
+| Type | Frequency | Procedure | Approval |
+|------|-----------|-----------|----------|
+| **Security patches** (critical/high) | Within 48h | `npm audit fix` → run tests → deploy | Tech lead |
+| **Patch updates** (x.y.Z) | Weekly | `npm update` → run tests | Developer |
+| **Minor updates** (x.Y.0) | Monthly | Update one by one → full test suite | Developer |
+| **Major updates** (X.0.0) | Quarterly review | Dedicated branch → migration guide → full E2E | Tech lead + review |
+
+### Risks to Watch
+
+| Risk | Impact | Mitigation |
+|------|--------|------------|
+| Prisma schema incompatibility | DB corruption, data loss | Always backup before migration, test on staging |
+| Node.js major upgrade | Native modules (bcrypt) may break | Test in Docker first, rebuild native deps |
+| React breaking changes | UI regression | Run full E2E suite (Playwright 21 tests) |
+| npm supply chain attack | Compromised dependency | Pin versions in `package-lock.json`, run `npm audit` |
+| TLS certificate expiry | HTTPS breaks | Set calendar reminder, automate with certbot (prod) |
+
 ### Frontend (React/Vite)
 
 ```bash
