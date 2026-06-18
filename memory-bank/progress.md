@@ -83,12 +83,21 @@
 - Fix: MinIO SSL boolean parsing (`'false'` string was truthy → `=== 'true'`)
 - **GitHub:** Issue #36 → PR #37 (squash merged)
 
+### Step 15 — Final Documentation & Presentation ✅
+- `docs/technical-documentation.md` — Complete OC template (8 sections)
+- `docs/presentation.md` — Soutenance slides (10 slides)
+- `PERF.md` updated — frontend bundle budget, browser metrics, key metrics tracking
+- `MAINTENANCE.md` updated — dependency frequency/risks, update policy
+- `README.md` updated — E2E/k6 commands, Prisma DB init
+- **GitHub:** Issue #38 → PR #39 (squash merged)
+
 ## Current Status
 
-### v0.7.0 — Quality Docs + MinIO SSL Fix (2026-06-18)
-- SECURITY.md, PERF.md, MAINTENANCE.md created
-- k6/upload-test.js performance test script
-- MinIO SSL crash fixed (EPROTO)
+### v0.8.0 — Final Documentation & Presentation (2026-06-18)
+- Complete technical documentation (OC template)
+- Soutenance presentation (10 slides)
+- Frontend performance budget + browser metrics
+- Dependency management risks + update policy
 
 ### v0.6.0 — Unit Tests & Coverage (2026-06-07)
 - 68 tests, 6 suites, 72.82% statement coverage
@@ -117,8 +126,9 @@
 | Frontend | ✅ 5 pages, auth flow working |
 | Unit Tests | ✅ **68 tests, 72.82% coverage** |
 | E2E Tests | ✅ **21/21 passing** |
-| Documentation | ✅ **12 doc files** + memory-bank |
-| Quality Docs | ✅ TESTING.md, SECURITY.md, PERF.md, MAINTENANCE.md |
+| Documentation | ✅ **14 doc files** + memory-bank |
+| Quality Docs | ✅ TESTING, SECURITY, PERF, MAINTENANCE |
+| Final Docs | ✅ Technical doc (OC template) + Presentation |
 
 ## What Remains
 
@@ -126,8 +136,10 @@
 - [x] MinIO presigned URL (MINIO_PUBLIC_URL env var) ✅ v0.5.3
 - [x] TESTING.md ✅ v0.6.0
 - [x] SECURITY.md ✅ v0.7.0
-- [x] PERF.md ✅ v0.7.0
-- [x] MAINTENANCE.md ✅ v0.7.0
+- [x] PERF.md + frontend budget ✅ v0.7.0 + v0.8.0
+- [x] MAINTENANCE.md + dep risks ✅ v0.7.0 + v0.8.0
 - [x] MinIO SSL fix ✅ v0.7.0
-- [ ] Production Docker Compose profile
-- [ ] Final investor demo preparation
+- [x] Technical documentation (OC template) ✅ v0.8.0
+- [x] Presentation (soutenance) ✅ v0.8.0
+- [x] README update (E2E + k6 + Prisma) ✅ v0.8.0
+- [ ] Production Docker Compose profile (post-MVP)

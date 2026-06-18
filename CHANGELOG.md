@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 Versioning follows [Semantic Versioning](https://semver.org/).
 
+## [0.8.0] - 2026-06-18 — Final Documentation & Presentation
+
+### Added
+
+**Documentation:**
+- `docs/technical-documentation.md` — Complete OC template (8 sections: architecture, tech choices, data model, API, security, quality/tests, installation, AI usage)
+- `docs/presentation.md` — Soutenance slides (10 slides: context, architecture, stack, features, quality, security, difficulties, AI, workflow, roadmap)
+
+### Changed
+
+**Documentation:**
+- `docs/performance/PERF.md` — Added frontend bundle budget (Vite ~105KB gzipped), browser performance metrics (FCP/LCP/TTI/CLS/TBT targets), key metrics tracking, optimization analysis
+- `docs/maintenance/MAINTENANCE.md` — Added dependency frequency/risks table (9 deps), update policy (security/patch/minor/major), risks to watch
+- `README.md` — Added E2E Playwright commands, k6 performance test commands, Prisma DB initialization
+
+**GitHub:** Issue #38 → PR #39 (squash merged)
+
+---
+
 ## [0.7.0] - 2026-06-18 — Quality Docs + MinIO SSL Fix
 
 ### Added

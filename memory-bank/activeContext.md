@@ -2,34 +2,30 @@
 
 ## Current Focus
 
-**Step 5a COMPLETED** — Unit Tests & Coverage (Issue #33, PR #34)
+**Step 6 COMPLETED** — Final Documentation & Presentation (Issue #38, PR #39)
 
 ### What was done
-- Fixed and expanded `files.service.spec.ts` (28 tests covering US05-US10 features)
-- Created `auth.controller.spec.ts` (4 tests for register/login/logout/refresh)
-- Created `jwt.guard.spec.ts` (5 tests for token validation/error handling)
-- Created `download.controller.spec.ts` (4 tests for CRUD + public download)
-- Configured Jest `collectCoverageFrom` to target business logic files
-- Set `coverageThreshold` at 70% statements/lines
-- Created `docs/testing/TESTING.md` with full testing strategy
+- Created `docs/technical-documentation.md` — Complete OC template (8 sections)
+- Created `docs/presentation.md` — Soutenance slides (10 slides)
+- Updated `docs/performance/PERF.md` — Frontend bundle budget, browser metrics
+- Updated `docs/maintenance/MAINTENANCE.md` — Dependency frequency/risks
+- Updated `README.md` — E2E/k6 commands, Prisma DB init
 
-### Results
-- **68 tests**, 6 suites, all passing
-- **72.82% statement coverage** (threshold: 70%)
-- All services at 92-100% coverage
+### Project Status: v0.8.0 — All deliverables complete
 
-## Next Steps
-
-### Remaining for project completion
-1. **Documentation docs** — SECURITY.md, performance considerations, maintenance guide
-2. **Memory-bank sync** — Ensure all docs reflect current state
-3. **Final review** — README, CHANGELOG, all docs up to date
-
-## Key Decisions
-- Coverage collected from `*.service.ts`, `*.controller.ts`, `*.guard.ts` only (not modules/DTOs)
-- Controllers tested with mocked services + ConfigService (for JwtGuard DI)
-- Guard tested with mocked `jsonwebtoken` module
-- req object stored as reference in guard tests (not recreated per getRequest() call)
+| Area | Status |
+|------|--------|
+| Architecture | ✅ Complete |
+| Infrastructure | ✅ Docker Compose (5 services) |
+| Backend API | ✅ 14 routes |
+| Frontend | ✅ 5 pages |
+| Unit Tests | ✅ 68 tests, 72.82% coverage |
+| E2E Tests | ✅ 21/21 passing |
+| Quality Docs | ✅ TESTING, SECURITY, PERF, MAINTENANCE |
+| Technical Doc | ✅ OC template (8 sections) |
+| Presentation | ✅ 10 slides |
 
 ## Known Issues
-- IDE shows "Cannot find name 'jest'" in spec files — this is normal (Jest types loaded at runtime via ts-jest, not by IDE TypeScript server)
+- Self-signed TLS in dev
+- No rate limiting (post-MVP)
+- No email verification (post-MVP)
