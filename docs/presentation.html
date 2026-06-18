@@ -17,18 +17,19 @@
             --r-link-color-hover: #a0d4ff;
             --r-selection-background-color: #3b82f6;
         }
-        .reveal { font-size: 28px; }
+        .reveal { font-size: 26px; }
         .reveal h1 { font-size: 2.2em; font-weight: 700; margin-bottom: 0.3em; }
-        .reveal h2 { font-size: 1.6em; font-weight: 600; color: #6cb4ee; margin-bottom: 0.5em; }
-        .reveal h3 { font-size: 1.2em; font-weight: 500; color: #94a3b8; }
+        .reveal h2 { font-size: 1.5em; font-weight: 600; color: #6cb4ee; margin-bottom: 0.4em; }
+        .reveal h3 { font-size: 1.1em; font-weight: 500; color: #94a3b8; }
         .reveal .subtitle { color: #94a3b8; font-size: 0.9em; margin-top: -0.3em; }
-        .reveal table { margin: 0.5em auto; font-size: 0.75em; border-collapse: collapse; }
-        .reveal table th { background: #1e293b; color: #6cb4ee; padding: 8px 14px; text-align: left; }
-        .reveal table td { padding: 6px 14px; border-bottom: 1px solid #1e293b; }
+        .reveal table { margin: 0.4em auto; font-size: 0.72em; border-collapse: collapse; }
+        .reveal table th { background: #1e293b; color: #6cb4ee; padding: 6px 12px; text-align: left; }
+        .reveal table td { padding: 5px 12px; border-bottom: 1px solid #1e293b; }
         .reveal table tr:hover td { background: rgba(59,130,246,0.08); }
         .reveal .highlight { color: #3b82f6; font-weight: 600; }
         .reveal .success { color: #22c55e; }
         .reveal .warning { color: #f59e0b; }
+        .reveal .error { color: #ef4444; }
         .reveal .badge {
             display: inline-block; padding: 3px 10px; border-radius: 12px;
             font-size: 0.7em; font-weight: 600; margin: 2px;
@@ -36,54 +37,119 @@
         .badge-green { background: rgba(34,197,94,0.2); color: #22c55e; }
         .badge-blue { background: rgba(59,130,246,0.2); color: #6cb4ee; }
         .badge-orange { background: rgba(245,158,11,0.2); color: #f59e0b; }
+        .badge-red { background: rgba(239,68,68,0.2); color: #ef4444; }
         .reveal .arch-box {
             background: #0f172a; border: 1px solid #1e293b; border-radius: 12px;
-            padding: 18px; margin: 8px; display: inline-block; text-align: center;
-            min-width: 120px;
+            padding: 14px; margin: 6px; display: inline-block; text-align: center;
+            min-width: 110px;
         }
-        .reveal .arch-box .icon { font-size: 1.8em; display: block; margin-bottom: 4px; }
-        .reveal .arch-box .label { font-size: 0.7em; color: #94a3b8; }
-        .reveal .arch-box .tech { font-size: 0.85em; font-weight: 600; color: #e8e8f0; }
-        .reveal .arrow { color: #3b82f6; font-size: 1.4em; margin: 0 6px; }
+        .reveal .arch-box .icon { font-size: 1.6em; display: block; margin-bottom: 2px; }
+        .reveal .arch-box .label { font-size: 0.65em; color: #94a3b8; }
+        .reveal .arch-box .tech { font-size: 0.8em; font-weight: 600; color: #e8e8f0; }
+        .reveal .arrow { color: #3b82f6; font-size: 1.3em; margin: 0 4px; }
         .reveal .stat-grid {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
-            max-width: 700px; margin: 0.5em auto;
+            display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+            max-width: 680px; margin: 0.4em auto;
         }
         .reveal .stat-card {
             background: #0f172a; border: 1px solid #1e293b; border-radius: 12px;
-            padding: 16px; text-align: center;
+            padding: 14px; text-align: center;
         }
-        .reveal .stat-card .number { font-size: 2em; font-weight: 700; color: #3b82f6; }
-        .reveal .stat-card .desc { font-size: 0.75em; color: #94a3b8; margin-top: 4px; }
-        .reveal .timeline { text-align: left; max-width: 600px; margin: 0 auto; }
+        .reveal .stat-card .number { font-size: 1.8em; font-weight: 700; color: #3b82f6; }
+        .reveal .stat-card .desc { font-size: 0.7em; color: #94a3b8; margin-top: 2px; }
+        .reveal .terminal {
+            background: #0c0c0c; border: 1px solid #333; border-radius: 8px;
+            padding: 16px 20px; text-align: left; font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+            font-size: 0.6em; line-height: 1.5; max-width: 850px; margin: 0.5em auto;
+            overflow-x: auto;
+        }
+        .reveal .terminal .prompt { color: #22c55e; }
+        .reveal .terminal .cmd { color: #e8e8f0; }
+        .reveal .terminal .output { color: #94a3b8; }
+        .reveal .terminal .pass { color: #22c55e; font-weight: 600; }
+        .reveal .terminal .fail { color: #ef4444; font-weight: 600; }
+        .reveal .terminal .info { color: #6cb4ee; }
+        .reveal .terminal .warn { color: #f59e0b; }
+        .reveal .terminal .dim { color: #475569; }
+        .reveal .terminal-title {
+            background: #1a1a2e; padding: 6px 14px; border-radius: 8px 8px 0 0;
+            font-size: 0.6em; color: #94a3b8; font-family: system-ui; border: 1px solid #333;
+            border-bottom: none; max-width: 850px; margin: 0 auto;
+        }
+        .reveal .terminal-title .dot { display: inline-block; width: 10px; height: 10px;
+            border-radius: 50%; margin-right: 5px; }
+        .reveal .terminal-title .dot-red { background: #ef4444; }
+        .reveal .terminal-title .dot-yellow { background: #f59e0b; }
+        .reveal .terminal-title .dot-green { background: #22c55e; }
+        .reveal .timeline { text-align: left; max-width: 550px; margin: 0 auto; }
         .reveal .timeline-item {
-            padding: 8px 0 8px 24px; border-left: 2px solid #1e293b; position: relative;
+            padding: 6px 0 6px 20px; border-left: 2px solid #1e293b; position: relative;
         }
         .reveal .timeline-item::before {
-            content: ''; position: absolute; left: -5px; top: 14px;
+            content: ''; position: absolute; left: -5px; top: 12px;
             width: 8px; height: 8px; border-radius: 50%; background: #3b82f6;
         }
-        .reveal .timeline-item .version { font-weight: 600; color: #6cb4ee; font-size: 0.85em; }
-        .reveal .timeline-item .detail { color: #94a3b8; font-size: 0.75em; }
+        .reveal .timeline-item .version { font-weight: 600; color: #6cb4ee; font-size: 0.8em; }
+        .reveal .timeline-item .detail { color: #94a3b8; font-size: 0.7em; }
         .reveal ul { text-align: left; }
-        .reveal li { margin-bottom: 0.3em; font-size: 0.85em; }
-        .reveal .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; text-align: left; }
+        .reveal li { margin-bottom: 0.25em; font-size: 0.82em; }
+        .reveal .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; text-align: left; }
         .slide-number { color: #475569 !important; font-size: 14px !important; }
         .reveal .progress { color: #3b82f6; }
+        .reveal .section-label {
+            font-size: 0.55em; color: #475569; text-transform: uppercase;
+            letter-spacing: 2px; margin-bottom: 4px;
+        }
+        .reveal .api-box {
+            background: #0f172a; border: 1px solid #1e293b; border-radius: 8px;
+            padding: 10px 16px; margin: 4px auto; max-width: 750px; text-align: left;
+            font-size: 0.7em;
+        }
+        .reveal .api-method { font-weight: 700; border-radius: 4px; padding: 2px 6px; font-size: 0.85em; }
+        .reveal .method-post { background: #065f46; color: #34d399; }
+        .reveal .method-get { background: #1e3a5f; color: #60a5fa; }
+        .reveal .method-delete { background: #7f1d1d; color: #f87171; }
+        .reveal .api-path { color: #e8e8f0; font-family: monospace; }
+        .reveal .api-desc { color: #94a3b8; font-size: 0.9em; }
+        .reveal .api-auth { float: right; }
+        .reveal .mockup {
+            background: #111827; border: 2px solid #1e293b; border-radius: 12px;
+            padding: 20px; max-width: 700px; margin: 0.5em auto; text-align: left;
+        }
+        .reveal .mockup-header {
+            background: #1e293b; padding: 8px 14px; border-radius: 8px;
+            margin-bottom: 12px; display: flex; justify-content: space-between;
+            align-items: center;
+        }
+        .reveal .mockup-nav { font-size: 0.7em; color: #94a3b8; }
+        .reveal .mockup-nav a { color: #6cb4ee; margin-left: 16px; text-decoration: none; }
+        .reveal .mockup-card {
+            background: #0f172a; border: 1px solid #1e293b; border-radius: 8px;
+            padding: 10px 14px; margin: 6px 0; display: flex; justify-content: space-between;
+            align-items: center;
+        }
+        .reveal .mockup-btn {
+            background: #3b82f6; color: white; border: none; border-radius: 6px;
+            padding: 4px 12px; font-size: 0.75em;
+        }
+        .reveal .mockup-btn-danger { background: #ef4444; }
+        .reveal .mockup-btn-outline { background: transparent; border: 1px solid #3b82f6; color: #3b82f6; }
     </style>
 </head>
 <body>
 <div class="reveal">
 <div class="slides">
 
-    <!-- SLIDE 1: Title -->
+    <!-- ======================== -->
+    <!-- SLIDE 1: TITRE           -->
+    <!-- ======================== -->
     <section>
         <h1>🔒 DataShare</h1>
         <h3>Plateforme de transfert sécurisé de fichiers</h3>
         <p class="subtitle">Projet P3 — Gestion du développement logiciel</p>
         <br>
-        <p style="font-size:0.7em; color:#475569;">
-            MVP pour freelances & petites entreprises<br>
+        <p style="font-size:0.65em; color:#475569;">
+            MVP pour freelances & petites entreprises<br><br>
             <span class="badge badge-blue">NestJS</span>
             <span class="badge badge-blue">React</span>
             <span class="badge badge-blue">PostgreSQL</span>
@@ -92,287 +158,588 @@
         </p>
     </section>
 
-    <!-- SLIDE 2: Context -->
+    <!-- ======================================== -->
+    <!-- PARTIE 1: CONTEXTE FONCTIONNEL (2 slides) -->
+    <!-- ======================================== -->
+
+    <!-- SLIDE 2: Contexte -->
     <section>
-        <h2>📋 Contexte & Problème</h2>
+        <p class="section-label">1 / Contexte fonctionnel</p>
+        <h2>📋 Problématique métier</h2>
         <div class="two-col">
             <div>
-                <h3 style="color:#f59e0b;">Problème</h3>
+                <h3 style="color:#f59e0b;">Problèmes identifiés</h3>
                 <ul>
-                    <li>Freelances partagent des fichiers <br>par email / WeTransfer</li>
-                    <li>Pas de contrôle sur les liens</li>
-                    <li>Pas de traçabilité des téléchargements</li>
-                    <li>Dépendance services cloud tiers</li>
+                    <li>Freelances envoient des fichiers par <strong>email / WeTransfer</strong></li>
+                    <li><strong>Aucun contrôle</strong> sur les liens partagés</li>
+                    <li>Pas de <strong>traçabilité</strong> des téléchargements</li>
+                    <li><strong>Dépendance</strong> services cloud tiers payants</li>
+                    <li>Risques <strong>confidentialité</strong> (données sensibles)</li>
                 </ul>
             </div>
             <div>
                 <h3 style="color:#22c55e;">Solution DataShare</h3>
                 <ul>
-                    <li>Upload sécurisé (auth JWT)</li>
-                    <li>Liens temporaires + mot de passe</li>
-                    <li>Historique des téléchargements</li>
-                    <li>Self-hosted (Docker Compose)</li>
+                    <li>Upload sécurisé (auth <strong>JWT</strong>)</li>
+                    <li>Liens temporaires + <strong>mot de passe</strong></li>
+                    <li><strong>Historique</strong> complet des téléchargements</li>
+                    <li><strong>Self-hosted</strong> (Docker Compose)</li>
+                    <li><strong>Open source</strong>, auditeable, maîtrisé</li>
                 </ul>
             </div>
         </div>
     </section>
 
-    <!-- SLIDE 3: Architecture -->
+    <!-- SLIDE 3: User Stories -->
     <section>
-        <h2>🏗️ Architecture</h2>
-        <div style="margin-top:20px;">
-            <div class="arch-box"><span class="icon">🌐</span><span class="tech">Browser</span><span class="label">Client</span></div>
-            <span class="arrow">→ HTTPS →</span>
-            <div class="arch-box"><span class="icon">🔒</span><span class="tech">Nginx</span><span class="label">TLS Proxy</span></div>
-        </div>
-        <div style="margin-top:12px;">
-            <span class="arrow" style="margin-left:200px;">↙</span>
-            <span style="display:inline-block;width:80px;"></span>
-            <span class="arrow">↘</span>
-        </div>
-        <div style="margin-top:8px;">
-            <div class="arch-box"><span class="icon">⚛️</span><span class="tech">React/Vite</span><span class="label">Frontend SPA</span></div>
-            <span style="display:inline-block;width:30px;"></span>
-            <div class="arch-box"><span class="icon">🟢</span><span class="tech">NestJS</span><span class="label">REST API</span></div>
-        </div>
-        <div style="margin-top:12px;">
-            <span style="display:inline-block;width:230px;"></span>
-            <span class="arrow">↙</span>
-            <span style="display:inline-block;width:40px;"></span>
-            <span class="arrow">↘</span>
-        </div>
-        <div style="margin-top:8px;">
-            <span style="display:inline-block;width:140px;"></span>
-            <div class="arch-box"><span class="icon">🐘</span><span class="tech">PostgreSQL</span><span class="label">SQL / Prisma</span></div>
-            <span style="display:inline-block;width:10px;"></span>
-            <div class="arch-box"><span class="icon">📦</span><span class="tech">MinIO</span><span class="label">S3 Storage</span></div>
-        </div>
-        <p style="font-size:0.6em; color:#475569; margin-top:16px;">5 services Docker Compose — <code>make up</code> pour tout démarrer</p>
-    </section>
-
-    <!-- SLIDE 4: Tech Stack -->
-    <section>
-        <h2>⚙️ Stack technique</h2>
-        <table>
-            <thead><tr><th>Couche</th><th>Choix</th><th>Justification</th></tr></thead>
-            <tbody>
-                <tr><td>Backend</td><td><strong>NestJS</strong> (TypeScript)</td><td>Architecture modulaire, DI, Swagger auto</td></tr>
-                <tr><td>Frontend</td><td><strong>React 18</strong> + Vite</td><td>Écosystème large, build ultra-rapide</td></tr>
-                <tr><td>BDD</td><td><strong>PostgreSQL 16</strong></td><td>Robustesse, types avancés (UUID, BigInt)</td></tr>
-                <tr><td>ORM</td><td><strong>Prisma 5</strong></td><td>Schema-first, client typé auto-généré</td></tr>
-                <tr><td>Stockage</td><td><strong>MinIO</strong> (S3)</td><td>Self-hosted, zero vendor lock-in</td></tr>
-                <tr><td>Auth</td><td><strong>JWT + Refresh</strong></td><td>Stateless, rotation de tokens</td></tr>
-                <tr><td>Proxy</td><td><strong>Nginx</strong></td><td>TLS termination, routing, mature</td></tr>
-                <tr><td>Tests</td><td><strong>Jest + Playwright</strong></td><td>Unitaires + E2E couvrant tous les US</td></tr>
-            </tbody>
-        </table>
-    </section>
-
-    <!-- SLIDE 5: Features -->
-    <section>
-        <h2>✨ Fonctionnalités (US01–US10)</h2>
+        <p class="section-label">1 / Contexte fonctionnel</p>
+        <h2>📝 User Stories MVP</h2>
         <div class="two-col">
             <div>
                 <table>
                     <tbody>
                         <tr><td><span class="success">✅</span> US01</td><td>Upload fichier (auth)</td></tr>
-                        <tr><td><span class="success">✅</span> US02</td><td>Liens temporaires</td></tr>
-                        <tr><td><span class="success">✅</span> US03</td><td>Inscription</td></tr>
+                        <tr><td><span class="success">✅</span> US02</td><td>Liens de téléchargement temporaires</td></tr>
+                        <tr><td><span class="success">✅</span> US03</td><td>Inscription utilisateur</td></tr>
                         <tr><td><span class="success">✅</span> US04</td><td>Connexion / déconnexion</td></tr>
-                        <tr><td><span class="success">✅</span> US05</td><td>Liste paginée</td></tr>
+                        <tr><td><span class="success">✅</span> US05</td><td>Liste paginée des fichiers</td></tr>
                     </tbody>
                 </table>
             </div>
             <div>
                 <table>
                     <tbody>
-                        <tr><td><span class="success">✅</span> US06</td><td>Statistiques</td></tr>
-                        <tr><td><span class="success">✅</span> US07</td><td>Mot de passe fichier</td></tr>
-                        <tr><td><span class="success">✅</span> US08</td><td>Upload anonyme</td></tr>
-                        <tr><td><span class="success">✅</span> US09</td><td>Tags fichiers</td></tr>
-                        <tr><td><span class="success">✅</span> US10</td><td>Historique downloads</td></tr>
+                        <tr><td><span class="success">✅</span> US06</td><td>Statistiques utilisateur</td></tr>
+                        <tr><td><span class="success">✅</span> US07</td><td>Protection par mot de passe</td></tr>
+                        <tr><td><span class="success">✅</span> US08</td><td>Upload anonyme (1 jour)</td></tr>
+                        <tr><td><span class="success">✅</span> US09</td><td>Tags de fichiers</td></tr>
+                        <tr><td><span class="success">✅</span> US10</td><td>Historique téléchargements</td></tr>
                     </tbody>
                 </table>
             </div>
         </div>
-        <p style="margin-top:16px;"><span class="highlight">14 routes API REST</span> — toutes documentées en <span class="badge badge-blue">OpenAPI 3.0</span></p>
-    </section>
-
-    <!-- SLIDE 6: Quality -->
-    <section>
-        <h2>🧪 Qualité & Tests</h2>
-        <div class="stat-grid">
-            <div class="stat-card">
-                <div class="number">68</div>
-                <div class="desc">Tests unitaires (Jest)</div>
-            </div>
-            <div class="stat-card">
-                <div class="number">72.8%</div>
-                <div class="desc">Couverture de code</div>
-            </div>
-            <div class="stat-card">
-                <div class="number">21/21</div>
-                <div class="desc">Tests E2E (Playwright)</div>
-            </div>
-            <div class="stat-card">
-                <div class="number">~350ms</div>
-                <div class="desc">Upload p95 (k6)</div>
-            </div>
-        </div>
-        <p style="margin-top:16px; font-size:0.75em; color:#94a3b8;">
-            <span class="badge badge-green">TESTING.md</span>
-            <span class="badge badge-green">SECURITY.md</span>
-            <span class="badge badge-green">PERF.md</span>
-            <span class="badge badge-green">MAINTENANCE.md</span>
+        <p style="margin-top:14px;">
+            <span class="highlight">10/10 US implémentées</span> —
+            <span class="badge badge-blue">14 routes API</span>
+            <span class="badge badge-blue">OpenAPI 3.0</span>
         </p>
     </section>
 
-    <!-- SLIDE 7: Security -->
+    <!-- ======================================== -->
+    <!-- PARTIE 2: CHOIX TECHNOLOGIQUES (2 slides)-->
+    <!-- ======================================== -->
+
+    <!-- SLIDE 4: Stack -->
     <section>
-        <h2>🛡️ Sécurité</h2>
+        <p class="section-label">2 / Choix technologiques</p>
+        <h2>⚙️ Stack technique & justifications</h2>
         <table>
-            <thead><tr><th>Mesure</th><th>Implémentation</th></tr></thead>
+            <thead><tr><th>Couche</th><th>Choix</th><th>Justification</th></tr></thead>
             <tbody>
-                <tr><td>Mots de passe</td><td>bcrypt (10 salt rounds)</td></tr>
-                <tr><td>TLS</td><td>Nginx HTTPS (certifs auto-signés dev)</td></tr>
-                <tr><td>JWT</td><td>HS256, 15min TTL, rotation refresh tokens</td></tr>
-                <tr><td>Injection SQL</td><td>Prisma (requêtes paramétrées)</td></tr>
-                <tr><td>Validation</td><td>class-validator sur tous les DTOs</td></tr>
-                <tr><td>Secrets</td><td>Variables d'env (.env non commité)</td></tr>
-                <tr><td>CORS</td><td>Restreint à <code>ALLOWED_ORIGINS</code></td></tr>
-                <tr><td>Downloads</td><td>Tokens crypto + TTL + max downloads</td></tr>
+                <tr><td>Backend</td><td><strong>NestJS 10</strong></td><td>Architecture modulaire, DI natif, Swagger auto-généré</td></tr>
+                <tr><td>Frontend</td><td><strong>React 18 + Vite</strong></td><td>Écosystème large, HMR instantané, build ultra-rapide</td></tr>
+                <tr><td>BDD</td><td><strong>PostgreSQL 16</strong></td><td>Robustesse, UUID natif, BigInt, requêtes paramétrisées</td></tr>
+                <tr><td>ORM</td><td><strong>Prisma 5</strong></td><td>Schema-first, client typé auto-généré, migrations versionnées</td></tr>
+                <tr><td>Stockage</td><td><strong>MinIO</strong> (S3)</td><td>Self-hosted, API S3 standard, zero vendor lock-in</td></tr>
+                <tr><td>Auth</td><td><strong>JWT + Refresh</strong></td><td>Stateless, 15min access + 7d refresh avec rotation</td></tr>
+                <tr><td>Proxy</td><td><strong>Nginx</strong></td><td>TLS termination, routing, maturité, performance</td></tr>
+                <tr><td>Tests</td><td><strong>Jest + Playwright + k6</strong></td><td>Unit + E2E + perf — couverture complète</td></tr>
             </tbody>
         </table>
-        <p style="font-size:0.65em; color:#f59e0b; margin-top:12px;">
-            npm audit : 47 vulnérabilités — toutes transitives / dev-only
+    </section>
+
+    <!-- SLIDE 5: Sécurité -->
+    <section>
+        <p class="section-label">2 / Choix technologiques — sécurité</p>
+        <h2>🛡️ Stratégie de sécurité</h2>
+        <table>
+            <thead><tr><th>Mesure</th><th>Implémentation</th><th>Statut</th></tr></thead>
+            <tbody>
+                <tr><td>Mots de passe</td><td>bcrypt (10 salt rounds)</td><td><span class="success">✅</span></td></tr>
+                <tr><td>Transit</td><td>Nginx HTTPS / TLS</td><td><span class="success">✅</span></td></tr>
+                <tr><td>Tokens</td><td>JWT HS256, 15min TTL, rotation refresh</td><td><span class="success">✅</span></td></tr>
+                <tr><td>Injection SQL</td><td>Prisma ORM (requêtes paramétrées)</td><td><span class="success">✅</span></td></tr>
+                <tr><td>Validation</td><td>class-validator sur tous les DTOs</td><td><span class="success">✅</span></td></tr>
+                <tr><td>Secrets</td><td>Variables d'env uniquement (.env non commité)</td><td><span class="success">✅</span></td></tr>
+                <tr><td>CORS</td><td>Restreint à <code>ALLOWED_ORIGINS</code></td><td><span class="success">✅</span></td></tr>
+                <tr><td>Downloads</td><td>Tokens crypto + TTL + max downloads</td><td><span class="success">✅</span></td></tr>
+            </tbody>
+        </table>
+        <p style="font-size:0.6em; color:#94a3b8; margin-top:10px;">
+            Post-MVP recommandé : rate limiting, email verification, CSP headers
         </p>
     </section>
 
-    <!-- SLIDE 8: Difficulties -->
+    <!-- ======================================== -->
+    <!-- PARTIE 3: ARCHITECTURE (3 slides)        -->
+    <!-- ======================================== -->
+
+    <!-- SLIDE 6: Architecture globale -->
     <section>
-        <h2>🔧 Difficultés & Solutions</h2>
-        <table>
-            <thead><tr><th>Problème</th><th>Cause</th><th>Solution</th></tr></thead>
-            <tbody>
-                <tr>
-                    <td><span class="warning">MinIO SSL crash</span></td>
-                    <td><code>'false'</code> string truthy en JS</td>
-                    <td>Comparaison <code>=== 'true'</code></td>
-                </tr>
-                <tr>
-                    <td><span class="warning">URL signature cassée</span></td>
-                    <td>HMAC sur hostname Docker</td>
-                    <td>2e client S3 pour URLs publiques</td>
-                </tr>
-                <tr>
-                    <td><span class="warning">BigInt JSON crash</span></td>
-                    <td>Prisma retourne BigInt</td>
-                    <td>Override <code>toJSON()</code></td>
-                </tr>
-                <tr>
-                    <td><span class="warning">JWT userId null</span></td>
-                    <td>Guard mal mappé</td>
-                    <td>Fix <code>sub → userId</code></td>
-                </tr>
-            </tbody>
-        </table>
-        <br>
-        <p style="font-size:0.8em;">💡 <em>Leçon : toujours partir du message d'erreur exact dans les logs</em></p>
+        <p class="section-label">3 / Architecture</p>
+        <h2>🏗️ Architecture globale</h2>
+        <div style="margin-top:14px;">
+            <div class="arch-box"><span class="icon">🌐</span><span class="tech">Browser</span><span class="label">Client</span></div>
+            <span class="arrow">→ HTTPS →</span>
+            <div class="arch-box"><span class="icon">🔒</span><span class="tech">Nginx</span><span class="label">TLS Proxy :443</span></div>
+        </div>
+        <div style="margin-top:10px;">
+            <span class="arrow" style="margin-left:190px;">↙ /</span>
+            <span style="display:inline-block;width:50px;"></span>
+            <span class="arrow">↘ /api/*</span>
+        </div>
+        <div style="margin-top:6px;">
+            <div class="arch-box"><span class="icon">⚛️</span><span class="tech">React/Vite</span><span class="label">Frontend :5173</span></div>
+            <span style="display:inline-block;width:20px;"></span>
+            <div class="arch-box"><span class="icon">🟢</span><span class="tech">NestJS</span><span class="label">API :3001</span></div>
+        </div>
+        <div style="margin-top:10px;">
+            <span style="display:inline-block;width:215px;"></span>
+            <span class="arrow">↙ SQL</span>
+            <span style="display:inline-block;width:20px;"></span>
+            <span class="arrow">↘ S3 API</span>
+        </div>
+        <div style="margin-top:6px;">
+            <span style="display:inline-block;width:130px;"></span>
+            <div class="arch-box"><span class="icon">🐘</span><span class="tech">PostgreSQL</span><span class="label">:5432</span></div>
+            <span style="display:inline-block;width:6px;"></span>
+            <div class="arch-box"><span class="icon">📦</span><span class="tech">MinIO</span><span class="label">:9000</span></div>
+        </div>
+        <p style="font-size:0.55em; color:#475569; margin-top:12px;">
+            5 services Docker Compose · bridge network <code>datashare-net</code> · <code>make up</code>
+        </p>
     </section>
 
-    <!-- SLIDE 9: AI Usage -->
+    <!-- SLIDE 7: MCD -->
     <section>
-        <h2>🤖 Utilisation de l'IA</h2>
-        <div class="two-col">
-            <div>
-                <h3 style="color:#6cb4ee;">Approche</h3>
-                <ul>
-                    <li><strong>Binômage supervisé</strong></li>
-                    <li>IA = développeur junior</li>
-                    <li>Chaque livrable revu + validé</li>
-                    <li>Architecture → décision humaine</li>
-                </ul>
-                <p style="font-size:0.7em; margin-top:12px;">
-                    <span class="badge badge-blue">Cline/Claude</span>
-                    <span class="badge badge-blue">GitHub Copilot</span>
-                </p>
+        <p class="section-label">3 / Architecture — base de données</p>
+        <h2>🗄️ Modèle de données (6 entités)</h2>
+        <div style="font-size:0.7em; display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; max-width:800px; margin:0.5em auto;">
+            <div class="arch-box" style="min-width:auto;">
+                <span class="tech" style="color:#3b82f6;">User</span><br>
+                <span class="label">id (UUID PK)<br>email (unique)<br>passwordHash<br>name<br>createdAt</span>
             </div>
-            <div>
-                <h3 style="color:#22c55e;">Résultats</h3>
-                <ul>
-                    <li><span class="success">~60%</span> plus rapide (scaffolding)</li>
-                    <li><span class="warning">5 corrections</span> humaines (US01)</li>
-                    <li>Debugging efficace (logs réels)</li>
-                    <li>Ne remplace pas la revue sécu</li>
-                </ul>
-                <p style="font-size:0.7em; color:#94a3b8; margin-top:12px;">
-                    📖 docs/ai-usage/ — prompts + supervision log
-                </p>
+            <div class="arch-box" style="min-width:auto;">
+                <span class="tech" style="color:#3b82f6;">File</span><br>
+                <span class="label">id (UUID PK)<br>userId (FK)<br>originalName<br>storagePath, mimeType<br>sizeBytes (BigInt)<br>passwordHash<br>expiresAt, deletedAt</span>
             </div>
+            <div class="arch-box" style="min-width:auto;">
+                <span class="tech" style="color:#3b82f6;">DownloadToken</span><br>
+                <span class="label">id (UUID PK)<br>fileId (FK)<br>token (unique)<br>maxDownloads<br>downloadCount<br>ttlSeconds, expiresAt<br>revoked</span>
+            </div>
+            <div class="arch-box" style="min-width:auto;">
+                <span class="tech" style="color:#f59e0b;">RefreshToken</span><br>
+                <span class="label">id (UUID PK)<br>userId (FK)<br>tokenHash (bcrypt)<br>expiresAt<br>revoked</span>
+            </div>
+            <div class="arch-box" style="min-width:auto;">
+                <span class="tech" style="color:#f59e0b;">Tag</span><br>
+                <span class="label">id (UUID PK)<br>fileId (FK)<br>name (lowercase)<br>createdAt</span>
+            </div>
+            <div class="arch-box" style="min-width:auto;">
+                <span class="tech" style="color:#f59e0b;">DownloadHistory</span><br>
+                <span class="label">id (UUID PK)<br>fileId (FK)<br>tokenId (FK)<br>ipAddress<br>userAgent<br>downloadedAt</span>
+            </div>
+        </div>
+        <p style="font-size:0.55em; color:#475569;">
+            Relations : User 1→N File · File 1→N DownloadToken · File 1→N Tag · File 1→N DownloadHistory
+        </p>
+    </section>
+
+    <!-- SLIDE 8: API -->
+    <section>
+        <p class="section-label">3 / Architecture — API REST</p>
+        <h2>📡 Contrat API (14 routes)</h2>
+        <div style="font-size:0.68em;">
+            <div class="api-box">
+                <span class="api-method method-post">POST</span> <span class="api-path">/api/auth/register</span>
+                <span class="api-auth"><span class="badge badge-green">Public</span></span>
+                <span class="api-desc"> — Inscription</span>
+            </div>
+            <div class="api-box">
+                <span class="api-method method-post">POST</span> <span class="api-path">/api/auth/login</span>
+                <span class="api-auth"><span class="badge badge-green">Public</span></span>
+                <span class="api-desc"> — Connexion → JWT + cookie refresh</span>
+            </div>
+            <div class="api-box">
+                <span class="api-method method-post">POST</span> <span class="api-path">/api/files/upload</span>
+                <span class="api-auth"><span class="badge badge-orange">JWT</span></span>
+                <span class="api-desc"> — Upload multipart/form-data</span>
+            </div>
+            <div class="api-box">
+                <span class="api-method method-get">GET</span> <span class="api-path">/api/files?page=1&limit=20</span>
+                <span class="api-auth"><span class="badge badge-orange">JWT</span></span>
+                <span class="api-desc"> — Liste paginée</span>
+            </div>
+            <div class="api-box">
+                <span class="api-method method-post">POST</span> <span class="api-path">/api/files/:id/links</span>
+                <span class="api-auth"><span class="badge badge-orange">JWT</span></span>
+                <span class="api-desc"> — Générer lien temporaire</span>
+            </div>
+            <div class="api-box">
+                <span class="api-method method-get">GET</span> <span class="api-path">/api/download/:token</span>
+                <span class="api-auth"><span class="badge badge-green">Public</span></span>
+                <span class="api-desc"> — Téléchargement (302 → MinIO presigned URL)</span>
+            </div>
+            <div class="api-box">
+                <span class="api-method method-delete">DEL</span> <span class="api-path">/api/files/:id</span>
+                <span class="api-auth"><span class="badge badge-orange">JWT</span></span>
+                <span class="api-desc"> — Suppression (soft-delete)</span>
+            </div>
+        </div>
+        <p style="font-size:0.55em; color:#475569; margin-top:8px;">+ 7 autres routes (refresh, logout, stats, password, tags, history, anonymous) — voir <code>openapi.yaml</code></p>
+    </section>
+
+    <!-- ======================================== -->
+    <!-- PARTIE 4: DÉMONSTRATION (4 slides)       -->
+    <!-- ======================================== -->
+
+    <!-- SLIDE 9: Démo - App screens -->
+    <section>
+        <p class="section-label">4 / Démonstration — interface</p>
+        <h2>💻 Interface utilisateur</h2>
+        <div class="mockup">
+            <div class="mockup-header">
+                <span style="font-size:0.8em;">🔒 <strong>DataShare</strong></span>
+                <span class="mockup-nav">
+                    <a>📤 Upload</a>
+                    <a>📁 My Files</a>
+                    <a>📊 Stats</a>
+                    <a style="color:#ef4444;">Logout</a>
+                </span>
+            </div>
+            <div style="font-size:0.75em; color:#94a3b8; margin-bottom:8px;">📁 Mes fichiers (3 fichiers · 12.4 MB total)</div>
+            <div class="mockup-card">
+                <div>
+                    <span style="font-size:0.85em;">📄 <strong>rapport-Q4.pdf</strong></span>
+                    <span style="font-size:0.65em; color:#94a3b8;"> — 2.3 MB · il y a 2h</span>
+                    <span class="badge badge-blue" style="font-size:0.55em;">finance</span>
+                </div>
+                <div>
+                    <button class="mockup-btn" style="font-size:0.65em;">🔗 Lien</button>
+                    <button class="mockup-btn mockup-btn-danger" style="font-size:0.65em;">🗑️</button>
+                </div>
+            </div>
+            <div class="mockup-card">
+                <div>
+                    <span style="font-size:0.85em;">🖼️ <strong>mockup-v3.png</strong></span>
+                    <span style="font-size:0.65em; color:#94a3b8;"> — 8.1 MB · il y a 1j</span>
+                    <span class="badge badge-blue" style="font-size:0.55em;">design</span>
+                    <span class="badge badge-orange" style="font-size:0.55em;">🔒 protégé</span>
+                </div>
+                <div>
+                    <button class="mockup-btn" style="font-size:0.65em;">🔗 Lien</button>
+                    <button class="mockup-btn mockup-btn-danger" style="font-size:0.65em;">🗑️</button>
+                </div>
+            </div>
+            <div class="mockup-card">
+                <div>
+                    <span style="font-size:0.85em;">📦 <strong>backup-db.sql.gz</strong></span>
+                    <span style="font-size:0.65em; color:#94a3b8;"> — 2.0 MB · il y a 3j</span>
+                </div>
+                <div>
+                    <button class="mockup-btn" style="font-size:0.65em;">🔗 Lien</button>
+                    <button class="mockup-btn mockup-btn-danger" style="font-size:0.65em;">🗑️</button>
+                </div>
+            </div>
+        </div>
+        <p style="font-size:0.55em; color:#475569;">5 pages : Login · Register · Dashboard · Upload · Download — React Router + PrivateRoute guard</p>
+    </section>
+
+    <!-- SLIDE 10: Démo - Gestion d'erreurs -->
+    <section>
+        <p class="section-label">4 / Démonstration — gestion d'erreurs</p>
+        <h2>⚠️ Gestion d'erreurs structurée</h2>
+        <div class="terminal-title">
+            <span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span>
+            Réponses d'erreur JSON — exemples réels
+        </div>
+        <div class="terminal" style="border-radius:0 0 8px 8px;">
+<span class="dim">// 401 — Token expiré</span>
+<span class="cmd">curl -H "Authorization: Bearer expired_token" /api/files</span>
+<span class="output">{
+  "<span class="fail">statusCode</span>": 401,
+  "<span class="fail">message</span>": "Invalid or expired token",
+  "<span class="fail">error</span>": "Unauthorized"
+}</span>
+
+<span class="dim">// 400 — Validation DTO</span>
+<span class="cmd">curl -X POST /api/auth/register -d '{"email":"bad"}'</span>
+<span class="output">{
+  "<span class="warn">statusCode</span>": 400,
+  "<span class="warn">message</span>": ["email must be an email", "password must be longer than 8 characters"],
+  "<span class="warn">error</span>": "Bad Request"
+}</span>
+
+<span class="dim">// 404 — Fichier inexistant</span>
+<span class="cmd">curl /api/files/unknown-id</span>
+<span class="output">{ "<span class="fail">statusCode</span>": 404, "<span class="fail">message</span>": "File not found" }</span>
+
+<span class="dim">// 410 — Lien expiré</span>
+<span class="cmd">curl /api/download/expired-token</span>
+<span class="output">{ "<span class="fail">statusCode</span>": 410, "<span class="fail">message</span>": "Download link has expired" }</span>
         </div>
     </section>
 
-    <!-- SLIDE 10: Workflow -->
+    <!-- SLIDE 11: Démo - Tests unitaires -->
     <section>
-        <h2>📊 Gestion de projet</h2>
+        <p class="section-label">4 / Démonstration — tests unitaires</p>
+        <h2>🧪 Tests unitaires (Jest)</h2>
+        <div class="terminal-title">
+            <span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span>
+            $ cd backend && npm test
+        </div>
+        <div class="terminal" style="border-radius:0 0 8px 8px;">
+<span class="pass"> PASS </span> <span class="output">src/auth/<span class="cmd">auth.service.spec.ts</span></span>
+<span class="output">  AuthService</span>
+<span class="output">    <span class="pass">✓</span> register — creates user with hashed password <span class="dim">(12ms)</span></span>
+<span class="output">    <span class="pass">✓</span> register — rejects duplicate email <span class="dim">(4ms)</span></span>
+<span class="output">    <span class="pass">✓</span> login — returns JWT + sets refresh cookie <span class="dim">(8ms)</span></span>
+<span class="output">    <span class="pass">✓</span> login — rejects wrong password <span class="dim">(3ms)</span></span>
+<span class="output">    <span class="pass">✓</span> logout — revokes refresh token <span class="dim">(2ms)</span></span>
+<span class="output">    <span class="pass">✓</span> refresh — rotates token (old revoked, new issued) <span class="dim">(6ms)</span></span>
+
+<span class="pass"> PASS </span> <span class="output">src/files/<span class="cmd">files.service.spec.ts</span> (28 tests)</span>
+<span class="pass"> PASS </span> <span class="output">src/download/<span class="cmd">download.service.spec.ts</span> (13 tests)</span>
+<span class="pass"> PASS </span> <span class="output">src/auth/<span class="cmd">auth.controller.spec.ts</span> (4 tests)</span>
+<span class="pass"> PASS </span> <span class="output">src/auth/guards/<span class="cmd">jwt.guard.spec.ts</span> (5 tests)</span>
+<span class="pass"> PASS </span> <span class="output">src/download/<span class="cmd">download.controller.spec.ts</span> (4 tests)</span>
+
+<span class="info">Test Suites: <span class="pass">6 passed</span>, 6 total</span>
+<span class="info">Tests:       <span class="pass">68 passed</span>, 68 total</span>
+<span class="info">Time:        3.842 s</span>
+        </div>
+    </section>
+
+    <!-- SLIDE 12: Démo - Coverage + E2E -->
+    <section>
+        <p class="section-label">4 / Démonstration — couverture + E2E</p>
+        <h2>📊 Couverture & Tests E2E</h2>
         <div class="two-col">
             <div>
-                <h3 style="color:#6cb4ee;">Workflow</h3>
-                <ul>
-                    <li><strong>Trunk-based</strong> sur <code>main</code></li>
-                    <li>Branches <code>feature/step*</code></li>
-                    <li>Conventional Commits</li>
-                    <li>Issues + PRs squash-merge</li>
-                    <li>CHANGELOG maintenu</li>
-                </ul>
+                <div class="terminal-title" style="max-width:100%;">
+                    <span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span>
+                    npm run test:cov
+                </div>
+                <div class="terminal" style="border-radius:0 0 8px 8px; max-width:100%; font-size:0.55em;">
+<span class="output">File                 | Stmts | Branch | Funcs | Lines</span>
+<span class="output">---------------------|-------|--------|-------|------</span>
+<span class="output">All files            | <span class="pass">72.82</span> |  47.36 | <span class="pass">68.42</span> | <span class="pass">73.13</span></span>
+<span class="output"> auth.service.ts     | <span class="pass">  100</span> | <span class="pass">   100</span> | <span class="pass">  100</span> | <span class="pass">  100</span></span>
+<span class="output"> auth.controller.ts  | <span class="pass"> 87.5</span> | <span class="pass">   100</span> | <span class="pass">  100</span> | <span class="pass"> 87.5</span></span>
+<span class="output"> jwt.guard.ts        | <span class="pass">  100</span> |  66.66 | <span class="pass">  100</span> | <span class="pass">  100</span></span>
+<span class="output"> files.service.ts    | <span class="pass">95.28</span> |  63.15 | <span class="pass">  100</span> | <span class="pass">95.28</span></span>
+<span class="output"> download.service.ts | <span class="pass"> 92.3</span> |  71.42 | <span class="pass">  100</span> | <span class="pass">93.33</span></span>
+<span class="output"> download.ctrl.ts    | <span class="pass">  100</span> | <span class="pass">   100</span> | <span class="pass">  100</span> | <span class="pass">  100</span></span>
+<span class="output">---------------------|-------|--------|-------|------</span>
+<span class="info">Threshold: 70% ✅ (configured in package.json)</span>
+                </div>
             </div>
             <div>
-                <h3 style="color:#6cb4ee;">Versions</h3>
-                <div class="timeline">
-                    <div class="timeline-item"><span class="version">v0.1.0</span> <span class="detail">Architecture</span></div>
-                    <div class="timeline-item"><span class="version">v0.2.0</span> <span class="detail">Infrastructure Docker</span></div>
-                    <div class="timeline-item"><span class="version">v0.3.0</span> <span class="detail">Auth JWT</span></div>
-                    <div class="timeline-item"><span class="version">v0.4.x</span> <span class="detail">Upload + Download + Features</span></div>
-                    <div class="timeline-item"><span class="version">v0.5.x</span> <span class="detail">E2E tests + fixes</span></div>
-                    <div class="timeline-item"><span class="version">v0.6.0</span> <span class="detail">Unit tests 72%</span></div>
-                    <div class="timeline-item"><span class="version">v0.7.0</span> <span class="detail">Quality docs</span></div>
-                    <div class="timeline-item"><span class="version">v0.8.0</span> <span class="detail">Final docs</span></div>
+                <div class="terminal-title" style="max-width:100%;">
+                    <span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span>
+                    npx playwright test
+                </div>
+                <div class="terminal" style="border-radius:0 0 8px 8px; max-width:100%; font-size:0.55em;">
+<span class="pass">  ✓</span> <span class="output">us01-upload.spec.ts (2 tests)</span>
+<span class="pass">  ✓</span> <span class="output">us02-download-links.spec.ts (2)</span>
+<span class="pass">  ✓</span> <span class="output">us03-register.spec.ts (3)</span>
+<span class="pass">  ✓</span> <span class="output">us04-login.spec.ts (3)</span>
+<span class="pass">  ✓</span> <span class="output">us05-file-list.spec.ts (3)</span>
+<span class="pass">  ✓</span> <span class="output">us06-stats.spec.ts (1)</span>
+<span class="pass">  ✓</span> <span class="output">us07-password.spec.ts (2)</span>
+<span class="pass">  ✓</span> <span class="output">us08-anonymous.spec.ts (1)</span>
+<span class="pass">  ✓</span> <span class="output">us09-tags.spec.ts (3)</span>
+<span class="pass">  ✓</span> <span class="output">us10-history.spec.ts (1)</span>
+<span class="output">  ─────────────────────────</span>
+<span class="info">  10 specs · <span class="pass">21 passed</span> · 0 failed</span>
+<span class="info">  Chromium · ~14s</span>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- SLIDE 11: Conclusion -->
+    <!-- ======================================== -->
+    <!-- PARTIE 5: DOCUMENTATION (1 slide)        -->
+    <!-- ======================================== -->
+
+    <!-- SLIDE 13: Documentation -->
+    <section>
+        <p class="section-label">5 / Documentation technique</p>
+        <h2>📚 Livrables documentaires</h2>
+        <table>
+            <thead><tr><th>Document</th><th>Contenu</th><th>Format</th></tr></thead>
+            <tbody>
+                <tr><td><strong>README.md</strong></td><td>Installation, config, lancement, 18 variables d'env</td><td>Markdown</td></tr>
+                <tr><td><strong>openapi.yaml</strong></td><td>14 routes, schémas, exemples, codes erreur</td><td>OpenAPI 3.0</td></tr>
+                <tr><td><strong>CHANGELOG.md</strong></td><td>Historique v0.1.0 → v0.8.0 (Keep a Changelog)</td><td>Markdown</td></tr>
+                <tr><td><strong>TESTING.md</strong></td><td>Stratégie tests, critères d'acceptation, résultats</td><td>Markdown</td></tr>
+                <tr><td><strong>SECURITY.md</strong></td><td>npm audit, revue sécurité applicative</td><td>Markdown</td></tr>
+                <tr><td><strong>PERF.md</strong></td><td>k6 résultats, budget front, métriques navigateur</td><td>Markdown</td></tr>
+                <tr><td><strong>MAINTENANCE.md</strong></td><td>Backup, rollback, monitoring, risques dépendances</td><td>Markdown</td></tr>
+                <tr><td><strong>technical-doc.md</strong></td><td>Documentation technique OC (8 sections)</td><td>Markdown</td></tr>
+            </tbody>
+        </table>
+        <p style="font-size:0.6em; color:#94a3b8; margin-top:8px;">
+            + 7 docs architecture (<code>docs/architecture/</code> + <code>docs/backend/</code>)
+            · Swagger UI live à <code>https://localhost/api/docs</code>
+        </p>
+    </section>
+
+    <!-- ======================================== -->
+    <!-- PARTIE 6: IA (1 slide)                   -->
+    <!-- ======================================== -->
+
+    <!-- SLIDE 14: AI Usage -->
+    <section>
+        <p class="section-label">6 / Pilotage IA</p>
+        <h2>🤖 Supervision du co-pilote IA</h2>
+        <div class="two-col">
+            <div>
+                <h3 style="color:#6cb4ee;">Approche : binômage supervisé</h3>
+                <ul>
+                    <li>IA = <strong>développeur junior</strong> supervisé</li>
+                    <li>Chaque livrable <strong>revu + corrigé</strong></li>
+                    <li>Architecture = <strong>décision humaine</strong></li>
+                </ul>
+                <br>
+                <h3 style="color:#6cb4ee;">Outils utilisés</h3>
+                <ul>
+                    <li><span class="badge badge-blue">Cline/Claude</span> Architecture, debugging, docs</li>
+                    <li><span class="badge badge-blue">GitHub Copilot</span> Code US01 (4 prompts)</li>
+                </ul>
+            </div>
+            <div>
+                <h3 style="color:#f59e0b;">5 corrections humaines (US01)</h3>
+                <table style="font-size:0.85em;">
+                    <tbody>
+                        <tr><td>1.</td><td>Ajout validation taille fichier</td></tr>
+                        <tr><td>2.</td><td>Correction imports Prisma</td></tr>
+                        <tr><td>3.</td><td>Vérification ownership sur delete</td></tr>
+                        <tr><td>4.</td><td>Hard-delete → soft-delete</td></tr>
+                        <tr><td>5.</td><td>Types BigInt vs Number</td></tr>
+                    </tbody>
+                </table>
+                <br>
+                <p style="font-size:0.75em;">
+                    <span class="success">~60%</span> plus rapide (scaffolding)<br>
+                    <span class="warning">Limite :</span> ne remplace pas la revue sécu
+                </p>
+            </div>
+        </div>
+        <p style="font-size:0.55em; color:#475569;">📖 docs/ai-usage/ — prompts + supervision log complets</p>
+    </section>
+
+    <!-- ======================================== -->
+    <!-- SLIDE 15: Difficultés                    -->
+    <!-- ======================================== -->
+    <section>
+        <p class="section-label">Retour d'expérience</p>
+        <h2>🔧 Difficultés rencontrées & solutions</h2>
+        <table>
+            <thead><tr><th>Problème</th><th>Cause racine</th><th>Solution</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td><span class="warning">MinIO SSL crash</span></td>
+                    <td><code>MINIO_USE_SSL=false</code> → truthy string en JS</td>
+                    <td>Comparaison stricte <code>=== 'true'</code></td>
+                </tr>
+                <tr>
+                    <td><span class="warning">Presigned URL cassée</span></td>
+                    <td>HMAC signature sur hostname Docker interne</td>
+                    <td>2e client S3 <code>publicClient</code> pour URLs</td>
+                </tr>
+                <tr>
+                    <td><span class="warning">BigInt JSON crash</span></td>
+                    <td>Prisma retourne BigInt, <code>JSON.stringify</code> crashe</td>
+                    <td>Override <code>BigInt.prototype.toJSON</code></td>
+                </tr>
+                <tr>
+                    <td><span class="warning">JWT userId null</span></td>
+                    <td>Guard mappait mal <code>payload.sub</code></td>
+                    <td>Fix mapping <code>sub → request.user.userId</code></td>
+                </tr>
+                <tr>
+                    <td><span class="warning">E2E auth fixture</span></td>
+                    <td>Register redirige vers /login, pas /dashboard</td>
+                    <td>Helper <code>registerAndLogin</code> dédié</td>
+                </tr>
+            </tbody>
+        </table>
+        <br>
+        <p style="font-size:0.8em;">💡 <em>Méthodologie : toujours partir du <strong>message d'erreur exact</strong> dans les logs</em></p>
+    </section>
+
+    <!-- ======================================== -->
+    <!-- SLIDE 16: Workflow                       -->
+    <!-- ======================================== -->
+    <section>
+        <p class="section-label">Méthodologie</p>
+        <h2>📊 Workflow & gestion de projet</h2>
+        <div class="two-col">
+            <div>
+                <h3 style="color:#6cb4ee;">Méthodologie</h3>
+                <ul>
+                    <li><strong>Trunk-based</strong> sur <code>main</code></li>
+                    <li>Branches <code>feature/step*</code></li>
+                    <li><strong>Conventional Commits</strong></li>
+                    <li>Issues GitHub typées + PRs</li>
+                    <li><strong>Squash-merge</strong> (historique propre)</li>
+                    <li>CHANGELOG à chaque version</li>
+                </ul>
+            </div>
+            <div>
+                <h3 style="color:#6cb4ee;">Timeline (v0.1→v0.8)</h3>
+                <div class="timeline">
+                    <div class="timeline-item"><span class="version">v0.1.0</span> <span class="detail">Architecture & design</span></div>
+                    <div class="timeline-item"><span class="version">v0.2.0</span> <span class="detail">Infrastructure Docker</span></div>
+                    <div class="timeline-item"><span class="version">v0.3.0</span> <span class="detail">Auth JWT + refresh</span></div>
+                    <div class="timeline-item"><span class="version">v0.4.x</span> <span class="detail">Upload + Download + US07-10</span></div>
+                    <div class="timeline-item"><span class="version">v0.5.x</span> <span class="detail">E2E Playwright 21/21</span></div>
+                    <div class="timeline-item"><span class="version">v0.6.0</span> <span class="detail">Unit tests 72% coverage</span></div>
+                    <div class="timeline-item"><span class="version">v0.7.0</span> <span class="detail">Quality docs + SSL fix</span></div>
+                    <div class="timeline-item"><span class="version">v0.8.0</span> <span class="detail">Documentation finale</span></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ======================================== -->
+    <!-- SLIDE 17: Conclusion                     -->
+    <!-- ======================================== -->
     <section>
         <h2>🎯 Conclusion</h2>
-        <div class="stat-grid" style="grid-template-columns:1fr 1fr 1fr;">
+        <div class="stat-grid" style="grid-template-columns:1fr 1fr 1fr 1fr; max-width:800px;">
             <div class="stat-card">
-                <div class="number" style="font-size:1.5em;">10</div>
+                <div class="number" style="font-size:1.4em;">10</div>
                 <div class="desc">User Stories</div>
             </div>
             <div class="stat-card">
-                <div class="number" style="font-size:1.5em;">14</div>
+                <div class="number" style="font-size:1.4em;">14</div>
                 <div class="desc">Routes API</div>
             </div>
             <div class="stat-card">
-                <div class="number" style="font-size:1.5em;">89</div>
-                <div class="desc">Tests (unit + E2E)</div>
+                <div class="number" style="font-size:1.4em;">89</div>
+                <div class="desc">Tests total</div>
+            </div>
+            <div class="stat-card">
+                <div class="number" style="font-size:1.4em;">15+</div>
+                <div class="desc">Docs livrées</div>
             </div>
         </div>
         <br>
         <p>
-            <span class="badge badge-green">✅ Code complet</span>
-            <span class="badge badge-green">✅ Tests passants</span>
-            <span class="badge badge-green">✅ Docs complètes</span>
-            <span class="badge badge-green">✅ Git propre</span>
+            <span class="badge badge-green">✅ Code complet & fonctionnel</span>
+            <span class="badge badge-green">✅ 68 unit + 21 E2E passants</span>
+            <span class="badge badge-green">✅ Documentation exhaustive</span>
+            <span class="badge badge-green">✅ Git propre (Issues + PRs)</span>
         </p>
         <br>
         <h3 style="color:#3b82f6;">Roadmap post-MVP</h3>
-        <p style="font-size:0.7em; color:#94a3b8;">
-            Rate limiting · Email verification · CSP headers · Streaming upload · Redis cache · CDN
+        <p style="font-size:0.65em; color:#94a3b8;">
+            Rate limiting · Email verification · CSP headers · Streaming upload · Redis cache · CDN · Monitoring
         </p>
         <br>
-        <h2 style="color:#ffffff; margin-top:20px;">Questions ?</h2>
+        <h2 style="color:#ffffff; margin-top:16px;">Questions ? 🙋</h2>
     </section>
 
 </div>
@@ -389,7 +756,7 @@
         center: true,
         width: 1280,
         height: 720,
-        margin: 0.08,
+        margin: 0.06,
     });
 </script>
 </body>
