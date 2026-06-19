@@ -1,0 +1,60 @@
+================================================================================
+  DataShare — Lien vers le repository GitHub
+================================================================================
+
+Repository : https://github.com/OC-Expert-DevOps/P3-OC-software-development-management
+
+Auteur     : Mathieu CHEREAU
+Projet     : P3 — Pilotez le développement d'une solution informatique
+Date       : Juin 2026
+
+================================================================================
+  Contenu du repository
+================================================================================
+
+Le repository contient :
+
+1. CODE SOURCE COMPLET
+   - backend/    → API NestJS (TypeScript) — authentification, fichiers, téléchargement
+   - frontend/   → SPA React/Vite (TypeScript) — interface utilisateur
+   - e2e/        → Tests E2E Playwright (10 specs)
+   - k6/         → Tests de charge k6
+
+2. HISTORIQUE DE COMMITS STRUCTURÉ
+   - Conventional Commits (feat:, fix:, chore:, docs:, test:)
+   - Branches feature/* avec Pull Requests et squash merge
+   - Issues GitHub liées aux PRs
+
+3. README DÉTAILLÉ
+   - README.md à la racine avec instructions complètes
+   - Prérequis, installation, lancement, tests, variables d'environnement
+
+4. SCRIPTS DE DÉPLOIEMENT
+   - infra/docker-compose.yml   → Orchestration Docker Compose (5 services)
+   - infra/nginx/nginx.conf     → Configuration reverse proxy Nginx
+   - backend/Dockerfile         → Image Docker backend NestJS
+   - frontend/Dockerfile        → Image Docker frontend React/Vite
+   - Makefile                   → Commandes make (up, down, migrate, test, etc.)
+   - .env.example               → Template de configuration (valeurs fictives)
+
+5. PLAN DE SUIVI QUALITÉ ET MAINTENANCE
+   - docs/testing/TESTING.md       → Stratégie de tests (unitaires, E2E, charge)
+   - docs/security/SECURITY.md     → Politique de sécurité (JWT, secrets, headers)
+   - docs/performance/PERF.md      → Plan de performance (k6, optimisations)
+   - docs/maintenance/MAINTENANCE.md → Plan de maintenance (backups, monitoring)
+
+================================================================================
+  Cloner et démarrer
+================================================================================
+
+  git clone git@github.com:OC-Expert-DevOps/P3-OC-software-development-management.git
+  cd P3-OC-software-development-management
+  cp .env.example .env
+  make up
+  make migrate
+
+  → Frontend : https://localhost
+  → API :      https://localhost/api
+  → MinIO :    http://localhost:9001
+
+================================================================================
