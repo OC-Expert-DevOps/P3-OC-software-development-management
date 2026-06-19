@@ -48,3 +48,6 @@ backend/prisma/*.db-journal
 
 # ─── Misc ───
 .turbo/
+
+# ZIP livrables (généré, pas versionné)
+*.zip
