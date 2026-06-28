@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import api from '../api/client';
 
-const gradientBg = 'linear-gradient(135deg, #D4785C 0%, #E8A4A0 50%, #F0C4B8 100%)';
 
 export default function DownloadPage() {
   const { token } = useParams<{ token: string }>();
@@ -30,7 +29,6 @@ export default function DownloadPage() {
   return (
     <div style={{
       minHeight: '100vh',
-      background: gradientBg,
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',

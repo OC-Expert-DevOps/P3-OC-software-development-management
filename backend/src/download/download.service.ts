@@ -21,7 +21,7 @@ export class DownloadService {
     private readonly minioService: MinioService,
     private readonly config: ConfigService,
   ) {
-    this.defaultTtl = this.config.get<number>('DOWNLOAD_LINK_TTL_SECONDS', 86400);
+    this.defaultTtl = this.config.get<number>('DOWNLOAD_LINK_TTL_SECONDS', 604800);
   }
 
   /** Generate a temporary download token for a file. */

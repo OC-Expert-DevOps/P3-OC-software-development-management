@@ -2,7 +2,6 @@ import { useState, FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 
-const gradientBg = 'linear-gradient(135deg, #D4785C 0%, #E8A4A0 50%, #F0C4B8 100%)';
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -27,7 +26,6 @@ export default function LoginPage() {
   return (
     <div style={{
       minHeight: '100vh',
-      background: gradientBg,
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
