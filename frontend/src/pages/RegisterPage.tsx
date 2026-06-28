@@ -2,7 +2,6 @@ import { useState, FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../api/client';
 
-const gradientBg = 'linear-gradient(135deg, #D4785C 0%, #E8A4A0 50%, #F0C4B8 100%)';
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -33,7 +32,6 @@ export default function RegisterPage() {
   return (
     <div style={{
       minHeight: '100vh',
-      background: gradientBg,
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',

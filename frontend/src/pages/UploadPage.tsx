@@ -2,7 +2,6 @@ import { useState, useRef, FormEvent } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import api from '../api/client';
 
-const gradientBg = 'linear-gradient(135deg, #D4785C 0%, #E8A4A0 50%, #F0C4B8 100%)';
 
 const EXPIRATION_OPTIONS = [
   { label: 'Une heure', value: 3600 },
@@ -102,7 +101,6 @@ export default function UploadPage() {
     return (
       <div style={{
         minHeight: '100vh',
-        background: gradientBg,
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -187,7 +185,6 @@ export default function UploadPage() {
   return (
     <div style={{
       minHeight: '100vh',
-      background: gradientBg,
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',

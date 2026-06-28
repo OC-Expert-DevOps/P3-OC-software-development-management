@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../api/client';
 
-const gradientBg = 'linear-gradient(135deg, #D4785C 0%, #E8A4A0 50%, #F0C4B8 100%)';
 
 interface FileItem {
   id: string;
@@ -53,7 +52,6 @@ export default function DashboardPage() {
   return (
     <div style={{
       minHeight: '100vh',
-      background: gradientBg,
       padding: '2rem',
     }}>
       <div style={{
