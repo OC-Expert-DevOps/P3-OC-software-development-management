@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import api from '../api/client';
-
 
 interface FileItem {
   id: string;
@@ -10,9 +10,12 @@ interface FileItem {
   createdAt: string;
 }
 
+type Filter = 'all' | 'active' | 'expired';
+
 export default function DashboardPage() {
   const [files, setFiles] = useState<FileItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState<Filter>('all');
   const [linkUrl, setLinkUrl] = useState('');
 
   const fetchFiles = async () => {
@@ -20,9 +23,7 @@ export default function DashboardPage() {
     try {
       const { data } = await api.get('/files');
       setFiles(data.data || data);
-    } catch {
-      // silent
-    } finally {
+    } catch { /* silent */ } finally {
       setLoading(false);
     }
   };
@@ -36,108 +37,124 @@ export default function DashboardPage() {
   };
 
   const generateLink = async (id: string) => {
-    const { data } = await api.post(`/files/${id}/links`, { ttlSeconds: 86400 });
+    const { data } = await api.post(`/files/${id}/links`, { ttlSeconds: 604800 });
     const token = data.token || data.data?.token;
-    const url = `${window.location.origin}/api/download/${token}`;
+    const url = `${window.location.origin}/download/${token}`;
     setLinkUrl(url);
-    navigator.clipboard.writeText(url).catch(() => {});
+    navigator.clipboard?.writeText(url);
   };
 
-  const formatSize = (bytes: number) => {
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  const formatSize = (bytes: number | string) => {
+    const n = Number(bytes);
+    if (isNaN(n)) return '—';
+    if (n < 1024) return `${n} B`;
+    if (n < 1048576) return `${(n / 1024).toFixed(1)} KB`;
+    return `${(n / 1048576).toFixed(1)} MB`;
   };
+
+  const getExt = (name: string) => {
+    const parts = name.split('.');
+    return parts.length > 1 ? parts.pop()!.toUpperCase().slice(0, 4) : '?';
+  };
+
+  const tabStyle = (active: boolean): React.CSSProperties => ({
+    padding: '0.4rem 1rem',
+    borderRadius: '6px',
+    fontSize: '0.8rem',
+    fontWeight: 600,
+    cursor: 'pointer',
+    border: 'none',
+    background: active ? '#D4785C' : 'transparent',
+    color: active ? '#fff' : '#666',
+    fontFamily: "'Inter', sans-serif",
+  });
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      padding: '2rem',
-    }}>
+    <div style={{ minHeight: '100vh', display: 'flex', paddingTop: '60px' }}>
+      {/* Left — Upload CTA */}
       <div style={{
-        maxWidth: '900px',
-        margin: '0 auto',
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '2rem',
       }}>
-        <h1 style={{ color: '#333', fontSize: '1.5rem', fontWeight: 600, marginBottom: '1.5rem' }}>
-          Mon espace
-        </h1>
+        <Link to="/upload" style={{ textDecoration: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+          <div style={{
+            width: '64px', height: '64px', borderRadius: '50%',
+            background: 'rgba(0,0,0,0.15)', display: 'flex',
+            alignItems: 'center', justifyContent: 'center',
+            fontSize: '1.5rem', color: '#fff',
+          }}>☁</div>
+          <span style={{ fontSize: '1.1rem', color: '#fff', fontWeight: 500 }}>Tu veux partager un fichier ?</span>
+        </Link>
+        <footer style={{ marginTop: 'auto', padding: '1.5rem', textAlign: 'center', fontSize: '0.75rem', color: 'rgba(255,255,255,0.7)' }}>
+          Copyright DataShare® 2025
+        </footer>
+      </div>
+
+      {/* Right — Files panel */}
+      <div style={{
+        width: '480px',
+        background: '#fff',
+        padding: '2rem',
+        overflowY: 'auto',
+        boxShadow: '-4px 0 16px rgba(0,0,0,0.05)',
+      }}>
+        <h2 style={{ fontSize: '1.25rem', fontWeight: 600, color: '#333', marginBottom: '1rem' }}>Mes fichiers</h2>
+
+        {/* Switch tabs */}
+        <div style={{ display: 'inline-flex', background: '#F5F5F5', borderRadius: '8px', padding: '3px', gap: '2px', marginBottom: '1.25rem' }}>
+          <button style={tabStyle(filter === 'all')} onClick={() => setFilter('all')}>Tous</button>
+          <button style={tabStyle(filter === 'active')} onClick={() => setFilter('active')}>Actifs</button>
+          <button style={tabStyle(filter === 'expired')} onClick={() => setFilter('expired')}>Expiré</button>
+        </div>
 
         {linkUrl && (
-          <div style={{
-            background: 'rgba(255,255,255,0.95)',
-            padding: '1rem',
-            borderRadius: '8px',
-            marginBottom: '1rem',
-            wordBreak: 'break-all',
-            fontSize: '0.9rem',
-            color: '#2a7',
-          }}>
-            ✅ Lien copié ! <a href={linkUrl} target="_blank" rel="noreferrer" style={{ color: '#D4785C' }}>{linkUrl}</a>
+          <div style={{ background: '#E8F5E9', color: '#2E7D32', padding: '0.7rem 1rem', borderRadius: '8px', marginBottom: '1rem', fontSize: '0.85rem', fontWeight: 500, wordBreak: 'break-all' }}>
+            ✅ Lien copié : {linkUrl}
           </div>
         )}
 
         {loading ? (
-          <p style={{ color: 'rgba(255,255,255,0.8)' }}>Chargement...</p>
+          <p style={{ color: '#999', fontSize: '0.9rem' }}>Chargement…</p>
         ) : files.length === 0 ? (
-          <div style={{
-            background: 'rgba(255,255,255,0.95)',
-            borderRadius: '12px',
-            padding: '3rem',
-            textAlign: 'center',
-            color: '#888',
-          }}>
-            <p>Aucun fichier pour le moment.</p>
-            <a href="/upload" style={{ color: '#D4785C', textDecoration: 'none', fontWeight: 500 }}>
-              Téléverser votre premier fichier
-            </a>
-          </div>
+          <p style={{ color: '#999', fontSize: '0.9rem' }}>Aucun fichier. <Link to="/upload" style={{ color: '#D4785C' }}>Téléverser</Link></p>
         ) : (
-          <div style={{
-            background: 'rgba(255,255,255,0.95)',
-            borderRadius: '12px',
-            overflow: 'hidden',
-            boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
-          }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr style={{ borderBottom: '2px solid #eee', textAlign: 'left' }}>
-                  <th style={{ padding: '0.8rem 1rem', color: '#555', fontWeight: 600, fontSize: '0.85rem' }}>Nom</th>
-                  <th style={{ padding: '0.8rem 0.5rem', color: '#555', fontWeight: 600, fontSize: '0.85rem' }}>Type</th>
-                  <th style={{ padding: '0.8rem 0.5rem', color: '#555', fontWeight: 600, fontSize: '0.85rem' }}>Taille</th>
-                  <th style={{ padding: '0.8rem 0.5rem', color: '#555', fontWeight: 600, fontSize: '0.85rem' }}>Date</th>
-                  <th style={{ padding: '0.8rem 0.5rem', color: '#555', fontWeight: 600, fontSize: '0.85rem' }}>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {files.map(f => (
-                  <tr key={f.id} style={{ borderBottom: '1px solid #f0f0f0' }}>
-                    <td style={{ padding: '0.7rem 1rem', fontSize: '0.9rem' }}>{f.originalName}</td>
-                    <td style={{ padding: '0.7rem 0.5rem', fontSize: '0.85rem', color: '#777' }}>{f.mimeType}</td>
-                    <td style={{ padding: '0.7rem 0.5rem', fontSize: '0.85rem', color: '#777' }}>{formatSize(Number(f.sizeBytes))}</td>
-                    <td style={{ padding: '0.7rem 0.5rem', fontSize: '0.85rem', color: '#777' }}>{new Date(f.createdAt).toLocaleDateString()}</td>
-                    <td style={{ padding: '0.7rem 0.5rem', display: 'flex', gap: '0.4rem' }}>
-                      <button onClick={() => generateLink(f.id)} style={{
-                        background: '#D4785C', color: '#fff', border: 'none',
-                        padding: '0.35rem 0.8rem', borderRadius: '6px', cursor: 'pointer',
-                        fontSize: '0.8rem', fontWeight: 500,
-                      }}>🔗 Lien</button>
-                      <button onClick={() => deleteFile(f.id)} style={{
-                        background: '#e94560', color: '#fff', border: 'none',
-                        padding: '0.35rem 0.8rem', borderRadius: '6px', cursor: 'pointer',
-                        fontSize: '0.8rem', fontWeight: 500,
-                      }}>🗑️ Supprimer</button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          files.map(f => (
+            <div key={f.id} style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              padding: '0.75rem 0', borderBottom: '1px solid #F0F0F0',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flex: 1, minWidth: 0 }}>
+                <div style={{
+                  width: '32px', height: '32px', borderRadius: '6px',
+                  background: '#E8A4A0', display: 'flex',
+                  alignItems: 'center', justifyContent: 'center',
+                  fontSize: '0.65rem', fontWeight: 700, color: '#C0654A', flexShrink: 0,
+                }}>{getExt(f.originalName)}</div>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontSize: '0.875rem', fontWeight: 500, color: '#333', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{f.originalName}</div>
+                  <div style={{ fontSize: '0.75rem', color: '#999' }}>{formatSize(f.sizeBytes)}</div>
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: '0.4rem', flexShrink: 0 }}>
+                <button onClick={() => generateLink(f.id)} style={{
+                  padding: '0.3rem 0.6rem', border: '1px solid #D4785C', borderRadius: '6px',
+                  background: 'transparent', color: '#D4785C', fontSize: '0.75rem', fontWeight: 600,
+                  cursor: 'pointer', fontFamily: "'Inter', sans-serif",
+                }}>Lien</button>
+                <button onClick={() => deleteFile(f.id)} style={{
+                  padding: '0.3rem 0.6rem', border: '1px solid #F44336', borderRadius: '6px',
+                  background: 'transparent', color: '#F44336', fontSize: '0.75rem', fontWeight: 600,
+                  cursor: 'pointer', fontFamily: "'Inter', sans-serif",
+                }}>Supprimer</button>
+              </div>
+            </div>
+          ))
         )}
       </div>
-
-      <footer style={{ textAlign: 'center', marginTop: '3rem', color: 'rgba(255,255,255,0.8)', fontSize: '0.8rem' }}>
-        Copyright DataShare® 2025
-      </footer>
     </div>
   );
 }

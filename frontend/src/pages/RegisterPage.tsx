@@ -2,21 +2,15 @@ import { useState, FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../api/client';
 
-
 export default function RegisterPage() {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [confirm, setConfirm] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (password !== confirm) {
-      setError('Les mots de passe ne correspondent pas');
-      return;
-    }
     setError('');
     setLoading(true);
     try {
@@ -36,7 +30,7 @@ export default function RegisterPage() {
       flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'center',
-      padding: '2rem',
+      padding: '5rem 1.5rem 2rem',
     }}>
       <div style={{
         background: 'rgba(255,255,255,0.95)',
@@ -44,7 +38,7 @@ export default function RegisterPage() {
         padding: '2.5rem',
         width: '100%',
         maxWidth: '400px',
-        boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+        boxShadow: '0 8px 32px rgba(0,0,0,0.08)',
       }}>
         <h1 style={{
           textAlign: 'center',
@@ -56,18 +50,19 @@ export default function RegisterPage() {
 
         {error && (
           <div style={{
-            background: '#fee',
-            color: '#c00',
-            padding: '0.8rem',
-            borderRadius: 8,
-            marginBottom: '1rem',
-            fontSize: '0.9rem',
+            background: '#FFEBEE',
+            color: '#C62828',
+            padding: '0.7rem 1rem',
+            borderRadius: '8px',
+            marginBottom: '1.25rem',
+            fontSize: '0.85rem',
+            fontWeight: 500,
           }}>{error}</div>
         )}
 
         <form onSubmit={handleSubmit}>
-          <div style={{ marginBottom: '1.2rem' }}>
-            <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.9rem', color: '#555', fontWeight: 500 }}>
+          <div style={{ marginBottom: '1.25rem' }}>
+            <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.875rem', color: '#666', fontWeight: 500 }}>
               Email
             </label>
             <input
@@ -78,62 +73,42 @@ export default function RegisterPage() {
               required
               style={{
                 width: '100%',
-                padding: '0.75rem',
-                border: '1px solid #ddd',
+                padding: '0.7rem 0.9rem',
+                border: '1px solid #E0E0E0',
                 borderRadius: '8px',
-                fontSize: '0.95rem',
+                fontSize: '0.9rem',
                 outline: 'none',
                 boxSizing: 'border-box',
+                fontFamily: "'Inter', sans-serif",
               }}
             />
           </div>
 
-          <div style={{ marginBottom: '1.2rem' }}>
-            <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.9rem', color: '#555', fontWeight: 500 }}>
+          <div style={{ marginBottom: '1.25rem' }}>
+            <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.875rem', color: '#666', fontWeight: 500 }}>
               Mot de passe
             </label>
             <input
               type="password"
-              placeholder="Saisissez votre mot de passe..."
+              placeholder="Minimum 8 caractères, 1 majuscule, 1 spécial"
               value={password}
               onChange={e => setPassword(e.target.value)}
               required
               style={{
                 width: '100%',
-                padding: '0.75rem',
-                border: '1px solid #ddd',
+                padding: '0.7rem 0.9rem',
+                border: '1px solid #E0E0E0',
                 borderRadius: '8px',
-                fontSize: '0.95rem',
+                fontSize: '0.9rem',
                 outline: 'none',
                 boxSizing: 'border-box',
+                fontFamily: "'Inter', sans-serif",
               }}
             />
           </div>
 
-          <div style={{ marginBottom: '1.2rem' }}>
-            <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.9rem', color: '#555', fontWeight: 500 }}>
-              Confirmer le mot de passe
-            </label>
-            <input
-              type="password"
-              placeholder="Confirmez votre mot de passe..."
-              value={confirm}
-              onChange={e => setConfirm(e.target.value)}
-              required
-              style={{
-                width: '100%',
-                padding: '0.75rem',
-                border: '1px solid #ddd',
-                borderRadius: '8px',
-                fontSize: '0.95rem',
-                outline: 'none',
-                boxSizing: 'border-box',
-              }}
-            />
-          </div>
-
-          <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
-            <Link to="/login" style={{ color: '#D4785C', fontSize: '0.9rem', textDecoration: 'none' }}>
+          <div style={{ textAlign: 'center', marginBottom: '1.25rem' }}>
+            <Link to="/login" style={{ color: '#D4785C', fontSize: '0.875rem', textDecoration: 'none', fontWeight: 500 }}>
               Déjà un compte ? Se connecter
             </Link>
           </div>
@@ -143,23 +118,24 @@ export default function RegisterPage() {
             disabled={loading}
             style={{
               width: '100%',
-              padding: '0.75rem',
+              padding: '0.7rem',
               background: '#D4785C',
               color: 'white',
-              border: 'none',
+              border: '2px solid #D4785C',
               borderRadius: '8px',
-              fontSize: '1rem',
+              fontSize: '0.9rem',
               fontWeight: 600,
               cursor: loading ? 'not-allowed' : 'pointer',
-              opacity: loading ? 0.7 : 1,
+              opacity: loading ? 0.6 : 1,
+              fontFamily: "'Inter', sans-serif",
             }}
           >
-            {loading ? 'Inscription...' : 'Créer mon compte'}
+            {loading ? 'Inscription...' : 'Créer un compte'}
           </button>
         </form>
       </div>
 
-      <footer style={{ marginTop: '2rem', color: 'rgba(255,255,255,0.8)', fontSize: '0.8rem' }}>
+      <footer style={{ marginTop: '2rem', color: 'rgba(255,255,255,0.7)', fontSize: '0.75rem' }}>
         Copyright DataShare® 2025
       </footer>
     </div>
