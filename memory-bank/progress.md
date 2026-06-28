@@ -91,7 +91,21 @@
 - `README.md` mis à jour — commandes E2E/k6, initialisation Prisma BDD
 - **GitHub :** Issue #38 → PR #39 (squash merged)
 
+### Étape 16 — Corrections UI/UX & Sécurité ✅
+- Expiration liens de téléchargement : 86400s (1j) → 604800s (7j) par défaut
+- Password policy : ajout `@Matches` (uppercase + lowercase + special char)
+- Police Inter (Google Fonts) importée et appliquée globalement
+- Gradient global sur `body` au lieu de gradients redondants par page
+- Nettoyage : suppression `gradientBg` dans 5 pages (Login, Register, Dashboard, Upload, Download)
+- **GitHub :** Issue #49 → PR #50 (squash merged)
+
 ## Statut Actuel
+
+### v0.9.0 — Corrections UI/UX & Sécurité (2026-06-28)
+- Expiration 7 jours par défaut
+- Password policy renforcée (8 chars + maj + min + spécial)
+- Police Inter (Google Fonts)
+- Gradient global (body) + Navbar glassmorphism
 
 ### v0.8.0 — Documentation Finale & Présentation (2026-06-18)
 - Documentation technique complète (modèle OC)
@@ -129,6 +143,7 @@
 | Documentation | ✅ **14 fichiers doc** + memory-bank |
 | Documentation Qualité | ✅ TESTING, SECURITY, PERF, MAINTENANCE |
 | Documentation Finale | ✅ Documentation technique (modèle OC) + Présentation |
+| UI/UX & Sécurité | ✅ Font Inter, gradient global, password policy, expiration 7j |
 
 ## Ce Qui Reste
 
