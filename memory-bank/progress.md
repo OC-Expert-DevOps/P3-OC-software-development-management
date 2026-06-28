@@ -99,13 +99,23 @@
 - Nettoyage : suppression `gradientBg` dans 5 pages (Login, Register, Dashboard, Upload, Download)
 - **GitHub :** Issue #49 → PR #50 (squash merged)
 
+### Étape 17 — Refonte Frontend Pixel-Perfect Figma ✅
+- Navbar : logo DataShare texte + boutons Se connecter / Mon espace / Se déconnecter (outlined)
+- LoginPage : carte blanche centrée, formulaire Connexion, lien Créer un compte, bouton coral
+- RegisterPage : même layout, formulaire Créer un compte
+- DashboardPage : layout split — CTA upload gauche + panneau fichiers droit avec tabs Tous/Actifs/Expiré
+- UploadPage : zone drag-drop sur gradient + carte de confirmation upload
+- DownloadPage : carte avec callout status vert + détails fichier + bouton Télécharger
+- Design system : gradient coral #D4785C, font Inter, cartes blanches border-radius 16px, responsive iPhone
+- **GitHub :** Issue #51 → PR #52 (squash merged)
+
 ## Statut Actuel
 
-### v0.9.0 — Corrections UI/UX & Sécurité (2026-06-28)
-- Expiration 7 jours par défaut
-- Password policy renforcée (8 chars + maj + min + spécial)
-- Police Inter (Google Fonts)
-- Gradient global (body) + Navbar glassmorphism
+### v1.0.0 — Refonte Frontend Figma (2026-06-28)
+- Toutes les pages refondue selon maquettes Figma DataShare
+- Design system cohérent : coral #D4785C, Inter, gradient, cartes blanches
+- Layout split pour Dashboard (desktop)
+- Responsive iPhone (≤ 430px)
 
 ### v0.8.0 — Documentation Finale & Présentation (2026-06-18)
 - Documentation technique complète (modèle OC)

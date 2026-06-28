@@ -1,31 +1,30 @@
-# Contexte Actif — DataShare
+# Active Context
 
-## Focus Actuel
+## Current Focus
+Frontend Figma redesign completed and merged (PR #52, Issue #51).
 
-**Étape 6 TERMINÉE** — Documentation Finale & Présentation (Issue #38, PR #39)
+## Recent Changes (2026-06-28)
 
-### Ce qui a été fait
-- Création de `docs/technical-documentation.md` — Modèle OC complet (8 sections)
-- Création de `docs/presentation.md` — Diapositives de soutenance (10 diapositives)
-- Mise à jour de `docs/performance/PERF.md` — Budget bundle frontend, métriques navigateur
-- Mise à jour de `docs/maintenance/MAINTENANCE.md` — Fréquence/risques des dépendances
-- Mise à jour de `README.md` — Commandes E2E/k6, initialisation Prisma BDD
+### feat: refonte frontend pixel-perfect Figma (PR #52)
+- **Navbar.tsx**: Simplified — "DataShare" text logo + "Se connecter" / "Mon espace" / "Se déconnecter" buttons with outlined style
+- **LoginPage.tsx**: Centered white card on gradient, "Connexion" title, email/password inputs, "Créer un compte" link, coral submit button
+- **RegisterPage.tsx**: Same card layout, "Créer un compte" title, email/password inputs
+- **DashboardPage.tsx**: Split layout — left side gradient with upload CTA ("Tu veux partager un fichier?" + cloud icon), right white panel with "Mes fichiers" title, switch tabs (Tous/Actifs/Expiré), file list with extension badges
+- **UploadPage.tsx**: Drag-drop zone on gradient, file confirmation card with cancel/upload buttons
+- **DownloadPage.tsx**: White card with "Télécharger un fichier" title, green callout for availability, file details, coral download button
 
-### Statut du Projet : v0.8.0 — Tous les livrables terminés
+### Design System (from Figma)
+- **Gradient**: `linear-gradient(135deg, #D4785C, #E8A4A0, #F0C4B8)`
+- **Primary color**: `#D4785C` (coral/salmon)
+- **Font**: Inter (Google Fonts)
+- **Cards**: White (`rgba(255,255,255,0.95)`), `border-radius: 16px`, shadow
+- **Buttons**: Coral filled primary, outlined secondary (dark border)
+- **Callouts**: Green (#E8F5E9/#2E7D32 success), Red (#FFEBEE/#C62828 error)
+- **Switch tabs**: #F5F5F5 background, coral active state
+- **Footer**: "Copyright DataShare® 2025"
 
-| Domaine | Statut |
-|---------|--------|
-| Architecture | ✅ Terminée |
-| Infrastructure | ✅ Docker Compose (5 services) |
-| API Backend | ✅ 14 routes |
-| Frontend | ✅ 5 pages |
-| Tests Unitaires | ✅ 68 tests, 72.82% de couverture |
-| Tests E2E | ✅ 21/21 réussis |
-| Documentation Qualité | ✅ TESTING, SECURITY, PERF, MAINTENANCE |
-| Documentation Technique | ✅ Modèle OC (8 sections) |
-| Présentation | ✅ 10 diapositives |
-
-## Problèmes Connus
-- TLS auto-signé en développement
-- Pas de limitation de débit (post-MVP)
-- Pas de vérification d'email (post-MVP)
+## Next Steps
+- Verify responsive behavior on iPhone (breakpoint 430px)
+- Test all pages with Docker Compose running
+- Consider adding CSS file for shared styles (currently inline)
+- Update e2e tests if selectors changed
