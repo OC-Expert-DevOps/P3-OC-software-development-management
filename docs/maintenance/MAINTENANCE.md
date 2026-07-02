@@ -6,7 +6,57 @@ Ce document décrit les procédures de maintenance de la plateforme DataShare, i
 
 ---
 
-## 1. Gestion des dépendances
+## 1. Automatic Cleanup (Cron Job)
+
+The `CleanupService` (`backend/src/cleanup/cleanup.service.ts`) runs **every hour** via `@nestjs/schedule` and performs three cleanup tasks:
+
+### What gets cleaned
+
+| Target | Condition | Action | Retention |
+|--------|-----------|--------|-----------|
+| **Expired files** | `expiresAt < now` AND `isDeleted = false` | Delete from MinIO + soft-delete in DB + invalidate download tokens | Immediate on expiry |
+| **Download tokens** | `expiresAt < now - 24h` | Hard-delete from DB | 24h after expiry |
+| **Refresh tokens** | `expiresAt < now - 24h` OR `isRevoked = true` (created > 24h ago) | Hard-delete from DB | 24h after expiry/revocation |
+
+### Default expiration times
+
+| Resource | Default TTL | Configuration |
+|----------|-------------|---------------|
+| Authenticated file | 7 days | `FILE_EXPIRY_DAYS_DEFAULT` env var, or `expiryDays` param at upload |
+| Anonymous file | 1 day | Hardcoded in `uploadAnonymous()` |
+| Download link | 7 days (604800s) | `DOWNLOAD_LINK_DEFAULT_TTL` env var, or `ttlSeconds` param at creation |
+| JWT access token | 15 minutes | `JWT_EXPIRES_IN` env var |
+| Refresh token | 7 days | `REFRESH_TOKEN_TTL` env var |
+
+### Cleanup flow
+
+```
+Every hour (EVERY_HOUR cron expression):
+  1. Find files where expiresAt < NOW and isDeleted = false
+     → Delete object from MinIO
+     → Set isDeleted = true in PostgreSQL
+     → Invalidate associated download tokens (set expiresAt = now)
+  2. Hard-delete download tokens expired > 24 hours ago
+  3. Hard-delete refresh tokens expired/revoked > 24 hours ago
+```
+
+### Logs
+
+The cleanup service logs its activity to stdout (visible via `docker logs datashare-backend`):
+
+```
+[CleanupService] Starting scheduled cleanup…
+[CleanupService] Purged expired file: report.pdf (uuid-xxx)
+[CleanupService] Cleanup complete — files: 2, download tokens: 5, refresh tokens: 3
+```
+
+### Manual trigger
+
+There is no HTTP endpoint to trigger cleanup manually. To force a cleanup, restart the backend container — the cron will fire at the next hour mark.
+
+---
+
+## 2. Gestion des dépendances
 
 ### Backend (NestJS)
 

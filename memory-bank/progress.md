@@ -109,7 +109,23 @@
 - Design system : gradient coral #D4785C, font Inter, cartes blanches border-radius 16px, responsive iPhone
 - **GitHub :** Issue #51 → PR #52 (squash merged)
 
+### Étape 18 — API complète, Swagger, Cron Cleanup (v0.9.0) ✅
+- 7 routes manquantes ajoutées au FilesController (US06-US10)
+- 7 méthodes ajoutées au FilesService
+- Bug fix : `GET /files/stats` 500 (route ordering)
+- Swagger : `.addServer('/api')` + `@ApiBearerAuth()` sur 14 routes + `@ApiTags`
+- CleanupService : cron horaire pour purger fichiers/tokens expirés (MinIO + BDD)
+- Documentation : MAINTENANCE.md (section cleanup), systemPatterns.md, CHANGELOG.md
+- API test report : 26/26 scénarios curl passants
+- **Résultat : 17 routes API, 26/26 tests, cleanup automatique, Swagger opérationnel**
+
 ## Statut Actuel
+
+### v0.9.0 — API complète + Swagger + Cron Cleanup (2026-07-02)
+- 17 routes API, 26/26 tests passants
+- Swagger UI fonctionnel via nginx (`https://localhost/api/docs`)
+- Cron de nettoyage horaire (fichiers expirés, tokens, refresh tokens)
+- Documentation complète mise à jour
 
 ### v1.0.0 — Refonte Frontend Figma (2026-06-28)
 - Toutes les pages refondue selon maquettes Figma DataShare
@@ -146,7 +162,7 @@
 |---------|--------|
 | Architecture | ✅ Terminée |
 | Infrastructure | ✅ Terminée |
-| API Backend | ✅ 14 routes, toutes fonctionnelles |
+| API Backend | ✅ **21 routes, 26/26 tests API** |
 | Frontend | ✅ 5 pages, flux d'authentification fonctionnel |
 | Tests Unitaires | ✅ **68 tests, 72.82% de couverture** |
 | Tests E2E | ✅ **21/21 réussis** |

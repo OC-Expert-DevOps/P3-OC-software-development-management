@@ -1,14 +1,15 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { HttpStatus } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { DownloadController } from './download.controller';
 import { DownloadService } from './download.service';
+import { Readable } from 'stream';
 
 const mockDownloadService = {
   createLink: jest.fn(),
   findByFile: jest.fn(),
   revokeLink: jest.fn(),
-  useToken: jest.fn(),
+  getTokenInfo: jest.fn(),
+  streamFile: jest.fn(),
 };
 
 const mockConfig = { get: jest.fn(() => 'test-secret-32-chars-long!!!!!!') };
@@ -65,15 +66,65 @@ describe('DownloadController', () => {
     });
   });
 
-  describe('useToken', () => {
-    it('should redirect to presigned URL', async () => {
-      const res = { redirect: jest.fn() } as any;
-      mockDownloadService.useToken.mockResolvedValue('https://minio/presigned');
+  describe('getTokenInfo', () => {
+    it('should return file info for a valid token', async () => {
+      const info = { originalName: 'test.pdf', sizeBytes: '1024', hasPassword: false };
+      mockDownloadService.getTokenInfo.mockResolvedValue(info);
 
-      await controller.useToken('tok-1', res);
+      const result = await controller.getTokenInfo('tok-1');
 
-      expect(mockDownloadService.useToken).toHaveBeenCalledWith('tok-1');
-      expect(res.redirect).toHaveBeenCalledWith(HttpStatus.FOUND, 'https://minio/presigned');
+      expect(mockDownloadService.getTokenInfo).toHaveBeenCalledWith('tok-1');
+      expect(result.originalName).toBe('test.pdf');
+      expect(result.hasPassword).toBe(false);
+    });
+  });
+
+  describe('downloadFile', () => {
+    it('should stream file through backend with correct headers', async () => {
+      const readable = new Readable({ read() { this.push(null); } });
+      mockDownloadService.streamFile.mockResolvedValue({
+        stream: readable,
+        contentType: 'application/pdf',
+        contentLength: 1024,
+        originalName: 'test.pdf',
+      });
+
+      const res = {
+        set: jest.fn(),
+        on: jest.fn(),
+        once: jest.fn(),
+        emit: jest.fn(),
+        write: jest.fn(),
+        end: jest.fn(),
+      } as any;
+      // Mock pipe
+      readable.pipe = jest.fn();
+
+      await controller.downloadFile('tok-1', undefined, res);
+
+      expect(mockDownloadService.streamFile).toHaveBeenCalledWith('tok-1', undefined);
+      expect(res.set).toHaveBeenCalledWith(expect.objectContaining({
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': 'attachment; filename="test.pdf"',
+      }));
+      expect(readable.pipe).toHaveBeenCalledWith(res);
+    });
+
+    it('should pass password to streamFile when provided', async () => {
+      const readable = new Readable({ read() { this.push(null); } });
+      readable.pipe = jest.fn();
+      mockDownloadService.streamFile.mockResolvedValue({
+        stream: readable,
+        contentType: 'text/plain',
+        contentLength: 100,
+        originalName: 'secret.txt',
+      });
+
+      const res = { set: jest.fn() } as any;
+
+      await controller.downloadFile('tok-1', 'my-password', res);
+
+      expect(mockDownloadService.streamFile).toHaveBeenCalledWith('tok-1', 'my-password');
     });
   });
 });

@@ -30,7 +30,6 @@ export class MinioService implements OnModuleInit {
 
     const protocol = useSsl ? 'https' : 'http';
     const url = `${protocol}://${endpoint}:${port}`;
-
     this.client = new S3Client({
       endpoint: url,
       region: 'us-east-1',
@@ -91,10 +90,25 @@ export class MinioService implements OnModuleInit {
   async getPresignedUrl(key: string, ttlSeconds = 300): Promise<string> {
     try {
       const cmd = new GetObjectCommand({ Bucket: this.bucket, Key: key });
-      const url = await getSignedUrl(this.client, cmd, { expiresIn: ttlSeconds });
-      return url;
+      return await getSignedUrl(this.client, cmd, { expiresIn: ttlSeconds });
     } catch (err) {
       this.logger.error(`Failed to create presigned url for ${key}`, err as any);
+      throw err;
+    }
+  }
+
+  /** Stream a file directly from MinIO (used for proxied downloads). */
+  async getFileStream(key: string): Promise<{ stream: NodeJS.ReadableStream; contentType?: string; contentLength?: number }> {
+    try {
+      const cmd = new GetObjectCommand({ Bucket: this.bucket, Key: key });
+      const response = await this.client.send(cmd);
+      return {
+        stream: response.Body as NodeJS.ReadableStream,
+        contentType: response.ContentType,
+        contentLength: response.ContentLength,
+      };
+    } catch (err) {
+      this.logger.error(`Failed to stream file ${key}`, err as any);
       throw err;
     }
   }
