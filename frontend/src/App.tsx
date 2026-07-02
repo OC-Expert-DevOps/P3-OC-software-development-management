@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import PrivateRoute from './components/PrivateRoute';
 import LoginPage from './pages/LoginPage';
@@ -8,9 +8,12 @@ import UploadPage from './pages/UploadPage';
 import DownloadPage from './pages/DownloadPage';
 
 function App() {
+  const location = useLocation();
+  const hideNavbar = location.pathname === '/dashboard';
+
   return (
     <>
-      <Navbar />
+      {!hideNavbar && <Navbar />}
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />

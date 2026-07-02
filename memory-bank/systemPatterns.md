@@ -132,3 +132,17 @@
 - **Contexte** : Le cahier des charges indique que la suppression est irréversible et physique.
 - **Impact** : L'objet est supprimé de MinIO, `is_deleted=true` en BDD, tous les jetons de téléchargement invalidés.
 - **Implémentation** : DELETE objet MinIO → UPDATE File → UPDATE DownloadToken `expires_at=NOW()`
+
+## Automatic Cleanup (Cron Job)
+
+**Décision** : Cron job toutes les heures pour purger les données expirées (BDD + MinIO)
+
+- **Contexte** : Les fichiers, tokens de téléchargement et refresh tokens ont un `expiresAt` mais rien ne les supprimait automatiquement. Les données expirées s'accumulaient indéfiniment.
+- **Impact** : Le stockage MinIO et la base PostgreSQL sont nettoyés automatiquement. Aucune intervention manuelle requise.
+- **Implémentation** :
+  - `CleanupService` utilise `@nestjs/schedule` (`@Cron(CronExpression.EVERY_HOUR)`)
+  - Fichiers expirés : suppression MinIO + soft-delete BDD + invalidation tokens
+  - Download tokens expirés > 24h : hard-delete BDD
+  - Refresh tokens expirés/révoqués > 24h : hard-delete BDD
+  - Rétention de 24h post-expiration pour audit/debugging
+- **Alternatives rejetées** : Lifecycle policy MinIO (ne gère pas la cohérence BDD), cleanup à la lecture (ne libère pas le stockage proactivement)

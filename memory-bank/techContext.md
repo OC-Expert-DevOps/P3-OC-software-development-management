@@ -10,14 +10,14 @@
 | ORM | Prisma | 5.x | ORM type-safe, migrations, schéma |
 | Stockage | MinIO | latest | Stockage objet compatible S3 |
 | Authentification | JWT (jsonwebtoken) | — | Jetons d'accès (15min) + jetons de rafraîchissement (7j) |
-| Hachage de mot de passe | bcrypt | — | Salt rounds : 10 |
+| Hachage de mot de passe | bcrypt | — | Salt rounds : 12 |
 | Proxy inverse | Nginx | alpine | Terminaison HTTPS, routage |
 | Déploiement | Docker Compose | v2 | Orchestration de démo locale (5 services) |
-| Tests (unitaires) | Jest | — | Natif NestJS, tests unitaires backend |
-| Tests (E2E) | Cypress | — | Scénarios de bout en bout (requis par le cahier des charges) |
+| Tests (unitaires) | Jest | — | Natif NestJS, 68 tests, 72.82% couverture |
+| Tests (E2E) | Playwright | 1.x | 21 scénarios de bout en bout (US01-US10) |
 | Lint/Formatage | ESLint + Prettier | — | Qualité du code TypeScript |
-| Planificateur | @nestjs/schedule (cron) | — | Expiration automatique des fichiers (US10) |
-| Documentation API | @nestjs/swagger | — | Swagger UI sur /api/docs |
+| Planificateur | @nestjs/schedule (cron) | 4.x | Nettoyage automatique horaire (fichiers expirés, tokens) |
+| Documentation API | @nestjs/swagger | 7.x | Swagger UI sur /api/docs avec @ApiBearerAuth |
 
 ## Architecture Docker Compose
 
@@ -88,7 +88,7 @@ TLS : Certificats auto-signés (`infra/nginx/certs/`, gitignored).
   - Front-end : doit être Angular / React / VueJS → **React choisi**
   - Base de données : doit être PostgreSQL ou MongoDB → **PostgreSQL choisi**
   - Stockage : doit être système de fichiers local ou AWS S3 → **MinIO (compatible S3) choisi**
-- **Tests** : Jest pour les tests unitaires (objectif 70% de couverture), Cypress pour E2E (minimum 2-3 scénarios critiques)
+- **Tests** : Jest pour les tests unitaires (objectif 70% de couverture), Playwright pour E2E (21 scénarios US01-US10)
 - **Git** : commits conventionnels, protection de branche sur `main`
 
 ## Environnement de Développement

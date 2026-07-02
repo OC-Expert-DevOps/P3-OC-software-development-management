@@ -8,23 +8,58 @@ export default function DownloadPage() {
   const [error, setError] = useState('');
   const [fileName, setFileName] = useState('');
   const [fileSize, setFileSize] = useState('');
+  const [hasPassword, setHasPassword] = useState(false);
+  const [password, setPassword] = useState('');
+  const [downloading, setDownloading] = useState(false);
 
   useEffect(() => {
     const check = async () => {
       try {
-        const { data } = await api.get(`/download/${token}`, { maxRedirects: 0, validateStatus: () => true });
-        if (data?.originalName) setFileName(data.originalName);
-        if (data?.sizeBytes) setFileSize(`${(Number(data.sizeBytes) / 1048576).toFixed(2)} MB`);
+        const { data } = await api.get(`/download/${token}/info`);
+        setFileName(data.originalName || '');
+        if (data.sizeBytes) setFileSize(`${(Number(data.sizeBytes) / 1048576).toFixed(2)} MB`);
+        setHasPassword(data.hasPassword === true);
         setStatus('ready');
-      } catch {
-        setStatus('ready');
+      } catch (err: any) {
+        const msg = err.response?.data?.message || 'Ce lien est invalide ou expiré.';
+        setError(msg);
+        setStatus('error');
       }
     };
     check();
   }, [token]);
 
-  const handleDownload = () => {
-    window.location.href = `/api/download/${token}`;
+  const handleDownload = async () => {
+    setError('');
+    setDownloading(true);
+    try {
+      const params = hasPassword && password ? `?password=${encodeURIComponent(password)}` : '';
+      // Use fetch to get the file as a blob (handles auth errors properly)
+      const resp = await fetch(`/api/download/${token}${params}`);
+
+      if (!resp.ok) {
+        const body = await resp.json().catch(() => null);
+        const msg = body?.message || (resp.status === 401 ? 'Mot de passe incorrect' : 'Téléchargement échoué');
+        setError(msg);
+        setDownloading(false);
+        return;
+      }
+
+      // Trigger browser download from blob
+      const blob = await resp.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName || 'download';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch {
+      setError('Erreur lors du téléchargement');
+    } finally {
+      setDownloading(false);
+    }
   };
 
   return (
@@ -79,19 +114,55 @@ export default function DownloadPage() {
               </div>
             )}
 
-            <button onClick={handleDownload} style={{
-              width: '100%',
-              padding: '0.7rem',
-              background: '#D4785C',
-              color: '#fff',
-              border: '2px solid #D4785C',
-              borderRadius: '8px',
-              fontSize: '0.9rem',
-              fontWeight: 600,
-              cursor: 'pointer',
-              fontFamily: "'Inter', sans-serif",
-            }}>
-              Télécharger ↓
+            {/* Password field if file is protected */}
+            {hasPassword && (
+              <div style={{ marginBottom: '1.25rem' }}>
+                <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.875rem', color: '#666', fontWeight: 500 }}>
+                  🔒 Ce fichier est protégé par un mot de passe
+                </label>
+                <input
+                  type="password"
+                  placeholder="Saisissez le mot de passe…"
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '0.7rem 0.9rem',
+                    border: '1px solid #E0E0E0',
+                    borderRadius: '8px',
+                    fontSize: '0.9rem',
+                    outline: 'none',
+                    boxSizing: 'border-box',
+                    fontFamily: "'Inter', sans-serif",
+                  }}
+                />
+              </div>
+            )}
+
+            {/* Error message (e.g. wrong password) */}
+            {error && (
+              <div style={{ background: '#FFEBEE', color: '#C62828', padding: '0.7rem 1rem', borderRadius: '8px', marginBottom: '1rem', fontSize: '0.85rem', fontWeight: 500 }}>
+                ❌ {error}
+              </div>
+            )}
+
+            <button
+              onClick={handleDownload}
+              disabled={downloading || (hasPassword && !password)}
+              style={{
+                width: '100%',
+                padding: '0.7rem',
+                background: '#D4785C',
+                color: '#fff',
+                border: '2px solid #D4785C',
+                borderRadius: '8px',
+                fontSize: '0.9rem',
+                fontWeight: 600,
+                cursor: downloading || (hasPassword && !password) ? 'not-allowed' : 'pointer',
+                opacity: downloading || (hasPassword && !password) ? 0.6 : 1,
+                fontFamily: "'Inter', sans-serif",
+              }}>
+              {downloading ? 'Téléchargement…' : 'Télécharger ↓'}
             </button>
           </>
         )}

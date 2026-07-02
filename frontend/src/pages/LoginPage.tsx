@@ -30,6 +30,7 @@ export default function LoginPage() {
       alignItems: 'center',
       justifyContent: 'center',
       padding: '5rem 1.5rem 2rem',
+      position: 'relative',
     }}>
       <div style={{
         background: 'rgba(255,255,255,0.95)',
@@ -118,9 +119,9 @@ export default function LoginPage() {
             style={{
               width: '100%',
               padding: '0.7rem',
-              background: '#D4785C',
-              color: 'white',
-              border: '2px solid #D4785C',
+              background: '#F5EBE6',
+              color: '#D4785C',
+              border: '2px solid #F0D6CC',
               borderRadius: '8px',
               fontSize: '0.9rem',
               fontWeight: 600,
@@ -134,7 +135,13 @@ export default function LoginPage() {
         </form>
       </div>
 
-      <footer style={{ marginTop: '2rem', color: 'rgba(255,255,255,0.7)', fontSize: '0.75rem' }}>
+      <footer style={{
+        position: 'fixed',
+        bottom: '1.5rem',
+        left: '2rem',
+        color: 'rgba(255,255,255,0.7)',
+        fontSize: '0.75rem',
+      }}>
         Copyright DataShare® 2025
       </footer>
     </div>

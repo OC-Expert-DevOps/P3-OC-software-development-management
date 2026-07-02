@@ -36,6 +36,7 @@ async function bootstrap() {
     .setDescription('Secure file transfer platform API')
     .setVersion('0.1.0')
     .addBearerAuth()
+    .addServer('/api', 'Behind nginx reverse-proxy')
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('docs', app, document);

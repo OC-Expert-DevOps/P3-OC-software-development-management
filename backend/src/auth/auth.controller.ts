@@ -8,7 +8,7 @@ import {
   Res,
   UseGuards,
 } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
@@ -51,6 +51,7 @@ export class AuthController {
     });
   }
 
+  @ApiBearerAuth()
   @Post('logout')
   @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(JwtGuard)

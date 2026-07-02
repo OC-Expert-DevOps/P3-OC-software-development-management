@@ -5,6 +5,48 @@ Tous les changements notables de ce projet seront documentés dans ce fichier.
 Le format suit [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 Le versionnement suit [Semantic Versioning](https://semver.org/).
 
+## [0.9.0] - 2026-07-02 — API complète, Swagger, Cron Cleanup
+
+### Added
+
+**Backend :**
+- `CleanupService` (`backend/src/cleanup/`) — Cron job horaire (`@nestjs/schedule`) pour purger automatiquement :
+  - Fichiers expirés : suppression MinIO + soft-delete BDD + invalidation tokens
+  - Download tokens expirés > 24h : hard-delete BDD
+  - Refresh tokens expirés/révoqués > 24h : hard-delete BDD
+- `CleanupModule` enregistré dans `AppModule` avec `ScheduleModule.forRoot()`
+
+**API :**
+- 7 routes manquantes ajoutées au `FilesController` (US06-US10) :
+  - `GET /files/stats` — statistiques utilisateur
+  - `PUT /files/:id/password` — définir mot de passe
+  - `DELETE /files/:id/password` — supprimer mot de passe
+  - `POST /files/anonymous` — upload anonyme
+  - `PUT /files/:id/tags` — gérer les tags
+  - `GET /files/:id/tags` — lister les tags
+  - `GET /files/:id/history` — historique de téléchargement
+- 7 méthodes correspondantes ajoutées au `FilesService`
+- `docs/testing/09-api-test-report.md` — rapport de test API (26 scénarios curl, 26/26 PASS)
+
+**Swagger :**
+- `.addServer('/api', 'Behind nginx reverse-proxy')` dans `main.ts` — corrige le base path Swagger derrière nginx
+- `@ApiBearerAuth()` ajouté sur les 14 routes protégées (FilesController, DownloadController, AuthController)
+- `@ApiTags('Files')`, `@ApiTags('Downloads')` ajoutés pour grouper les endpoints
+
+### Fixed
+
+- **Route ordering bug** : `GET /files/stats` retournait 500 car `"stats"` était capturé par `@Get(':id')` — corrigé en déclarant `@Get('stats')` avant `@Get(':id')`
+- **Swagger non fonctionnel via nginx** : les requêtes allaient vers `https://localhost/health` au lieu de `https://localhost/api/health` — corrigé avec `.addServer('/api')`
+- **Swagger n'envoyait pas le JWT** : le header `Authorization: Bearer` n'était pas inclus car `@ApiBearerAuth()` manquait sur les controllers
+
+### Changed
+
+**Documentation :**
+- `docs/maintenance/MAINTENANCE.md` — nouvelle section "Automatic Cleanup" (tableaux de rétention, flow de purge, logs)
+- `memory-bank/systemPatterns.md` — nouvelle entrée "Automatic Cleanup (Cron Job)"
+
+---
+
 ## [0.8.0] - 2026-06-18 — Documentation finale et présentation
 
 ### Ajouté
