@@ -12,6 +12,8 @@ Date       : Juin 2026
   Contenu du repository
 ================================================================================
 
+Lien vers le repository : https://github.com/OC-Expert-DevOps/P3-OC-software-development-management
+
 Le repository contient :
 
 1. CODE SOURCE COMPLET

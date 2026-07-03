@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DataShare — Présentation</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    /* ============================================
+       DataShare Presentation — Design System
+       ============================================ */
+    :root {
+      --coral: #D4785C;
+      --coral-dark: #C0654A;
+      --coral-light: #E8A4A0;
+      --coral-bg: #F0C4B8;
+      --white: #FFFFFF;
+      --text: #333333;
+      --text-light: #666666;
+      --text-muted: #999999;
+      --success: #4CAF50;
+      --success-bg: #E8F5E9;
+      --radius: 16px;
+      --shadow: 0 8px 32px rgba(0,0,0,0.08);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: linear-gradient(135deg, #D4785C 0%, #E8A4A0 50%, #F0C4B8 100%);
+      background-attachment: fixed;
+      color: var(--text);
+      overflow: hidden;
+      height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* --- Slide Container --- */
+    .deck { position: relative; width: 100vw; height: 100vh; }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 3rem 4rem;
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+      pointer-events: none;
+      overflow-y: auto;
+    }
+    .slide.active {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+    .slide.prev {
+      opacity: 0;
+      transform: translateY(-30px);
+    }
+
+    /* --- Progress Bar --- */
+    .progress {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 4px;
+      background: var(--white);
+      transition: width 0.4s ease;
+      z-index: 200;
+      border-radius: 0 2px 2px 0;
+    }
+
+    /* --- Navigation --- */
+    .nav {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      display: flex;
+      gap: 0.5rem;
+      z-index: 200;
+    }
+    .nav button {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.4);
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(10px);
+      color: white;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .nav button:hover {
+      background: rgba(255,255,255,0.3);
+      border-color: rgba(255,255,255,0.6);
+    }
+
+    .slide-counter {
+      position: fixed;
+      bottom: 2.4rem;
+      left: 2rem;
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.6);
+      font-weight: 500;
+      z-index: 200;
+    }
+
+    /* --- Glass Card --- */
+    .glass {
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(20px);
+      border-radius: var(--radius);
+      padding: 2.5rem;
+      box-shadow: var(--shadow);
+    }
+    .glass-sm {
+      background: rgba(255,255,255,0.88);
+      backdrop-filter: blur(16px);
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+    }
+    .glass-dark {
+      background: rgba(0,0,0,0.08);
+      backdrop-filter: blur(10px);
+      border-radius: 12px;
+      padding: 1.5rem;
+    }
+
+    /* --- Typography --- */
+    h1 { font-size: 4rem; font-weight: 800; letter-spacing: -0.03em; line-height: 1.1; }
+    h2 { font-size: 2.6rem; font-weight: 700; letter-spacing: -0.02em; line-height: 1.2; }
+    h3 { font-size: 1rem; font-weight: 600; color: var(--coral); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.5rem; }
+    p { font-size: 1.05rem; line-height: 1.7; color: var(--text-light); }
+    .subtitle { font-size: 1.3rem; font-weight: 300; color: var(--text-muted); }
+    .text-white { color: var(--white); }
+    .text-white-muted { color: rgba(255,255,255,0.7); }
+    .text-coral { color: var(--coral); }
+
+    /* --- Layout Helpers --- */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem; }
+    .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 1rem; }
+    .flex-center { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+    .gap-1 { gap: 1rem; }
+    .gap-2 { gap: 2rem; }
+    .mt-1 { margin-top: 1rem; }
+    .mt-2 { margin-top: 2rem; }
+    .mb-1 { margin-bottom: 1rem; }
+
+    /* --- Pill / Badge --- */
+    .pill {
+      display: inline-block;
+      padding: 0.3rem 0.9rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+    }
+    .pill-coral { background: var(--coral); color: white; }
+    .pill-white { background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3); }
+    .pill-green { background: var(--success-bg); color: #2E7D32; }
+
+    /* --- Metric Card --- */
+    .metric {
+      text-align: center;
+      padding: 1.5rem 1rem;
+    }
+    .metric-value {
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: var(--coral);
+      line-height: 1;
+    }
+    .metric-label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      font-weight: 500;
+      margin-top: 0.4rem;
+    }
+
+    /* --- Table --- */
+    .table-modern {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      font-size: 0.85rem;
+      overflow: hidden;
+      border-radius: 12px;
+    }
+    .table-modern th {
+      background: var(--coral);
+      color: white;
+      padding: 0.7rem 1rem;
+      text-align: left;
+      font-weight: 600;
+      font-size: 0.8rem;
+      letter-spacing: 0.03em;
+    }
+    .table-modern td {
+      padding: 0.6rem 1rem;
+      border-bottom: 1px solid #f0eded;
+    }
+    .table-modern tr:nth-child(even) { background: #faf8f7; }
+    .table-modern tr:last-child td { border-bottom: none; }
+
+    /* --- Feature Item --- */
+    .feat-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.6rem;
+      font-size: 0.9rem;
+      line-height: 1.5;
+      color: var(--text);
+    }
+    .feat-icon {
+      flex-shrink: 0;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--success-bg);
+      color: var(--success);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      font-weight: 700;
+      margin-top: 2px;
+    }
+
+    /* --- Architecture Diagram --- */
+    .archi {
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 0.6rem;
+      line-height: 1.5;
+      white-space: pre;
+      color: rgba(255,255,255,0.85);
+      text-align: center;
+    }
+
+    /* --- Code block --- */
+    .code-block {
+      background: #1e1e2e;
+      color: #cdd6f4;
+      padding: 1.2rem 1.5rem;
+      border-radius: 12px;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 0.8rem;
+      line-height: 1.6;
+    }
+
+    /* --- Quote --- */
+    .quote {
+      position: relative;
+      padding: 1.5rem 2rem;
+      font-size: 1.1rem;
+      font-weight: 500;
+      line-height: 1.6;
+      color: white;
+      background: linear-gradient(135deg, var(--coral), var(--coral-light));
+      border-radius: 12px;
+    }
+    .quote::before {
+      content: '"';
+      position: absolute;
+      top: -0.3rem;
+      left: 0.8rem;
+      font-size: 4rem;
+      font-weight: 800;
+      color: rgba(255,255,255,0.2);
+      line-height: 1;
+    }
+
+    /* --- Animated entry --- */
+    .slide.active .anim { animation: fadeUp 0.5s ease forwards; opacity: 0; }
+    .slide.active .anim-d1 { animation-delay: 0.1s; }
+    .slide.active .anim-d2 { animation-delay: 0.2s; }
+    .slide.active .anim-d3 { animation-delay: 0.3s; }
+    .slide.active .anim-d4 { animation-delay: 0.4s; }
+    .slide.active .anim-d5 { animation-delay: 0.5s; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* --- Specific slide overrides --- */
+    .slide-title { text-align: center; }
+    .slide-end { text-align: center; }
+  </style>
+</head>
+<body>
+
+<div class="progress" id="progress"></div>
+<div class="slide-counter" id="counter"></div>
+<div class="nav">
+  <button onclick="prev()" aria-label="Précédent">‹</button>
+  <button onclick="next()" aria-label="Suivant">›</button>
+</div>
+
+<div class="deck" id="deck">
+
+  <!-- ===== SLIDE 0: TITLE ===== -->
+  <section class="slide slide-title flex-center active">
+    <div>
+      <p class="anim text-white-muted" style="font-size:0.85rem; letter-spacing:0.15em; text-transform:uppercase; margin-bottom:1rem;">P3 — Pilotez le développement d'une solution informatique</p>
+      <h1 class="anim anim-d1 text-white" style="font-size:5rem;">DataShare</h1>
+      <p class="anim anim-d2 text-white" style="font-size:1.4rem; font-weight:300; margin-top:1rem;">Plateforme de transfert sécurisé de fichiers</p>
+      <div class="anim anim-d3 mt-2" style="display:flex; gap:0.8rem; justify-content:center;">
+        <span class="pill pill-white">Mathieu CHEREAU</span>
+        <span class="pill pill-white">Juin 2026</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SLIDE 1: CONTEXTE ===== -->
+  <section class="slide">
+    <div class="glass anim" style="max-width:1100px; width:100%;">
+      <h3>Contexte &amp; Problème</h3>
+      <h2 class="anim anim-d1 mb-1">Échanger des fichiers en toute sécurité</h2>
+      <p class="anim anim-d2">Les freelances et petites entreprises ont besoin d'échanger des fichiers de manière sécurisée, sans dépendre de services cloud tiers coûteux.</p>
+      <div class="grid-2 mt-2 anim anim-d3">
+        <div class="glass-sm">
+          <div style="font-size:1.5rem; margin-bottom:0.5rem;">📤</div>
+          <strong>Upload sécurisé</strong>
+          <p style="font-size:0.85rem;">Stockage chiffré sur serveur dédié</p>
+        </div>
+        <div class="glass-sm">
+          <div style="font-size:1.5rem; margin-bottom:0.5rem;">🔗</div>
+          <strong>Liens temporaires</strong>
+          <p style="font-size:0.85rem;">Protégeables par mot de passe</p>
+        </div>
+        <div class="glass-sm">
+          <div style="font-size:1.5rem; margin-bottom:0.5rem;">📁</div>
+          <strong>Gestion autonome</strong>
+          <p style="font-size:0.85rem;">Liste, suppression, tags, historique</p>
+        </div>
+        <div class="glass-sm">
+          <div style="font-size:1.5rem; margin-bottom:0.5rem;">🔐</div>
+          <strong>Auth sécurisée</strong>
+          <p style="font-size:0.85rem;">JWT + refresh tokens révocables</p>
+        </div>
+      </div>
+      <div class="anim anim-d4 mt-2">
+        <span class="pill pill-coral">Objectif MVP</span>
+        <span style="margin-left:0.5rem; font-size:0.9rem; color:var(--text-light);">Prototype fonctionnel en 4 semaines pour démo investisseurs</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SLIDE 2: ARCHITECTURE ===== -->
+  <section class="slide flex-center">
+    <h3 class="anim text-white" style="opacity:0.7;">Architecture</h3>
+    <h2 class="anim anim-d1 text-white mb-1">5 services conteneurisés</h2>
+    <div class="anim anim-d2" style="max-width:900px; width:100%; position:relative;">
+      <!-- Row 1: Browser → Nginx -->
+      <div style="display:flex; justify-content:center; align-items:center; gap:3rem; margin-bottom:1.5rem;">
+        <div class="glass-sm" style="text-align:center; min-width:150px; padding:1.2rem 2rem;">
+          <div style="font-size:1.8rem;">🌐</div>
+          <strong style="font-size:1rem;">Browser</strong>
+        </div>
+        <div style="display:flex; align-items:center; gap:0.5rem;">
+          <div style="width:80px; height:3px; background:rgba(255,255,255,0.5);"></div>
+          <span style="color:white; font-size:0.85rem; font-weight:600;">HTTPS</span>
+          <div style="width:80px; height:3px; background:rgba(255,255,255,0.5);"></div>
+          <div style="width:0; height:0; border-top:8px solid transparent; border-bottom:8px solid transparent; border-left:12px solid rgba(255,255,255,0.5);"></div>
+        </div>
+        <div class="glass-sm" style="text-align:center; min-width:150px; padding:1.2rem 2rem; border:2px solid rgba(255,255,255,0.3);">
+          <div style="font-size:1.8rem;">🛡️</div>
+          <strong style="font-size:1rem;">Nginx</strong>
+          <p style="font-size:0.75rem; color:var(--text-muted);">TLS Proxy</p>
+        </div>
+      </div>
+      <!-- Arrow down -->
+      <div style="text-align:center; margin-bottom:1rem;">
+        <div style="width:3px; height:30px; background:rgba(255,255,255,0.4); margin:0 auto;"></div>
+        <div style="width:0; height:0; border-left:8px solid transparent; border-right:8px solid transparent; border-top:12px solid rgba(255,255,255,0.4); margin:0 auto;"></div>
+      </div>
+      <!-- Row 2: Frontend + Backend -->
+      <div style="display:flex; justify-content:center; gap:2rem; margin-bottom:1.5rem;">
+        <div class="glass-sm" style="text-align:center; min-width:180px; padding:1.2rem 2rem;">
+          <div style="font-size:1.8rem;">⚛️</div>
+          <strong style="font-size:1rem;">Frontend</strong>
+          <p style="font-size:0.8rem; color:var(--text-muted);">React + Vite</p>
+        </div>
+        <div class="glass-sm" style="text-align:center; min-width:180px; padding:1.2rem 2rem;">
+          <div style="font-size:1.8rem;">⚙️</div>
+          <strong style="font-size:1rem;">Backend</strong>
+          <p style="font-size:0.8rem; color:var(--text-muted);">NestJS API</p>
+        </div>
+      </div>
+      <!-- Arrow down -->
+      <div style="text-align:center; margin-bottom:1rem;">
+        <div style="width:3px; height:30px; background:rgba(255,255,255,0.4); margin:0 auto;"></div>
+        <div style="width:0; height:0; border-left:8px solid transparent; border-right:8px solid transparent; border-top:12px solid rgba(255,255,255,0.4); margin:0 auto;"></div>
+      </div>
+      <!-- Row 3: PostgreSQL + MinIO -->
+      <div style="display:flex; justify-content:center; gap:2rem;">
+        <div class="glass-sm" style="text-align:center; min-width:180px; padding:1.2rem 2rem;">
+          <div style="font-size:1.8rem;">🐘</div>
+          <strong style="font-size:1rem;">PostgreSQL</strong>
+          <p style="font-size:0.8rem; color:var(--text-muted);">Données</p>
+        </div>
+        <div class="glass-sm" style="text-align:center; min-width:180px; padding:1.2rem 2rem;">
+          <div style="font-size:1.8rem;">📦</div>
+          <strong style="font-size:1rem;">MinIO</strong>
+          <p style="font-size:0.8rem; color:var(--text-muted);">Fichiers (S3)</p>
+        </div>
+      </div>
+    </div>
+    <p class="anim anim-d3 text-white-muted mt-2" style="font-size:1.1rem;">Démarrage en une commande : <code style="background:rgba(255,255,255,0.15); padding:0.3rem 0.8rem; border-radius:8px; color:white; font-size:1rem;">make up</code></p>
+  </section>
+
+  <!-- ===== SLIDE 3: STACK ===== -->
+  <section class="slide">
+    <div class="anim glass" style="max-width:1100px; width:100%;">
+      <h3>Technologies</h3>
+      <h2 class="mb-1">Stack technique</h2>
+      <table class="table-modern anim anim-d1">
+        <thead><tr><th>Couche</th><th>Technologie</th><th>Justification</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Frontend</strong></td><td>React 18 + Vite + TypeScript</td><td>Écosystème mature, HMR rapide, typage statique</td></tr>
+          <tr><td><strong>Backend</strong></td><td>NestJS 10 + TypeScript</td><td>Architecture modulaire, injection de dépendances</td></tr>
+          <tr><td><strong>BDD</strong></td><td>PostgreSQL 16 + Prisma</td><td>Robuste, ORM type-safe, migrations auto</td></tr>
+          <tr><td><strong>Stockage</strong></td><td>MinIO (S3-compatible)</td><td>Self-hosted, compatible AWS S3, zéro coût</td></tr>
+          <tr><td><strong>Auth</strong></td><td>JWT + Refresh Tokens</td><td>Stateless, sécurisé, révocable</td></tr>
+          <tr><td><strong>Proxy</strong></td><td>Nginx</td><td>TLS termination, routing, headers sécu</td></tr>
+          <tr><td><strong>Tests</strong></td><td>Jest + Playwright + k6</td><td>Unitaires + E2E + charge</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ===== SLIDE 4: MODÈLE DE DONNÉES ===== -->
+  <section class="slide">
+    <div class="anim glass" style="max-width:1100px; width:100%;">
+      <h3>Base de données</h3>
+      <h2 class="mb-1">Modèle de données</h2>
+      <div class="grid-4 anim anim-d1">
+        <div class="glass-sm" style="text-align:center;">
+          <div style="font-size:2rem;">👤</div>
+          <strong>User</strong>
+          <p style="font-size:0.75rem; color:var(--text-muted);">1:N → File</p>
+        </div>
+        <div class="glass-sm" style="text-align:center;">
+          <div style="font-size:2rem;">📄</div>
+          <strong>File</strong>
+          <p style="font-size:0.75rem; color:var(--text-muted);">1:N → Link, M:N → Tag</p>
+        </div>
+        <div class="glass-sm" style="text-align:center;">
+          <div style="font-size:2rem;">🔗</div>
+          <strong>DownloadLink</strong>
+          <p style="font-size:0.75rem; color:var(--text-muted);">N:1 → File</p>
+        </div>
+        <div class="glass-sm" style="text-align:center;">
+          <div style="font-size:2rem;">🏷️</div>
+          <strong>Tag</strong>
+          <p style="font-size:0.75rem; color:var(--text-muted);">M:N → File</p>
+        </div>
+      </div>
+      <div class="grid-3 mt-2 anim anim-d2">
+        <div class="feat-item"><div class="feat-icon">✓</div><span>UUIDs comme clés primaires</span></div>
+        <div class="feat-item"><div class="feat-icon">✓</div><span>Mots de passe hashés bcrypt</span></div>
+        <div class="feat-item"><div class="feat-icon">✓</div><span>Suppression en cascade</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SLIDE 5: FONCTIONNALITÉS ===== -->
+  <section class="slide">
+    <div style="max-width:1100px; width:100%;">
+      <h3 class="anim text-white" style="opacity:0.7;">User Stories</h3>
+      <h2 class="anim anim-d1 text-white mb-1">Fonctionnalités implémentées</h2>
+      <div class="grid-2 anim anim-d2">
+        <div class="glass-sm">
+          <h3 style="color:var(--coral); font-size:0.85rem;">🔐 Auth (US03 + US04)</h3>
+          <div class="feat-item mt-1"><div class="feat-icon">✓</div><span>Inscription avec validation</span></div>
+          <div class="feat-item"><div class="feat-icon">✓</div><span>JWT access 15min + refresh 7j</span></div>
+          <div class="feat-item"><div class="feat-icon">✓</div><span>Logout + révocation</span></div>
+          <div class="feat-item"><div class="feat-icon">✓</div><span>Refresh automatique</span></div>
+        </div>
+        <div class="glass-sm">
+          <h3 style="color:var(--coral); font-size:0.85rem;">📁 Fichiers (US01 + US05)</h3>
+          <div class="feat-item mt-1"><div class="feat-icon">✓</div><span>Upload multipart (max 50MB)</span></div>
+          <div class="feat-item"><div class="feat-icon">✓</div><span>Liste paginée + filtrage tags</span></div>
+          <div class="feat-item"><div class="feat-icon">✓</div><span>Métadonnées (taille, MIME)</span></div>
+          <div class="feat-item"><div class="feat-icon">✓</div><span>Suppression + cleanup MinIO</span></div>
+        </div>
+        <div class="glass-sm">
+          <h3 style="color:var(--coral); font-size:0.85rem;">🔗 Liens (US02 + US07)</h3>
+          <div class="feat-item mt-1"><div class="feat-icon">✓</div><span>Liens temporaires (1h/24h/7j)</span></div>
+          <div class="feat-item"><div class="feat-icon">✓</div><span>Protection par mot de passe</span></div>
+          <div class="feat-item"><div class="feat-icon">✓</div><span>Compteur de téléchargements</span></div>
+          <div class="feat-item"><div class="feat-icon">✓</div><span>Expiration automatique</span></div>
+        </div>
+        <div class="glass-sm">
+          <h3 style="color:var(--coral); font-size:0.85rem;">⚡ Avancées (US08 + US09)</h3>
+          <div class="feat-item mt-1"><div class="feat-icon">✓</div><span>Upload anonyme (sans compte)</span></div>
+          <div class="feat-item"><div class="feat-icon">✓</div><span>Système de tags</span></div>
+          <div class="feat-item"><div class="feat-icon">✓</div><span>Historique de téléchargement</span></div>
+          <div class="feat-item"><div class="feat-icon">✓</div><span>Statistiques utilisateur</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SLIDE 6: SÉCURITÉ ===== -->
+  <section class="slide">
+    <div class="anim glass" style="max-width:1100px; width:100%;">
+      <h3>Protection</h3>
+      <h2 class="mb-1">Sécurité</h2>
+      <table class="table-modern anim anim-d1">
+        <thead><tr><th>Mesure</th><th>Implémentation</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Chiffrement en transit</strong></td><td>HTTPS/TLS via Nginx</td></tr>
+          <tr><td><strong>Hachage mots de passe</strong></td><td>bcrypt (12 rounds)</td></tr>
+          <tr><td><strong>Tokens signés</strong></td><td>JWT HS256 — access 15min, refresh 7j</td></tr>
+          <tr><td><strong>Refresh token hashé</strong></td><td>Stocké hashé en BDD, révocable</td></tr>
+          <tr><td><strong>Liens sécurisés</strong></td><td>Token UUID unique + TTL</td></tr>
+          <tr><td><strong>Headers sécurité</strong></td><td>X-Frame-Options, HSTS, nosniff</td></tr>
+          <tr><td><strong>Secrets externalisés</strong></td><td>Variables d'env (.env non versionné)</td></tr>
+          <tr><td><strong>Fail-fast</strong></td><td>L'app refuse de démarrer si secret manquant</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ===== SLIDE 7: TESTS ===== -->
+  <section class="slide flex-center">
+    <h3 class="anim text-white" style="opacity:0.7;">Qualité</h3>
+    <h2 class="anim anim-d1 text-white mb-1">Tests &amp; Couverture</h2>
+    <div class="grid-4 anim anim-d2" style="max-width:1100px; width:100%;">
+      <div class="glass-sm metric">
+        <div class="metric-value" style="font-size:3.2rem;">68</div>
+        <div class="metric-label">Tests unitaires</div>
+        <span class="pill pill-green" style="margin-top:0.5rem;">Jest</span>
+      </div>
+      <div class="glass-sm metric">
+        <div class="metric-value" style="font-size:3.2rem;">72.8%</div>
+        <div class="metric-label">Couverture</div>
+        <span class="pill pill-green" style="margin-top:0.5rem;">Statements</span>
+      </div>
+      <div class="glass-sm metric">
+        <div class="metric-value" style="font-size:3.2rem;">21</div>
+        <div class="metric-label">Tests E2E</div>
+        <span class="pill pill-green" style="margin-top:0.5rem;">Playwright</span>
+      </div>
+      <div class="glass-sm metric">
+        <div class="metric-value" style="font-size:3.2rem;">26/26</div>
+        <div class="metric-label">Tests API</div>
+        <span class="pill pill-green" style="margin-top:0.5rem;">curl</span>
+      </div>
+    </div>
+    <div class="grid-2 anim anim-d3 mt-2" style="max-width:800px; width:100%;">
+      <div class="glass-sm" style="text-align:center;">
+        <strong>Conventional Commits</strong>
+        <p style="font-size:0.8rem; color:var(--text-muted);">Historique structuré</p>
+      </div>
+      <div class="glass-sm" style="text-align:center;">
+        <strong>Pull Requests</strong>
+        <p style="font-size:0.8rem; color:var(--text-muted);">Review + squash merge</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SLIDE 8: GESTION DE PROJET ===== -->
+  <section class="slide">
+    <div style="max-width:1100px; width:100%;">
+      <h3 class="anim text-white" style="opacity:0.7;">Méthodologie</h3>
+      <h2 class="anim anim-d1 text-white mb-1">Gestion de projet</h2>
+      <div class="grid-2 anim anim-d2">
+        <div class="glass-sm">
+          <h3 style="font-size:0.85rem;">🔀 Workflow Git</h3>
+          <div class="feat-item mt-1"><div class="feat-icon">✓</div><span><strong>Trunk-based</strong> : branche <code>main</code></span></div>
+          <div class="feat-item"><div class="feat-icon">✓</div><span>Feature branches : <code>feat/*</code>, <code>fix/*</code></span></div>
+          <div class="feat-item"><div class="feat-icon">✓</div><span>Issues GitHub : traçabilité complète</span></div>
+          <div class="feat-item"><div class="feat-icon">✓</div><span>Conventional Commits</span></div>
+        </div>
+        <div class="glass-sm">
+          <h3 style="font-size:0.85rem;">🤖 Utilisation de l'IA</h3>
+          <div class="feat-item mt-1"><div class="feat-icon">✓</div><span><strong>GitHub Copilot</strong> : autocomplétion supervisée</span></div>
+          <div class="feat-item"><div class="feat-icon">✓</div><span>Supervision systématique de l'IA</span></div>
+          <div class="feat-item"><div class="feat-icon">✓</div><span><strong>Gain : 40-50%</strong> sur le temps de dev</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SLIDE 9: DÉMO ===== -->
+  <section class="slide">
+    <div class="anim glass" style="max-width:1100px; width:100%;">
+      <h3>Live</h3>
+      <h2 class="mb-1">Démo</h2>
+      <div class="grid-3 anim anim-d1 mt-1">
+        <div class="glass-sm" style="text-align:center;">
+          <div style="font-size:2rem;">1️⃣</div>
+          <strong>Inscription</strong>
+          <p style="font-size:0.8rem; color:var(--text-muted);">Email + mot de passe</p>
+        </div>
+        <div class="glass-sm" style="text-align:center;">
+          <div style="font-size:2rem;">2️⃣</div>
+          <strong>Connexion</strong>
+          <p style="font-size:0.8rem; color:var(--text-muted);">Auth JWT</p>
+        </div>
+        <div class="glass-sm" style="text-align:center;">
+          <div style="font-size:2rem;">3️⃣</div>
+          <strong>Upload</strong>
+          <p style="font-size:0.8rem; color:var(--text-muted);">Fichier + options</p>
+        </div>
+        <div class="glass-sm" style="text-align:center;">
+          <div style="font-size:2rem;">4️⃣</div>
+          <strong>Lien généré</strong>
+          <p style="font-size:0.8rem; color:var(--text-muted);">URL sécurisée</p>
+        </div>
+        <div class="glass-sm" style="text-align:center;">
+          <div style="font-size:2rem;">5️⃣</div>
+          <strong>Téléchargement</strong>
+          <p style="font-size:0.8rem; color:var(--text-muted);">Via le lien</p>
+        </div>
+        <div class="glass-sm" style="text-align:center;">
+          <div style="font-size:2rem;">6️⃣</div>
+          <strong>Dashboard</strong>
+          <p style="font-size:0.8rem; color:var(--text-muted);">Gestion fichiers</p>
+        </div>
+      </div>
+      <div class="code-block anim anim-d2 mt-2">
+https://localhost        → Interface utilisateur
+https://localhost/api    → API REST
+https://localhost/api/docs → Swagger UI
+http://localhost:9001    → Console MinIO</div>
+    </div>
+  </section>
+
+  <!-- ===== SLIDE 10: CONCLUSION ===== -->
+  <section class="slide flex-center">
+    <h3 class="anim text-white" style="opacity:0.7;">Conclusion</h3>
+    <h2 class="anim anim-d1 text-white" style="font-size:2.5rem;">Perspectives &amp; Points forts</h2>
+    <div class="grid-2 anim anim-d2 mt-2" style="max-width:1000px; width:100%;">
+      <div class="glass-sm">
+        <h3 style="font-size:0.85rem;">🚀 Évolutions futures</h3>
+        <div class="feat-item mt-1"><span>📧 Notifications email</span></div>
+        <div class="feat-item"><span>📊 Analytics détaillées</span></div>
+        <div class="feat-item"><span>🔐 Chiffrement at-rest</span></div>
+        <div class="feat-item"><span>☁️ Migration cloud</span></div>
+        <div class="feat-item"><span>👥 Espaces collaboratifs</span></div>
+      </div>
+      <div class="glass-sm">
+        <h3 style="font-size:0.85rem;">💪 Points forts MVP</h3>
+        <div class="feat-item mt-1"><div class="feat-icon">✓</div><span>Architecture propre</span></div>
+        <div class="feat-item"><div class="feat-icon">✓</div><span>Sécurité dès le départ</span></div>
+        <div class="feat-item"><div class="feat-icon">✓</div><span>Tests multi-couches</span></div>
+        <div class="feat-item"><div class="feat-icon">✓</div><span>Deploy en une commande</span></div>
+        <div class="feat-item"><div class="feat-icon">✓</div><span>Documentation complète</span></div>
+      </div>
+    </div>
+    <div class="anim anim-d3 mt-2" style="max-width:900px; width:100%;">
+      <div class="quote">DataShare est prêt pour la démo investisseurs&nbsp;: un MVP fonctionnel, sécurisé et bien documenté, avec une base solide pour les évolutions futures.</div>
+    </div>
+  </section>
+
+  <!-- ===== SLIDE 11: MERCI ===== -->
+  <section class="slide slide-end flex-center">
+    <h1 class="anim text-white" style="font-size:6rem; margin-bottom:1.5rem;">Merci&nbsp;!</h1>
+    <p class="anim anim-d1 text-white" style="font-size:1.6rem; font-weight:300;">Mathieu CHEREAU — Juin 2026</p>
+    <div class="anim anim-d2 mt-2" style="display:flex; gap:0.8rem;">
+      <span class="pill pill-white">Questions ?</span>
+    </div>
+  </section>
+
+</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const progress = document.getElementById('progress');
+  const counter = document.getElementById('counter');
+  let current = 0;
+
+  function update() {
+    slides.forEach((s, i) => {
+      s.classList.remove('active', 'prev');
+      if (i === current) s.classList.add('active');
+      if (i < current) s.classList.add('prev');
+    });
+    const pct = ((current) / (slides.length - 1)) * 100;
+    progress.style.width = pct + '%';
+    counter.textContent = (current + 1) + ' / ' + slides.length;
+  }
+
+  function next() { if (current < slides.length - 1) { current++; update(); } }
+  function prev() { if (current > 0) { current--; update(); } }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'ArrowDown') { e.preventDefault(); next(); }
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); prev(); }
+  });
+
+  // Touch support
+  let touchStartX = 0;
+  document.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; });
+  document.addEventListener('touchend', e => {
+    const diff = touchStartX - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 50) { diff > 0 ? next() : prev(); }
+  });
+
+  update();
+</script>
+</body>
+</html>
