@@ -24,9 +24,9 @@ The `CleanupService` (`backend/src/cleanup/cleanup.service.ts`) runs **every hou
 |----------|-------------|---------------|
 | Authenticated file | 7 days | `FILE_EXPIRY_DAYS_DEFAULT` env var, or `expiryDays` param at upload |
 | Anonymous file | 1 day | Hardcoded in `uploadAnonymous()` |
-| Download link | 7 days (604800s) | `DOWNLOAD_LINK_DEFAULT_TTL` env var, or `ttlSeconds` param at creation |
+| Download link | 24 hours (86400s) | `DOWNLOAD_LINK_TTL_SECONDS` env var, or `ttlSeconds` param at creation |
 | JWT access token | 15 minutes | `JWT_EXPIRES_IN` env var |
-| Refresh token | 7 days | `REFRESH_TOKEN_TTL` env var |
+| Refresh token | 7 days | `REFRESH_TOKEN_EXPIRES_IN` env var |
 
 ### Cleanup flow
 

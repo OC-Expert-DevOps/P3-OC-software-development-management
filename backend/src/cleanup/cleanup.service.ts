@@ -7,7 +7,8 @@ import { MinioService } from '../minio/minio.service';
  * Scheduled cleanup service that purges expired data from both
  * PostgreSQL and MinIO storage.
  *
- * Runs every hour by default (configurable via CLEANUP_CRON_EXPRESSION env var).
+ * Runs every hour. The schedule is hardcoded (CronExpression.EVERY_HOUR below)
+ * — there is no environment variable to change it or trigger a run manually.
  */
 @Injectable()
 export class CleanupService {
