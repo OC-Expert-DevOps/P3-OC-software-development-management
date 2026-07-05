@@ -42,11 +42,13 @@ make certs
 | `MINIO_PUBLIC_URL` | Oui | url | — | stockage | URL MinIO publique (pour les URLs pré-signées) | `https://localhost:9000` |
 | `JWT_SECRET` | Oui | string | — | auth | Secret pour la signature JWT | `votre-secret-jwt-256-bits` |
 | `JWT_EXPIRES_IN` | Non | string | `15m` | auth | Durée de vie du token d'accès | `15m` |
-| `REFRESH_TOKEN_DAYS` | Non | int | `7` | auth | Durée de vie du token de rafraîchissement (jours) | `7` |
-| `MAX_FILE_SIZE` | Non | int | `104857600` | upload | Taille maximale de fichier en octets (100 Mo) | `104857600` |
+| `REFRESH_TOKEN_EXPIRES_IN` | Non | string (durée) | `7d` | auth | Durée de vie du token de rafraîchissement | `7d` |
+| `MAX_FILE_SIZE_BYTES` | Non | int | `1073741824` | upload | Taille maximale de fichier en octets (1 Go) | `1073741824` |
+| `FILE_EXPIRY_DAYS_DEFAULT` | Non | int | `7` | upload | Durée de vie par défaut d'un fichier uploadé, en jours | `7` |
+| `DOWNLOAD_LINK_TTL_SECONDS` | Non | int | `86400` | partage | Durée de vie par défaut d'un lien de téléchargement, en secondes (24h) | `86400` |
 | `ALLOWED_ORIGINS` | Non | string | `https://localhost` | sécurité | Origines CORS autorisées | `https://localhost` |
-| `BACKEND_PORT` | Non | int | `3001` | runtime | Port du backend | `3001` |
-| `NODE_ENV` | Non | string | `development` | runtime | Environnement Node.js | `production` |
+| `APP_PORT` | Non | int | `3001` | runtime | Port du backend | `3001` |
+| `APP_ENV` | Non | string | `development` | runtime | Environnement applicatif (non lu par le code à ce jour) | `production` |
 
 ## Lancement
 

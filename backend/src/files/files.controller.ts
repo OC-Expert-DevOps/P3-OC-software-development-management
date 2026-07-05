@@ -84,7 +84,7 @@ export class FilesController {
     await this.filesService.remove(id, userId);
   }
 
-  // --- Password management (US07) ---
+  // --- Password management (US09) ---
 
   @ApiBearerAuth()
   @UseGuards(JwtGuard)
@@ -107,7 +107,7 @@ export class FilesController {
     await this.filesService.removePassword(id, userId);
   }
 
-  // --- Tags management (US09) ---
+  // --- Tags management (US08) ---
 
   @ApiBearerAuth()
   @UseGuards(JwtGuard)
@@ -129,7 +129,7 @@ export class FilesController {
     return this.filesService.getTags(id, userId);
   }
 
-  // --- Download history (US10) ---
+  // --- Per-file download history (extra feature, not one of the 10 official user stories — US10 in memory-bank/projectbrief.md is the automatic cleanup cron) ---
 
   @ApiBearerAuth()
   @UseGuards(JwtGuard)
