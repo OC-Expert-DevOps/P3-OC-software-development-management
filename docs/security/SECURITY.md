@@ -89,7 +89,7 @@ cd frontend && npm audit
 | Validation JWT | ✅ | Vérifie `sub`, `email`, `exp` |
 | Rotation des jetons de rafraîchissement | ✅ | L'ancien jeton est révoqué lors du rafraîchissement |
 | Cookies HttpOnly | ✅ | Jeton de rafraîchissement dans un cookie HttpOnly/Secure/SameSite |
-| Limitation de débit | ⚠️ | Non implémentée (MVP) — recommandée pour la v1.0 |
+| Limitation de débit | ✅ | `@nestjs/throttler` — 10 req/min sur `/auth/*` et le téléchargement public, 60 req/min par défaut ailleurs |
 
 ### ✅ Protection des Données
 
@@ -102,14 +102,14 @@ cd frontend && npm audit
 | Validation des entrées | ✅ | class-validator sur tous les DTOs |
 | Injection SQL | ✅ | ORM Prisma avec requêtes paramétrées |
 | Limite de taille de fichier | ✅ | `MAX_FILE_SIZE_BYTES` (par défaut 1 Go) |
+| Validation du type de fichier | ✅ | Détection du type réel par analyse des octets (`file-type`) contre une liste blanche de types MIME — remplace l'ancienne liste noire d'extensions, contournable en renommant un fichier |
+| En-têtes de sécurité HTTP | ⚠️ | CSP, HSTS, X-Frame-Options, X-Content-Type-Options, X-XSS-Protection (Nginx). `script-src` doit inclure `'unsafe-inline'` tant que le conteneur frontend sert le serveur de dev Vite (préambule React Fast Refresh injecté en inline) — passer à un build de production (`vite build`) permettrait de le retirer |
 
 ### ⚠️ Recommandations pour la Production
 
 | Priorité | Recommandation |
 |----------|---------------|
-| Élevée | Ajouter une limitation de débit sur les points d'entrée d'authentification (express-rate-limit) |
 | Élevée | Ajouter une liste blanche CORS (autorise actuellement les origines configurées) |
-| Moyenne | Ajouter des en-têtes CSP via Nginx |
 | Moyenne | Implémenter le verrouillage de compte après N tentatives de connexion échouées |
 | Faible | Ajouter la journalisation des requêtes avec des identifiants de corrélation |
 | Faible | Mettre en place une analyse automatisée des dépendances en CI (Dependabot/Renovate) |

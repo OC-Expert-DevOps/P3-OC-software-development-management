@@ -7,14 +7,35 @@ import { UploadFileDto } from './dto/upload-file.dto';
 import { SetPasswordDto } from './dto/set-password.dto';
 import { ManageTagsDto } from './dto/manage-tags.dto';
 import { randomUUID } from 'crypto';
-import * as path from 'path';
 import * as bcrypt from 'bcrypt';
+import * as FileType from 'file-type';
 
 @Injectable()
 export class FilesService {
   private readonly logger = new Logger(FilesService.name);
   private readonly maxFileSize: number;
-  private readonly forbiddenExts = ['.exe', '.bat', '.cmd', '.sh', '.ps1'];
+
+  // Content-sniffed MIME types allowed for upload, checked against the real
+  // file bytes via `file-type` — the client-supplied filename/extension and
+  // Content-Type header are not trusted (both are trivially spoofable).
+  private readonly allowedMimeTypes = new Set([
+    'application/pdf',
+    'image/jpeg',
+    'image/png',
+    'image/gif',
+    'image/webp',
+    'application/zip',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    'video/mp4',
+    'audio/mpeg',
+  ]);
+
+  // `file-type` cannot fingerprint plain-text formats (no magic bytes). These
+  // are allowed only if the client-declared type matches AND the content is
+  // verified to actually look like text — see looksLikeText().
+  private readonly allowedTextMimeTypes = new Set(['text/plain', 'text/csv']);
 
   constructor(
     private readonly prisma: PrismaService,
@@ -22,6 +43,41 @@ export class FilesService {
     private readonly config: ConfigService,
   ) {
     this.maxFileSize = this.config.get<number>('MAX_FILE_SIZE_BYTES', 1073741824);
+  }
+
+  /**
+   * Validate the file's real content type by sniffing its magic bytes,
+   * against an explicit whitelist.
+   */
+  private async assertAllowedFileType(file: Express.Multer.File): Promise<void> {
+    const detected = await FileType.fromBuffer(file.buffer);
+
+    if (detected) {
+      if (!this.allowedMimeTypes.has(detected.mime)) {
+        throw new BadRequestException(`File type not allowed: ${detected.mime}`);
+      }
+      return;
+    }
+
+    if (!this.allowedTextMimeTypes.has(file.mimetype) || !this.looksLikeText(file.buffer)) {
+      throw new BadRequestException('File type not allowed or could not be verified');
+    }
+  }
+
+  /** Heuristic used only for formats file-type cannot fingerprint (plain text/CSV). */
+  private looksLikeText(buffer: Buffer): boolean {
+    const sample = buffer.subarray(0, 8000);
+    for (const byte of sample) {
+      if (byte === 0x00) return false;
+      if (byte < 0x07 || (byte > 0x0d && byte < 0x20)) return false;
+    }
+    return true;
+  }
+
+  /** Strip the password hash before a File record is returned to the client. */
+  private toSafeFile<T extends { passwordHash?: string | null }>(file: T) {
+    const { passwordHash, ...safe } = file;
+    return { ...safe, hasPassword: !!passwordHash };
   }
 
   async uploadFile(userId: string, file: Express.Multer.File, dto?: UploadFileDto) {
@@ -32,10 +88,7 @@ export class FilesService {
         throw new BadRequestException('File size exceeds maximum allowed');
       }
 
-      const ext = path.extname(file.originalname).toLowerCase();
-      if (this.forbiddenExts.includes(ext)) {
-        throw new BadRequestException('File extension is forbidden');
-      }
+      await this.assertAllowedFileType(file);
 
       const key = `${userId}/${randomUUID()}-${file.originalname}`;
 
@@ -61,7 +114,7 @@ export class FilesService {
         },
       });
 
-      return created;
+      return this.toSafeFile(created);
     } catch (err) {
       this.logger.error('uploadFile failed', err as any);
       throw err;
@@ -96,7 +149,7 @@ export class FilesService {
       if (!file) throw new NotFoundException('File not found');
       if (file.userId !== userId) throw new ForbiddenException('Access denied');
       if (file.isDeleted) throw new NotFoundException('File not found');
-      return file;
+      return this.toSafeFile(file);
     } catch (err) {
       this.logger.error('findOne failed', err as any);
       throw err;
@@ -159,10 +212,7 @@ export class FilesService {
       throw new BadRequestException('File size exceeds maximum allowed');
     }
 
-    const ext = path.extname(file.originalname).toLowerCase();
-    if (this.forbiddenExts.includes(ext)) {
-      throw new BadRequestException('File extension is forbidden');
-    }
+    await this.assertAllowedFileType(file);
 
     const key = `anonymous/${randomUUID()}-${file.originalname}`;
     await this.minioService.uploadFile(key, file.buffer, file.mimetype);
@@ -181,7 +231,7 @@ export class FilesService {
     });
 
     this.logger.log(`Anonymous file uploaded: ${created.id}`);
-    return created;
+    return this.toSafeFile(created);
   }
 
   /** Set tags on a file (replace all). */

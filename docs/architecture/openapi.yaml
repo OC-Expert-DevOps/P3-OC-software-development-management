@@ -126,7 +126,10 @@ components:
 
     # ── Files ──
     FileResponse:
-      description: Raw shape of the `File` Prisma model as returned by the API.
+      description: >-
+        Shape of the `File` Prisma model as returned by the API. `passwordHash`
+        is stripped server-side and replaced by the `hasPassword` boolean —
+        the raw hash is never sent to the client.
       type: object
       properties:
         id:
@@ -162,6 +165,8 @@ components:
           type: string
           format: date-time
         isDeleted:
+          type: boolean
+        hasPassword:
           type: boolean
 
     FileListItem:

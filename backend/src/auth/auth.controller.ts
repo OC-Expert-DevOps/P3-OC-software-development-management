@@ -9,11 +9,17 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { JwtGuard } from './guards/jwt.guard';
+
+// Stricter than the global default (60/min) to slow down credential
+// brute-forcing and registration spam, while staying well above what a
+// legitimate user (or the sequential E2E suite) would ever trigger.
+const AUTH_THROTTLE = { default: { limit: 10, ttl: 60000 } };
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -21,6 +27,7 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('register')
+  @Throttle(AUTH_THROTTLE)
   @ApiOperation({ summary: 'Create a new user account (US03)' })
   @ApiResponse({ status: 201, description: 'Account created, tokens returned' })
   @ApiResponse({ status: 409, description: 'Email already registered' })
@@ -36,6 +43,7 @@ export class AuthController {
   }
 
   @Post('login')
+  @Throttle(AUTH_THROTTLE)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Authenticate with email + password (US04)' })
   @ApiResponse({ status: 200, description: 'Tokens returned' })
@@ -68,6 +76,7 @@ export class AuthController {
   }
 
   @Post('refresh')
+  @Throttle(AUTH_THROTTLE)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Renew access token via refresh token cookie' })
   @ApiResponse({ status: 200, description: 'New access token returned' })

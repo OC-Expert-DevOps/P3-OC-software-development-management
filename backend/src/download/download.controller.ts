@@ -15,6 +15,7 @@ import {
 import { Response } from 'express';
 import { Readable } from 'stream';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import { JwtGuard } from '../auth/guards/jwt.guard';
 import { DownloadService } from './download.service';
 import { CreateLinkDto } from './dto/create-link.dto';
@@ -63,12 +64,16 @@ export class DownloadController {
 
   /** Return file metadata + hasPassword flag for download page. */
   @Get('download/:token/info')
+  @Throttle({ default: { limit: 20, ttl: 60000 } })
   async getTokenInfo(@Param('token') token: string) {
     return this.downloadService.getTokenInfo(token);
   }
 
   /** Stream the file through the backend (proxied from MinIO). */
   @Get('download/:token')
+  // Stricter than the info endpoint: this is also where a password-protected
+  // file's password is checked, so it's the real brute-force target.
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
   async downloadFile(
     @Param('token') token: string,
     @Query('password') password: string | undefined,
