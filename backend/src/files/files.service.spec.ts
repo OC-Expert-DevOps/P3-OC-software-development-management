@@ -82,7 +82,7 @@ describe('FilesService', () => {
             userId: 'user-1',
             originalName: 'document.txt',
             mimeType: 'text/plain',
-            sizeBytes: 1024,
+            sizeBytes: BigInt(1024),
           }),
         }),
       );
@@ -96,11 +96,49 @@ describe('FilesService', () => {
       );
     });
 
-    it('should throw BadRequestException for forbidden extension', async () => {
-      const badFile = { ...file, originalname: 'virus.exe' } as any;
-      await expect(service.uploadFile('user-1', badFile)).rejects.toThrow(
+    it('should rename a forbidden extension but still reject the file based on its real content', async () => {
+      // A file renamed to look harmless (.txt) but whose magic bytes are a real
+      // gzip archive — file-type must catch this from the content, not the name.
+      const gzipFile = {
+        ...file,
+        originalname: 'not-a-virus.txt',
+        mimetype: 'text/plain',
+        buffer: Buffer.from([0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03]),
+      } as any;
+      await expect(service.uploadFile('user-1', gzipFile)).rejects.toThrow(
         BadRequestException,
       );
+    });
+
+    it('should throw BadRequestException when declared text/plain content is actually binary', async () => {
+      const binaryFile = {
+        ...file,
+        mimetype: 'text/plain',
+        buffer: Buffer.from([0x00, 0x01, 0x02, 0xff, 0xfe]),
+      } as any;
+      await expect(service.uploadFile('user-1', binaryFile)).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
+    it('should accept a real PNG image regardless of its declared mimetype', async () => {
+      mockMinio.uploadFile.mockResolvedValue(undefined);
+      mockPrisma.file.create.mockResolvedValue({ id: 'file-3' });
+
+      const pngFile = {
+        ...file,
+        originalname: 'photo.png',
+        mimetype: 'application/octet-stream', // deliberately wrong declared type
+        // file-type needs more than just the 8-byte signature to avoid an
+        // end-of-stream read error, hence the padding.
+        buffer: Buffer.concat([
+          Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+          Buffer.alloc(64),
+        ]),
+      } as any;
+
+      const result = await service.uploadFile('user-1', pngFile);
+      expect(result.id).toBe('file-3');
     });
 
     it('should set expiresAt based on expiryDays', async () => {
@@ -128,16 +166,60 @@ describe('FilesService', () => {
   });
 
   describe('findAllByUser', () => {
-    it('should return only non-deleted files for the user', async () => {
+    it('should map DB records to the safe list shape (no passwordHash, sizeBytes as string)', async () => {
+      const now = new Date();
       const files = [
-        { id: 'file-1', userId: 'user-1', isDeleted: false },
-        { id: 'file-2', userId: 'user-1', isDeleted: false },
+        {
+          id: 'file-1',
+          userId: 'user-1',
+          isDeleted: false,
+          originalName: 'a.txt',
+          storageKey: 'user-1/a.txt',
+          mimeType: 'text/plain',
+          sizeBytes: BigInt(2048),
+          expiresAt: now,
+          createdAt: now,
+          passwordHash: null,
+        },
+        {
+          id: 'file-2',
+          userId: 'user-1',
+          isDeleted: false,
+          originalName: 'b.pdf',
+          storageKey: 'user-1/b.pdf',
+          mimeType: 'application/pdf',
+          sizeBytes: BigInt(4096),
+          expiresAt: now,
+          createdAt: now,
+          passwordHash: '$2b$10$somebcrypthash',
+        },
       ];
       mockPrisma.file.findMany.mockResolvedValue(files);
 
       const result = await service.findAllByUser('user-1');
 
-      expect(result).toEqual(files);
+      expect(result).toEqual([
+        {
+          id: 'file-1',
+          originalName: 'a.txt',
+          storageKey: 'user-1/a.txt',
+          mimeType: 'text/plain',
+          sizeBytes: '2048',
+          expiresAt: now,
+          createdAt: now,
+          hasPassword: false,
+        },
+        {
+          id: 'file-2',
+          originalName: 'b.pdf',
+          storageKey: 'user-1/b.pdf',
+          mimeType: 'application/pdf',
+          sizeBytes: '4096',
+          expiresAt: now,
+          createdAt: now,
+          hasPassword: true,
+        },
+      ]);
       expect(mockPrisma.file.findMany).toHaveBeenCalledWith({
         where: { userId: 'user-1', isDeleted: false },
         orderBy: { createdAt: 'desc' },
@@ -160,8 +242,23 @@ describe('FilesService', () => {
 
       const result = await service.findOne('file-1', 'user-1');
 
-      expect(result).toEqual(file);
+      expect(result).toEqual({ ...file, hasPassword: false });
       expect(mockPrisma.file.findUnique).toHaveBeenCalledWith({ where: { id: 'file-1' } });
+    });
+
+    it('should never leak passwordHash, but should expose hasPassword', async () => {
+      const file = {
+        id: 'file-1',
+        userId: 'user-1',
+        isDeleted: false,
+        passwordHash: '$2b$10$somebcrypthash',
+      };
+      mockPrisma.file.findUnique.mockResolvedValue(file);
+
+      const result: any = await service.findOne('file-1', 'user-1');
+
+      expect(result.passwordHash).toBeUndefined();
+      expect(result.hasPassword).toBe(true);
     });
 
     it('should throw NotFoundException when the file does not exist', async () => {

@@ -1,4 +1,5 @@
 import { NestFactory } from '@nestjs/core';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import * as cookieParser from 'cookie-parser';
@@ -10,7 +11,12 @@ import { AppModule } from './app.module';
 };
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+  // Trust the Nginx reverse-proxy's X-Forwarded-For so req.ip (used by
+  // ThrottlerGuard for per-client rate limiting) is the real client IP,
+  // not Nginx's own container IP for every request.
+  app.set('trust proxy', 1);
 
   // Global validation pipe
   app.useGlobalPipes(
