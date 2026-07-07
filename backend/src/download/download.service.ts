@@ -98,9 +98,9 @@ export class DownloadService {
 
   /**
    * Validate a public download token, check password if required,
-   * and return the file stream from MinIO.
+   * record the download in history, and return the file stream from MinIO.
    */
-  async streamFile(tokenValue: string, password?: string) {
+  async streamFile(tokenValue: string, password?: string, ipAddress?: string, userAgent?: string) {
     const token = await this.prisma.downloadToken.findUnique({
       where: { token: tokenValue },
       include: { file: true },
@@ -138,6 +138,17 @@ export class DownloadService {
       data: { downloadCount: { increment: 1 } },
     });
 
+    // Record the download in history (was previously never written — the
+    // DownloadHistory table stayed empty regardless of real download traffic).
+    await this.prisma.downloadHistory.create({
+      data: {
+        fileId: token.fileId,
+        tokenId: token.id,
+        ipAddress,
+        userAgent,
+      },
+    });
+
     // Stream file from MinIO
     const fileData = await this.minioService.getFileStream(token.file.storageKey);
 
@@ -148,31 +159,5 @@ export class DownloadService {
       contentLength: fileData.contentLength,
       originalName: token.file.originalName,
     };
-  }
-
-  /**
-   * @deprecated Use streamFile() instead. Kept for backward compat.
-   */
-  async useToken(tokenValue: string): Promise<string> {
-    const token = await this.prisma.downloadToken.findUnique({
-      where: { token: tokenValue },
-      include: { file: true },
-    });
-
-    if (!token) throw new NotFoundException('Download link not found');
-    if (token.expiresAt <= new Date()) throw new GoneException('Download link has expired');
-    if (token.file.isDeleted) throw new NotFoundException('File no longer available');
-    if (token.maxDownloads > 0 && token.downloadCount >= token.maxDownloads) {
-      throw new GoneException('Download limit reached');
-    }
-
-    await this.prisma.downloadToken.update({
-      where: { id: token.id },
-      data: { downloadCount: { increment: 1 } },
-    });
-
-    const presignedUrl = await this.minioService.getPresignedUrl(token.file.storageKey, 300);
-    this.logger.log(`Download used: token=${token.id}, file=${token.fileId}, count=${token.downloadCount + 1}`);
-    return presignedUrl;
   }
 }

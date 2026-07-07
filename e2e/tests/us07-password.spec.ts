@@ -10,27 +10,25 @@ test.describe('US07 — Password Protection', () => {
     const user = generateTestUser();
     await registerAndLogin(page, user);
 
-    // Upload a file
     const uploadPage = new UploadPage(page);
     await uploadPage.uploadAndSubmit(TEST_FILE);
 
-    // Get file ID
     const token = await page.evaluate(() => localStorage.getItem('accessToken'));
     const filesResponse = await request.get('/api/files', {
       headers: { Authorization: `Bearer ${token}` },
     });
     const files = await filesResponse.json();
-    const fileId = files.data?.[0]?.id || files[0]?.id;
+    const fileId = files[0]?.id;
+    expect(fileId).toBeTruthy();
 
-    if (fileId) {
-      // Set password
-      const pwResponse = await request.patch(`/api/files/${fileId}/password`, {
-        headers: { Authorization: `Bearer ${token}` },
-        data: { password: 'SecurePass123!' },
-      });
-      // Accept 200/204 (success) or 404 (feature not yet implemented)
-      expect([200, 204, 404]).toContain(pwResponse.status());
-    }
+    // The real route is PUT, not PATCH.
+    const pwResponse = await request.put(`/api/files/${fileId}/password`, {
+      headers: { Authorization: `Bearer ${token}` },
+      data: { password: 'SecurePass123!' },
+    });
+    expect(pwResponse.status()).toBe(200);
+    const body = await pwResponse.json();
+    expect(body.message).toBeTruthy();
   });
 
   test('should remove password from a file via API', async ({ page, request }) => {
@@ -45,15 +43,26 @@ test.describe('US07 — Password Protection', () => {
       headers: { Authorization: `Bearer ${token}` },
     });
     const files = await filesResponse.json();
-    const fileId = files.data?.[0]?.id || files[0]?.id;
+    const fileId = files[0]?.id;
+    expect(fileId).toBeTruthy();
 
-    if (fileId) {
-      // Remove password (empty string or null)
-      const pwResponse = await request.patch(`/api/files/${fileId}/password`, {
-        headers: { Authorization: `Bearer ${token}` },
-        data: { password: '' },
-      });
-      expect([200, 204, 404]).toContain(pwResponse.status());
-    }
+    // Set a password first so there is something to remove.
+    await request.put(`/api/files/${fileId}/password`, {
+      headers: { Authorization: `Bearer ${token}` },
+      data: { password: 'SecurePass123!' },
+    });
+
+    // Removal is a dedicated DELETE endpoint, not "PATCH with an empty password".
+    const removeResponse = await request.delete(`/api/files/${fileId}/password`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    expect(removeResponse.status()).toBe(204);
+
+    // Confirm it's actually gone: the file's hasPassword flag should now be false.
+    const fileResponse = await request.get(`/api/files/${fileId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const file = await fileResponse.json();
+    expect(file.hasPassword).toBe(false);
   });
 });

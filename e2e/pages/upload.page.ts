@@ -22,15 +22,15 @@ export class UploadPage {
     await this.uploadFile(filePath);
     await this.submit();
     await this.page.waitForURL('**/dashboard', { timeout: 15000 });
+    // The dashboard navigation only proves the POST resolved on the client —
+    // give the API a brief moment before callers immediately re-query
+    // GET /files (observed as an intermittent empty list otherwise, most
+    // visible on the last test of a long sequential run).
+    await this.page.waitForTimeout(300);
   }
 
   async getErrorMessage() {
-    const el = this.page.locator('div[style*="color: rgb(204, 0, 0)"]');
-    return el.textContent();
-  }
-
-  async getSelectedFileName() {
-    const el = this.page.locator('strong');
+    const el = this.page.locator('[data-testid="error-message"]');
     return el.textContent();
   }
 }

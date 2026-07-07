@@ -6,7 +6,7 @@ test.describe('US04 — User Login / Logout', () => {
   test('should login with valid credentials and redirect to dashboard', async ({ page }) => {
     const user = generateTestUser();
     await registerAndLogin(page, user);
-    await page.click('button:has-text("Logout")');
+    await page.getByTestId('logout-button').click();
 
     const loginPage = new LoginPage(page);
     await loginPage.login(user.email, user.password);
@@ -17,7 +17,7 @@ test.describe('US04 — User Login / Logout', () => {
   test('should show error for wrong password', async ({ page }) => {
     const user = generateTestUser();
     await registerAndLogin(page, user);
-    await page.click('button:has-text("Logout")');
+    await page.getByTestId('logout-button').click();
 
     const loginPage = new LoginPage(page);
     await loginPage.login(user.email, 'WrongPassword123!');
@@ -31,7 +31,7 @@ test.describe('US04 — User Login / Logout', () => {
     await registerAndLogin(page, user);
     expect(page.url()).toContain('/dashboard');
 
-    await page.click('button:has-text("Logout")');
+    await page.getByTestId('logout-button').click();
     await page.waitForURL('**/login', { timeout: 5000 });
     expect(page.url()).toContain('/login');
   });

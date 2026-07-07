@@ -49,7 +49,7 @@ export default function LoginPage() {
         }}>Connexion</h1>
 
         {error && (
-          <div style={{
+          <div data-testid="error-message" style={{
             background: '#FFEBEE',
             color: '#C62828',
             padding: '0.7rem 1rem',

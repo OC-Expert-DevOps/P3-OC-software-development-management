@@ -18,23 +18,28 @@ npm run test:cov      # Run with coverage report
 
 | Métrique     | Seuil   | Actuel  |
 |--------------|---------|---------|
-| Statements   | 70%     | 72.82%  |
-| Branches     | 50%     | 80%     |
-| Functions    | 60%     | 66.66%  |
-| Lines        | 70%     | 72.31%  |
+| Statements   | 75%     | 77.14%  |
+| Branches     | 65%     | 67.94%  |
+| Functions    | 68%     | 70.66%  |
+| Lines        | 75%     | 78.23%  |
 
 La couverture est collectée à partir des fichiers de logique métier (`*.service.ts`, `*.controller.ts`, `*.guard.ts`), en excluant le câblage des modules et les DTOs.
 
 ### Structure des Tests
 
+71 tests au total, répartis sur 9 fichiers :
+
 | Fichier | Tests | Description |
 |---------|-------|-------------|
-| `auth.service.spec.ts` | 14 | Inscription, connexion, déconnexion, rafraîchissement, génération JWT |
+| `auth.service.spec.ts` | 10 | Inscription, connexion, déconnexion, rafraîchissement, génération JWT |
 | `auth.controller.spec.ts` | 4 | Points d'entrée du contrôleur (inscription, connexion, déconnexion, rafraîchissement) |
 | `jwt.guard.spec.ts` | 5 | Extraction du jeton Bearer, validation, gestion des erreurs |
-| `files.service.spec.ts` | 28 | Téléversement, listage, suppression, mot de passe, téléversement anonyme, tags, historique |
-| `download.service.spec.ts` | 13 | Création de liens, utilisation des jetons, révocation, expiration |
-| `download.controller.spec.ts` | 4 | Points d'entrée du contrôleur (création, listage, révocation, téléchargement) |
+| `files.service.spec.ts` | 13 | Téléversement (dont whitelist MIME réelle), listage, suppression, mot de passe, téléversement anonyme |
+| `files.controller.spec.ts` | 11 | Délégation de chacune des 11 routes vers `FilesService` avec le bon `userId` |
+| `download.service.spec.ts` | 15 | Création de liens, streaming, mot de passe, expiration, historique de téléchargement |
+| `download.controller.spec.ts` | 6 | Points d'entrée du contrôleur (création, listage, révocation, téléchargement) |
+| `cleanup.service.spec.ts` | 6 | Purge des fichiers/jetons expirés, tolérance aux erreurs partielles |
+| `app.controller.spec.ts` | 1 | Endpoint de health check |
 
 ### Patrons de Test
 

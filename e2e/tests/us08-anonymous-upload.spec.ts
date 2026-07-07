@@ -11,11 +11,10 @@ test.describe('US08 — Anonymous Upload', () => {
         },
       },
     });
-    // Accept 201 (created) or 401 (if feature not implemented yet)
-    expect([201, 200, 401, 404]).toContain(response.status());
-    if (response.ok()) {
-      const body = await response.json();
-      expect(body).toBeTruthy();
-    }
+    expect(response.status()).toBe(201);
+    const body = await response.json();
+    expect(body.id).toBeTruthy();
+    expect(body.userId).toBeNull();
+    expect(body.originalName).toBe('anon-test.txt');
   });
 });
