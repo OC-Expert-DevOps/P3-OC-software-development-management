@@ -7,18 +7,16 @@ export class DashboardPage {
     await this.page.goto('/dashboard');
   }
 
-  /** Wait for loading to finish (no "Loading..." text visible) */
+  /** Wait for loading to finish (the "Chargement…" placeholder disappears). */
   async waitForLoaded() {
-    // Wait for "Loading..." to disappear (dashboard fetches files on mount)
-    await this.page.waitForFunction(
-      () => !document.body.textContent?.includes('Loading...'),
-      { timeout: 10000 },
-    );
+    await this.page.getByTestId('loading').waitFor({ state: 'hidden', timeout: 10000 }).catch(() => {
+      // Already gone before we could attach the wait — that's fine.
+    });
   }
 
   async getFileRows() {
     await this.waitForLoaded();
-    return this.page.locator('tbody tr').all();
+    return this.page.getByTestId('file-row').all();
   }
 
   async getFileCount() {
@@ -27,28 +25,33 @@ export class DashboardPage {
   }
 
   async getFileName(index: number) {
-    await this.waitForLoaded();
-    return this.page.locator(`tbody tr:nth-child(${index + 1}) td:first-child`).textContent();
+    const rows = await this.getFileRows();
+    if (!rows[index]) throw new Error(`No file row at index ${index}`);
+    return rows[index].getByTestId('file-name').textContent();
   }
 
   async clickGenerateLink(index: number) {
     const rows = await this.getFileRows();
     if (!rows[index]) throw new Error(`No file row at index ${index}`);
-    await rows[index].locator('button:has-text("Link")').click();
+    await rows[index].getByTestId('generate-link-button').click();
   }
 
   async clickDelete(index: number) {
     const rows = await this.getFileRows();
     if (!rows[index]) throw new Error(`No file row at index ${index}`);
-    await rows[index].locator('button:has-text("Delete")').click();
+    await rows[index].getByTestId('delete-file-button').click();
+  }
+
+  async clickLogout() {
+    await this.page.getByTestId('logout-button').click();
   }
 
   async getLinkNotification() {
-    return this.page.locator('div[style*="background: rgb(232, 245, 233)"]').textContent();
+    return this.page.getByTestId('link-notification').textContent();
   }
 
   async getEmptyMessage() {
     await this.waitForLoaded();
-    return this.page.locator('p[style*="color: rgb(136, 136, 136)"]').textContent();
+    return this.page.getByTestId('empty-state').textContent();
   }
 }

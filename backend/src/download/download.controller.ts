@@ -12,7 +12,7 @@ import {
   Res,
   UseGuards,
 } from '@nestjs/common';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { Readable } from 'stream';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
@@ -77,9 +77,10 @@ export class DownloadController {
   async downloadFile(
     @Param('token') token: string,
     @Query('password') password: string | undefined,
+    @Req() req: Request,
     @Res() res: Response,
   ) {
-    const fileData = await this.downloadService.streamFile(token, password);
+    const fileData = await this.downloadService.streamFile(token, password, req.ip, req.get('user-agent'));
 
     res.set({
       'Content-Type': fileData.contentType,

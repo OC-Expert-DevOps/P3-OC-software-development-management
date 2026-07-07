@@ -10,49 +10,40 @@ test.describe('US10 — Download History', () => {
     const user = generateTestUser();
     await registerAndLogin(page, user);
 
-    // Upload a file
     const uploadPage = new UploadPage(page);
     await uploadPage.uploadAndSubmit(TEST_FILE);
 
-    // Get file and create download link
     const token = await page.evaluate(() => localStorage.getItem('accessToken'));
     const filesResponse = await request.get('/api/files', {
       headers: { Authorization: `Bearer ${token}` },
     });
     const files = await filesResponse.json();
-    const fileId = files.data?.[0]?.id || files[0]?.id;
+    const fileId = files[0]?.id;
+    expect(fileId).toBeTruthy();
 
-    if (fileId) {
-      // Generate download link
-      const linkResponse = await request.post(`/api/files/${fileId}/links`, {
-        headers: { Authorization: `Bearer ${token}` },
-        data: { ttlSeconds: 86400 },
-      });
+    const linkResponse = await request.post(`/api/files/${fileId}/links`, {
+      headers: { Authorization: `Bearer ${token}` },
+      data: { ttlSeconds: 86400 },
+    });
+    expect(linkResponse.ok()).toBeTruthy();
+    const linkData = await linkResponse.json();
+    const downloadToken = linkData.token;
+    expect(downloadToken).toBeTruthy();
 
-      if (linkResponse.ok()) {
-        const linkData = await linkResponse.json();
-        const downloadToken = linkData.token || linkData.data?.token;
+    // Download the file — the backend streams it directly (200), it does not
+    // redirect. This is what creates the DownloadHistory entry.
+    const downloadResponse = await request.get(`/api/download/${downloadToken}`, {
+      maxRedirects: 0,
+    });
+    expect(downloadResponse.status()).toBe(200);
 
-        if (downloadToken) {
-          // Download file (creates history entry) — don't follow redirect to internal minio host
-          await request.get(`/api/download/${downloadToken}`, {
-            maxRedirects: 0,
-          });
-
-          // Check history endpoint (if available)
-          const historyResponse = await request.get(`/api/files/${fileId}/history`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          // Accept 200 (has history) or 404 (not yet implemented)
-          expect([200, 404]).toContain(historyResponse.status());
-
-          if (historyResponse.ok()) {
-            const history = await historyResponse.json();
-            const events = history.data || history;
-            expect(Array.isArray(events)).toBeTruthy();
-          }
-        }
-      }
-    }
+    const historyResponse = await request.get(`/api/files/${fileId}/history`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    expect(historyResponse.status()).toBe(200);
+    const events = await historyResponse.json();
+    expect(Array.isArray(events)).toBeTruthy();
+    expect(events.length).toBeGreaterThanOrEqual(1);
+    expect(events[0].tokenId).toBeTruthy();
   });
 });

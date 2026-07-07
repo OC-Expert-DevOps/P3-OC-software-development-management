@@ -153,7 +153,7 @@ export default function DashboardPage() {
             }}>
               Ajouter des fichiers
             </Link>
-            <button onClick={handleLogout} style={{
+            <button data-testid="logout-button" onClick={handleLogout} style={{
               padding: '0.5rem 0.8rem', background: 'transparent', color: '#D4785C', border: 'none', borderRadius: '8px',
               fontSize: isMobile ? '0.75rem' : '0.875rem', fontWeight: 600, cursor: 'pointer', fontFamily: "'Inter', sans-serif",
               display: 'flex', alignItems: 'center', gap: '0.3rem', whiteSpace: 'nowrap',
@@ -173,15 +173,15 @@ export default function DashboardPage() {
           </div>
 
           {linkUrl && (
-            <div style={{ background: '#E8F5E9', color: '#2E7D32', padding: '0.7rem 1rem', borderRadius: '8px', marginBottom: '1rem', fontSize: '0.85rem', fontWeight: 500, wordBreak: 'break-all' }}>
+            <div data-testid="link-notification" style={{ background: '#E8F5E9', color: '#2E7D32', padding: '0.7rem 1rem', borderRadius: '8px', marginBottom: '1rem', fontSize: '0.85rem', fontWeight: 500, wordBreak: 'break-all' }}>
               ✅ Lien copié : {linkUrl}
             </div>
           )}
 
           {loading ? (
-            <p style={{ color: '#999', fontSize: '0.9rem' }}>Chargement…</p>
+            <p data-testid="loading" style={{ color: '#999', fontSize: '0.9rem' }}>Chargement…</p>
           ) : filteredFiles.length === 0 ? (
-            <p style={{ color: '#999', fontSize: '0.9rem' }}>
+            <p data-testid="empty-state" style={{ color: '#999', fontSize: '0.9rem' }}>
               {filter === 'all' ? <>Aucun fichier. <Link to="/upload" style={{ color: '#D4785C' }}>Téléverser</Link></> : 'Aucun fichier dans cette catégorie.'}
             </p>
           ) : (
@@ -189,33 +189,33 @@ export default function DashboardPage() {
               const days = daysRemaining(f.expiresAt);
               const isExpired = days <= 0;
               return (
-                <div key={f.id} style={{
+                <div key={f.id} data-testid="file-row" style={{
                   display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                   padding: '0.75rem 0', borderBottom: '1px solid #F0E8E5',
                   flexWrap: isMobile ? 'wrap' : 'nowrap', gap: isMobile ? '0.5rem' : '0',
                   opacity: isExpired ? 0.5 : 1,
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flex: 1, minWidth: 0 }}>
-                    <div style={{
+                    <div data-testid="file-type-badge" style={{
                       width: '32px', height: '32px', borderRadius: '6px',
                       background: '#F0E8E5', display: 'flex',
                       alignItems: 'center', justifyContent: 'center',
                       fontSize: '0.65rem', fontWeight: 700, color: '#C0654A', flexShrink: 0,
                     }}>{getExt(f.originalName)}</div>
                     <div style={{ minWidth: 0 }}>
-                      <div style={{ fontSize: '0.875rem', fontWeight: 500, color: '#333', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{f.originalName}</div>
-                      <div style={{ fontSize: '0.75rem', color: isExpired ? '#E53935' : '#999' }}>{expiryLabel(f.expiresAt)}</div>
+                      <div data-testid="file-name" style={{ fontSize: '0.875rem', fontWeight: 500, color: '#333', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{f.originalName}</div>
+                      <div data-testid="file-expiry" style={{ fontSize: '0.75rem', color: isExpired ? '#E53935' : '#999' }}>{expiryLabel(f.expiresAt)}</div>
                     </div>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0, ...(isMobile ? { width: '100%', justifyContent: 'flex-end' } : {}) }}>
                     {f.hasPassword && <span style={{ fontSize: '0.85rem' }}>🔒</span>}
-                    <button onClick={() => deleteFile(f.id)} style={{
+                    <button data-testid="delete-file-button" onClick={() => deleteFile(f.id)} style={{
                       padding: '0.35rem 0.7rem', border: '1px solid #D4785C', borderRadius: '6px',
                       background: 'transparent', color: '#D4785C', fontSize: '0.75rem', fontWeight: 600,
                       cursor: 'pointer', fontFamily: "'Inter', sans-serif", display: 'flex', alignItems: 'center', gap: '0.3rem',
                     }}>🗑 Supprimer</button>
                     {!isExpired && (
-                      <button onClick={() => generateLink(f.id)} style={{
+                      <button data-testid="generate-link-button" onClick={() => generateLink(f.id)} style={{
                         padding: '0.35rem 0.7rem', border: '1px solid #D4785C', borderRadius: '6px',
                         background: 'transparent', color: '#D4785C', fontSize: '0.75rem', fontWeight: 600,
                         cursor: 'pointer', fontFamily: "'Inter', sans-serif",

@@ -27,7 +27,7 @@ export class LoginPage {
   }
 
   async getErrorMessage() {
-    const el = this.page.locator('div[style*="color: rgb(204, 0, 0)"]');
+    const el = this.page.locator('[data-testid="error-message"]');
     return el.textContent();
   }
 }

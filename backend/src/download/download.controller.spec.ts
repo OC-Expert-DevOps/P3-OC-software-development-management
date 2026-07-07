@@ -99,10 +99,11 @@ describe('DownloadController', () => {
       } as any;
       // Mock pipe
       readable.pipe = jest.fn();
+      const req = { ip: '203.0.113.5', get: jest.fn(() => 'jest-agent') } as any;
 
-      await controller.downloadFile('tok-1', undefined, res);
+      await controller.downloadFile('tok-1', undefined, req, res);
 
-      expect(mockDownloadService.streamFile).toHaveBeenCalledWith('tok-1', undefined);
+      expect(mockDownloadService.streamFile).toHaveBeenCalledWith('tok-1', undefined, '203.0.113.5', 'jest-agent');
       expect(res.set).toHaveBeenCalledWith(expect.objectContaining({
         'Content-Type': 'application/pdf',
         'Content-Disposition': 'attachment; filename="test.pdf"',
@@ -121,10 +122,11 @@ describe('DownloadController', () => {
       });
 
       const res = { set: jest.fn() } as any;
+      const req = { ip: '203.0.113.5', get: jest.fn(() => 'jest-agent') } as any;
 
-      await controller.downloadFile('tok-1', 'my-password', res);
+      await controller.downloadFile('tok-1', 'my-password', req, res);
 
-      expect(mockDownloadService.streamFile).toHaveBeenCalledWith('tok-1', 'my-password');
+      expect(mockDownloadService.streamFile).toHaveBeenCalledWith('tok-1', 'my-password', '203.0.113.5', 'jest-agent');
     });
   });
 });

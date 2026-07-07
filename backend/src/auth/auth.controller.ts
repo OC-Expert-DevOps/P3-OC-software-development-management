@@ -17,9 +17,11 @@ import { LoginDto } from './dto/login.dto';
 import { JwtGuard } from './guards/jwt.guard';
 
 // Stricter than the global default (60/min) to slow down credential
-// brute-forcing and registration spam, while staying well above what a
-// legitimate user (or the sequential E2E suite) would ever trigger.
-const AUTH_THROTTLE = { default: { limit: 10, ttl: 60000 } };
+// brute-forcing and registration spam. 30/min still leaves real brute-force
+// far too slow to be useful, while comfortably covering legitimate traffic —
+// including the ~20 register/login calls the sequential E2E suite fires in
+// under 90s (a limit of 10 was empirically too tight and started 429-ing it).
+const AUTH_THROTTLE = { default: { limit: 30, ttl: 60000 } };
 
 @ApiTags('Auth')
 @Controller('auth')

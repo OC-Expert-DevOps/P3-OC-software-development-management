@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { NotFoundException, ForbiddenException, GoneException } from '@nestjs/common';
+import { NotFoundException, ForbiddenException, GoneException, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import * as bcrypt from 'bcrypt';
 import { DownloadService } from './download.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { MinioService } from '../minio/minio.service';
@@ -15,10 +16,13 @@ const mockPrisma = {
     findUnique: jest.fn(),
     update: jest.fn(),
   },
+  downloadHistory: {
+    create: jest.fn(),
+  },
 };
 
 const mockMinio = {
-  getPresignedUrl: jest.fn(),
+  getFileStream: jest.fn(),
 };
 
 const mockConfig = {
@@ -145,77 +149,110 @@ describe('DownloadService', () => {
     });
   });
 
-  // --- useToken ---
+  // --- streamFile ---
 
-  describe('useToken', () => {
-    const now = new Date();
+  describe('streamFile', () => {
     const futureDate = new Date(Date.now() + 3600 * 1000);
     const pastDate = new Date(Date.now() - 3600 * 1000);
+    const fileStream = { stream: 'fake-stream', contentType: 'text/plain', contentLength: 42 };
 
-    it('should return presigned URL for valid token', async () => {
-      mockPrisma.downloadToken.findUnique.mockResolvedValue({
-        id: 'token-1',
-        token: 'valid-uuid',
-        expiresAt: futureDate,
-        downloadCount: 0,
-        maxDownloads: 0,
-        file: { storageKey: 'user-1/file.txt', isDeleted: false },
-      });
+    const baseToken = {
+      id: 'token-1',
+      fileId: 'file-1',
+      token: 'valid-uuid',
+      expiresAt: futureDate,
+      downloadCount: 0,
+      maxDownloads: 0,
+      file: { storageKey: 'user-1/file.txt', originalName: 'file.txt', mimeType: 'text/plain', isDeleted: false, passwordHash: null },
+    };
+
+    it('should stream the file, increment downloadCount and record history', async () => {
+      mockPrisma.downloadToken.findUnique.mockResolvedValue(baseToken);
       mockPrisma.downloadToken.update.mockResolvedValue({});
-      mockMinio.getPresignedUrl.mockResolvedValue('https://minio/presigned');
+      mockPrisma.downloadHistory.create.mockResolvedValue({});
+      mockMinio.getFileStream.mockResolvedValue(fileStream);
 
-      const url = await service.useToken('valid-uuid');
+      const result = await service.streamFile('valid-uuid', undefined, '203.0.113.5', 'jest-agent');
 
-      expect(url).toBe('https://minio/presigned');
+      expect(result.stream).toBe('fake-stream');
+      expect(result.originalName).toBe('file.txt');
       expect(mockPrisma.downloadToken.update).toHaveBeenCalledWith({
         where: { id: 'token-1' },
         data: { downloadCount: { increment: 1 } },
+      });
+      expect(mockPrisma.downloadHistory.create).toHaveBeenCalledWith({
+        data: { fileId: 'file-1', tokenId: 'token-1', ipAddress: '203.0.113.5', userAgent: 'jest-agent' },
       });
     });
 
     it('should throw NotFoundException if token does not exist', async () => {
       mockPrisma.downloadToken.findUnique.mockResolvedValue(null);
 
-      await expect(service.useToken('bad-uuid')).rejects.toThrow(NotFoundException);
+      await expect(service.streamFile('bad-uuid')).rejects.toThrow(NotFoundException);
+      expect(mockPrisma.downloadHistory.create).not.toHaveBeenCalled();
     });
 
     it('should throw GoneException if token has expired', async () => {
-      mockPrisma.downloadToken.findUnique.mockResolvedValue({
-        id: 'token-1',
-        token: 'expired-uuid',
-        expiresAt: pastDate,
-        downloadCount: 0,
-        maxDownloads: 0,
-        file: { storageKey: 'user-1/file.txt', isDeleted: false },
-      });
+      mockPrisma.downloadToken.findUnique.mockResolvedValue({ ...baseToken, expiresAt: pastDate });
 
-      await expect(service.useToken('expired-uuid')).rejects.toThrow(GoneException);
+      await expect(service.streamFile('valid-uuid')).rejects.toThrow(GoneException);
+      expect(mockPrisma.downloadHistory.create).not.toHaveBeenCalled();
     });
 
     it('should throw NotFoundException if file is deleted', async () => {
       mockPrisma.downloadToken.findUnique.mockResolvedValue({
-        id: 'token-1',
-        token: 'uuid',
-        expiresAt: futureDate,
-        downloadCount: 0,
-        maxDownloads: 0,
-        file: { storageKey: 'user-1/file.txt', isDeleted: true },
+        ...baseToken,
+        file: { ...baseToken.file, isDeleted: true },
       });
 
-      await expect(service.useToken('uuid')).rejects.toThrow(NotFoundException);
+      await expect(service.streamFile('valid-uuid')).rejects.toThrow(NotFoundException);
     });
 
     it('should throw GoneException when maxDownloads limit reached', async () => {
       mockPrisma.downloadToken.findUnique.mockResolvedValue({
-        id: 'token-1',
-        token: 'uuid',
-        expiresAt: futureDate,
+        ...baseToken,
         downloadCount: 5,
         maxDownloads: 5,
-        file: { storageKey: 'user-1/file.txt', isDeleted: false },
       });
 
-      await expect(service.useToken('uuid')).rejects.toThrow(GoneException);
+      await expect(service.streamFile('valid-uuid')).rejects.toThrow(GoneException);
+      expect(mockPrisma.downloadHistory.create).not.toHaveBeenCalled();
+    });
+
+    it('should throw UnauthorizedException if password is required but missing', async () => {
+      const hash = await bcrypt.hash('SecurePass123!', 4);
+      mockPrisma.downloadToken.findUnique.mockResolvedValue({
+        ...baseToken,
+        file: { ...baseToken.file, passwordHash: hash },
+      });
+
+      await expect(service.streamFile('valid-uuid')).rejects.toThrow(UnauthorizedException);
+      expect(mockPrisma.downloadHistory.create).not.toHaveBeenCalled();
+    });
+
+    it('should throw UnauthorizedException if password is incorrect', async () => {
+      const hash = await bcrypt.hash('SecurePass123!', 4);
+      mockPrisma.downloadToken.findUnique.mockResolvedValue({
+        ...baseToken,
+        file: { ...baseToken.file, passwordHash: hash },
+      });
+
+      await expect(service.streamFile('valid-uuid', 'WrongPassword')).rejects.toThrow(UnauthorizedException);
+    });
+
+    it('should stream the file when the correct password is provided', async () => {
+      const hash = await bcrypt.hash('SecurePass123!', 4);
+      mockPrisma.downloadToken.findUnique.mockResolvedValue({
+        ...baseToken,
+        file: { ...baseToken.file, passwordHash: hash },
+      });
+      mockPrisma.downloadToken.update.mockResolvedValue({});
+      mockPrisma.downloadHistory.create.mockResolvedValue({});
+      mockMinio.getFileStream.mockResolvedValue(fileStream);
+
+      const result = await service.streamFile('valid-uuid', 'SecurePass123!');
+
+      expect(result.stream).toBe('fake-stream');
     });
   });
 });

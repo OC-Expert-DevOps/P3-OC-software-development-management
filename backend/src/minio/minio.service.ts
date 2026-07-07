@@ -8,8 +8,6 @@ import {
   DeleteObjectCommand,
   GetObjectCommand,
 } from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-
 @Injectable()
 export class MinioService implements OnModuleInit {
   private readonly logger = new Logger(MinioService.name);
@@ -83,16 +81,6 @@ export class MinioService implements OnModuleInit {
       await this.client.send(cmd);
     } catch (err) {
       this.logger.error(`Failed to delete file ${key}`, err as any);
-      throw err;
-    }
-  }
-
-  async getPresignedUrl(key: string, ttlSeconds = 300): Promise<string> {
-    try {
-      const cmd = new GetObjectCommand({ Bucket: this.bucket, Key: key });
-      return await getSignedUrl(this.client, cmd, { expiresIn: ttlSeconds });
-    } catch (err) {
-      this.logger.error(`Failed to create presigned url for ${key}`, err as any);
       throw err;
     }
   }

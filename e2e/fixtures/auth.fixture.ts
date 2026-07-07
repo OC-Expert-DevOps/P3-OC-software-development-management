@@ -4,18 +4,22 @@ import { test as base, expect, Page } from '@playwright/test';
 function generateTestUser() {
   const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
   return {
-    name: `TestUser-${id}`,
     email: `test-${id}@datashare.local`,
     password: 'TestPass123!',
   };
 }
 
-/** Register a new user via the UI — redirects to /login after success. */
-async function registerUser(page: Page, user: { name: string; email: string; password: string }) {
+/**
+ * Register a new user via the UI — redirects to /login after success.
+ * RegisterPage has no "name" field: just email + password + confirm-password
+ * (both rendered as `input[type="password"]`, in that order).
+ */
+async function registerUser(page: Page, user: { email: string; password: string }) {
   await page.goto('/register');
-  await page.fill('input[type="text"]', user.name);
   await page.fill('input[type="email"]', user.email);
-  await page.fill('input[type="password"]', user.password);
+  const passwordInputs = page.locator('input[type="password"]');
+  await passwordInputs.nth(0).fill(user.password);
+  await passwordInputs.nth(1).fill(user.password);
   await page.click('button[type="submit"]');
   // App redirects to /login after register (not /dashboard)
   await page.waitForURL('**/login', { timeout: 10000 });
@@ -31,7 +35,7 @@ async function loginUser(page: Page, user: { email: string; password: string }) 
 }
 
 /** Register then login — ends on /dashboard. */
-async function registerAndLogin(page: Page, user?: { name: string; email: string; password: string }) {
+async function registerAndLogin(page: Page, user?: { email: string; password: string }) {
   const u = user || generateTestUser();
   await registerUser(page, u);
   await loginUser(page, u);
@@ -43,7 +47,7 @@ export { generateTestUser, registerUser, loginUser, registerAndLogin };
 // Extended test fixture with authenticated page
 type AuthFixtures = {
   authenticatedPage: Page;
-  testUser: { name: string; email: string; password: string };
+  testUser: { email: string; password: string };
 };
 
 export const test = base.extend<AuthFixtures>({

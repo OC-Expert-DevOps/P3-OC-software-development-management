@@ -68,7 +68,7 @@ export default function RegisterPage() {
         }}>Créer un compte</h1>
 
         {error && (
-          <div style={{
+          <div data-testid="error-message" style={{
             background: '#FFEBEE',
             color: '#C62828',
             padding: '0.7rem 1rem',
