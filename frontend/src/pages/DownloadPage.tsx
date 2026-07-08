@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import api from '../api/client';
+import { useIsMobile } from '../hooks/useIsMobile';
 
 export default function DownloadPage() {
   const { token } = useParams<{ token: string }>();
+  const isTablet = useIsMobile(768);
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [error, setError] = useState('');
   const [fileName, setFileName] = useState('');
@@ -69,12 +71,12 @@ export default function DownloadPage() {
       flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'center',
-      padding: '5rem 1.5rem 2rem',
+      padding: isTablet ? '4rem 1rem 1.5rem' : '5rem 1.5rem 2rem',
     }}>
       <div style={{
         background: 'rgba(255,255,255,0.95)',
         borderRadius: '16px',
-        padding: '2.5rem',
+        padding: isTablet ? '1.5rem' : '2.5rem',
         width: '100%',
         maxWidth: '440px',
         boxShadow: '0 8px 32px rgba(0,0,0,0.08)',
@@ -84,11 +86,11 @@ export default function DownloadPage() {
         </h1>
 
         {status === 'loading' && (
-          <p style={{ color: '#999', textAlign: 'center', fontSize: '0.9rem' }}>Vérification du lien…</p>
+          <p role="status" style={{ color: '#999', textAlign: 'center', fontSize: '0.9rem' }}>Vérification du lien…</p>
         )}
 
         {status === 'error' && (
-          <div style={{ background: '#FFEBEE', color: '#C62828', padding: '0.7rem 1rem', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 500 }}>
+          <div role="alert" style={{ background: '#FFEBEE', color: '#C62828', padding: '0.7rem 1rem', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 500 }}>
             ❌ {error || 'Ce lien est invalide ou expiré.'}
           </div>
         )}
@@ -141,7 +143,7 @@ export default function DownloadPage() {
 
             {/* Error message (e.g. wrong password) */}
             {error && (
-              <div style={{ background: '#FFEBEE', color: '#C62828', padding: '0.7rem 1rem', borderRadius: '8px', marginBottom: '1rem', fontSize: '0.85rem', fontWeight: 500 }}>
+              <div role="alert" style={{ background: '#FFEBEE', color: '#C62828', padding: '0.7rem 1rem', borderRadius: '8px', marginBottom: '1rem', fontSize: '0.85rem', fontWeight: 500 }}>
                 ❌ {error}
               </div>
             )}
