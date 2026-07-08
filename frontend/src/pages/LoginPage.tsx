@@ -1,9 +1,11 @@
 import { useState, FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { useIsMobile } from '../hooks/useIsMobile';
 
 export default function LoginPage() {
   const { login } = useAuth();
+  const isTablet = useIsMobile(768);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -29,13 +31,13 @@ export default function LoginPage() {
       flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'center',
-      padding: '5rem 1.5rem 2rem',
+      padding: isTablet ? '4rem 1rem 1.5rem' : '5rem 1.5rem 2rem',
       position: 'relative',
     }}>
       <div style={{
         background: 'rgba(255,255,255,0.95)',
         borderRadius: '16px',
-        padding: '2.5rem',
+        padding: isTablet ? '1.5rem' : '2.5rem',
         width: '100%',
         maxWidth: '400px',
         boxShadow: '0 8px 32px rgba(0,0,0,0.08)',
@@ -49,7 +51,7 @@ export default function LoginPage() {
         }}>Connexion</h1>
 
         {error && (
-          <div data-testid="error-message" style={{
+          <div role="alert" data-testid="error-message" style={{
             background: '#FFEBEE',
             color: '#C62828',
             padding: '0.7rem 1rem',

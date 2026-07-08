@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../api/client';
 import { useAuth } from '../hooks/useAuth';
+import { useIsMobile } from '../hooks/useIsMobile';
 
 interface FileItem {
   id: string;
@@ -25,16 +26,6 @@ function expiryLabel(expiresAt: string): string {
   if (days <= 0) return 'Expiré';
   if (days === 1) return 'Expire dans 1 jour';
   return `Expire dans ${days} jours`;
-}
-
-function useIsMobile(breakpoint = 768): boolean {
-  const [isMobile, setIsMobile] = useState(window.innerWidth < breakpoint);
-  useEffect(() => {
-    const handler = () => setIsMobile(window.innerWidth < breakpoint);
-    window.addEventListener('resize', handler);
-    return () => window.removeEventListener('resize', handler);
-  }, [breakpoint]);
-  return isMobile;
 }
 
 export default function DashboardPage() {
@@ -114,7 +105,7 @@ export default function DashboardPage() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
         <div style={{ color: '#fff', fontWeight: 700, fontSize: '1.25rem' }}>DataShare</div>
         {isMobile && (
-          <button onClick={() => setSidebarOpen(false)} style={{ background: 'none', border: 'none', color: '#fff', fontSize: '1.5rem', cursor: 'pointer' }}>✕</button>
+          <button aria-label="Fermer le menu" onClick={() => setSidebarOpen(false)} style={{ background: 'none', border: 'none', color: '#fff', fontSize: '1.5rem', cursor: 'pointer' }}>✕</button>
         )}
       </div>
       <div style={{ background: 'rgba(255,255,255,0.2)', borderRadius: '8px', padding: '0.6rem 1rem', color: '#fff', fontSize: '0.875rem', fontWeight: 500 }}>
@@ -142,7 +133,7 @@ export default function DashboardPage() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: isMobile ? '0.75rem 1rem' : '1rem 2rem', gap: '0.5rem', flexWrap: 'wrap' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             {isMobile && (
-              <button onClick={() => setSidebarOpen(true)} style={{ background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: '#333' }}>☰</button>
+              <button aria-label="Ouvrir le menu" onClick={() => setSidebarOpen(true)} style={{ background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: '#333' }}>☰</button>
             )}
             {isMobile && <span style={{ fontWeight: 700, fontSize: '1.1rem', color: '#333' }}>DataShare</span>}
           </div>
@@ -173,13 +164,13 @@ export default function DashboardPage() {
           </div>
 
           {linkUrl && (
-            <div data-testid="link-notification" style={{ background: '#E8F5E9', color: '#2E7D32', padding: '0.7rem 1rem', borderRadius: '8px', marginBottom: '1rem', fontSize: '0.85rem', fontWeight: 500, wordBreak: 'break-all' }}>
+            <div role="status" data-testid="link-notification" style={{ background: '#E8F5E9', color: '#2E7D32', padding: '0.7rem 1rem', borderRadius: '8px', marginBottom: '1rem', fontSize: '0.85rem', fontWeight: 500, wordBreak: 'break-all' }}>
               ✅ Lien copié : {linkUrl}
             </div>
           )}
 
           {loading ? (
-            <p data-testid="loading" style={{ color: '#999', fontSize: '0.9rem' }}>Chargement…</p>
+            <p role="status" data-testid="loading" style={{ color: '#999', fontSize: '0.9rem' }}>Chargement…</p>
           ) : filteredFiles.length === 0 ? (
             <p data-testid="empty-state" style={{ color: '#999', fontSize: '0.9rem' }}>
               {filter === 'all' ? <>Aucun fichier. <Link to="/upload" style={{ color: '#D4785C' }}>Téléverser</Link></> : 'Aucun fichier dans cette catégorie.'}
@@ -208,14 +199,14 @@ export default function DashboardPage() {
                     </div>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0, ...(isMobile ? { width: '100%', justifyContent: 'flex-end' } : {}) }}>
-                    {f.hasPassword && <span style={{ fontSize: '0.85rem' }}>🔒</span>}
-                    <button data-testid="delete-file-button" onClick={() => deleteFile(f.id)} style={{
+                    {f.hasPassword && <span role="img" aria-label="Protégé par un mot de passe" style={{ fontSize: '0.85rem' }}>🔒</span>}
+                    <button aria-label={`Supprimer ${f.originalName}`} data-testid="delete-file-button" onClick={() => deleteFile(f.id)} style={{
                       padding: '0.35rem 0.7rem', border: '1px solid #D4785C', borderRadius: '6px',
                       background: 'transparent', color: '#D4785C', fontSize: '0.75rem', fontWeight: 600,
                       cursor: 'pointer', fontFamily: "'Inter', sans-serif", display: 'flex', alignItems: 'center', gap: '0.3rem',
                     }}>🗑 Supprimer</button>
                     {!isExpired && (
-                      <button data-testid="generate-link-button" onClick={() => generateLink(f.id)} style={{
+                      <button aria-label={`Générer un lien de téléchargement pour ${f.originalName}`} data-testid="generate-link-button" onClick={() => generateLink(f.id)} style={{
                         padding: '0.35rem 0.7rem', border: '1px solid #D4785C', borderRadius: '6px',
                         background: 'transparent', color: '#D4785C', fontSize: '0.75rem', fontWeight: 600,
                         cursor: 'pointer', fontFamily: "'Inter', sans-serif",

@@ -5,14 +5,12 @@ import api from '../api/client';
 interface User {
   id: string;
   email: string;
-  name: string;
 }
 
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (name: string, email: string, password: string) => Promise<void>;
   logout: () => void;
 }
 
@@ -33,11 +31,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     navigate('/dashboard');
   }, [navigate]);
 
-  const register = useCallback(async (name: string, email: string, password: string) => {
-    await api.post('/auth/register', { name, email, password });
-    navigate('/login');
-  }, [navigate]);
-
   const logout = useCallback(() => {
     api.post('/auth/logout').catch(() => {});
     localStorage.removeItem('accessToken');
@@ -47,7 +40,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [navigate]);
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated: !!user, login, register, logout }}>
+    <AuthContext.Provider value={{ user, isAuthenticated: !!user, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

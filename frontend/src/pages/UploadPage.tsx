@@ -1,9 +1,11 @@
-import { useState, useRef, FormEvent } from 'react';
+import { useState, useRef, FormEvent, KeyboardEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/client';
+import { useIsMobile } from '../hooks/useIsMobile';
 
 export default function UploadPage() {
   const navigate = useNavigate();
+  const isTablet = useIsMobile(768);
   const fileRef = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -15,6 +17,13 @@ export default function UploadPage() {
   const handleFile = (f: File) => {
     setFile(f);
     setError('');
+  };
+
+  const handleDropzoneKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      fileRef.current?.click();
+    }
   };
 
   const handleSubmit = async (e: FormEvent) => {
@@ -54,12 +63,16 @@ export default function UploadPage() {
       flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'center',
-      padding: '5rem 1.5rem 2rem',
+      padding: isTablet ? '4rem 1rem 1.5rem' : '5rem 1.5rem 2rem',
     }}>
       {!file ? (
         /* Drop zone */
         <div
+          role="button"
+          tabIndex={0}
+          aria-label="Téléverser un fichier : cliquer ou glisser-déposer un fichier ici"
           onClick={() => fileRef.current?.click()}
+          onKeyDown={handleDropzoneKeyDown}
           onDragOver={e => { e.preventDefault(); setDragOver(true); }}
           onDragLeave={() => setDragOver(false)}
           onDrop={e => { e.preventDefault(); setDragOver(false); if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]); }}
@@ -69,7 +82,7 @@ export default function UploadPage() {
             alignItems: 'center',
             gap: '1rem',
             cursor: 'pointer',
-            padding: '3rem',
+            padding: isTablet ? '2rem' : '3rem',
             borderRadius: '16px',
             border: dragOver ? '2px dashed rgba(255,255,255,0.6)' : '2px dashed transparent',
             transition: 'border 0.2s',
@@ -99,7 +112,7 @@ export default function UploadPage() {
         <div style={{
           background: 'rgba(255,255,255,0.95)',
           borderRadius: '16px',
-          padding: '2.5rem',
+          padding: isTablet ? '1.5rem' : '2.5rem',
           width: '100%',
           maxWidth: '420px',
           boxShadow: '0 8px 32px rgba(0,0,0,0.08)',
@@ -109,7 +122,7 @@ export default function UploadPage() {
           </h2>
 
           {error && (
-            <div data-testid="error-message" style={{ background: '#FFEBEE', color: '#C62828', padding: '0.7rem 1rem', borderRadius: '8px', marginBottom: '1rem', fontSize: '0.85rem', fontWeight: 500 }}>
+            <div role="alert" data-testid="error-message" style={{ background: '#FFEBEE', color: '#C62828', padding: '0.7rem 1rem', borderRadius: '8px', marginBottom: '1rem', fontSize: '0.85rem', fontWeight: 500 }}>
               {error}
             </div>
           )}
