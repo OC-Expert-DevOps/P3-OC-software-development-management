@@ -14,7 +14,7 @@ const mockPrisma = {
   },
   refreshToken: {
     create: jest.fn(),
-    findMany: jest.fn(),
+    findUnique: jest.fn(),
     update: jest.fn(),
   },
 };
@@ -133,25 +133,41 @@ describe('AuthService', () => {
 
   describe('logout', () => {
     it('should revoke matching refresh token', async () => {
-      const raw = 'some-refresh-token';
-      const hash = await bcrypt.hash(raw, 10);
-      mockPrisma.refreshToken.findMany.mockResolvedValue([
-        { id: 'rt-1', tokenHash: hash, isRevoked: false },
-      ]);
+      const selector = 'selector123';
+      const verifier = 'verifier-secret';
+      const hash = await bcrypt.hash(verifier, 10);
+      mockPrisma.refreshToken.findUnique.mockResolvedValue({ id: 'rt-1', selector, tokenHash: hash, isRevoked: false });
       mockPrisma.refreshToken.update.mockResolvedValue({});
 
-      await service.logout(raw);
+      await service.logout(`${selector}.${verifier}`);
 
+      expect(mockPrisma.refreshToken.findUnique).toHaveBeenCalledWith({ where: { selector } });
       expect(mockPrisma.refreshToken.update).toHaveBeenCalledWith({
         where: { id: 'rt-1' },
         data: { isRevoked: true },
       });
     });
 
-    it('should do nothing if token not found', async () => {
-      mockPrisma.refreshToken.findMany.mockResolvedValue([]);
+    it('should do nothing if the token is malformed (no selector.verifier split)', async () => {
+      await service.logout('not-a-valid-token');
 
-      await service.logout('unknown-token');
+      expect(mockPrisma.refreshToken.findUnique).not.toHaveBeenCalled();
+      expect(mockPrisma.refreshToken.update).not.toHaveBeenCalled();
+    });
+
+    it('should do nothing if the selector is not found', async () => {
+      mockPrisma.refreshToken.findUnique.mockResolvedValue(null);
+
+      await service.logout('unknown-selector.unknown-verifier');
+
+      expect(mockPrisma.refreshToken.update).not.toHaveBeenCalled();
+    });
+
+    it('should do nothing if the verifier does not match the stored hash', async () => {
+      const hash = await bcrypt.hash('correct-verifier', 10);
+      mockPrisma.refreshToken.findUnique.mockResolvedValue({ id: 'rt-1', selector: 'sel', tokenHash: hash, isRevoked: false });
+
+      await service.logout('sel.wrong-verifier');
 
       expect(mockPrisma.refreshToken.update).not.toHaveBeenCalled();
     });
@@ -160,25 +176,29 @@ describe('AuthService', () => {
   // ─── REFRESH ───
 
   describe('refresh', () => {
-    it('should issue new tokens for valid refresh token', async () => {
-      const raw = 'valid-refresh-token';
-      const hash = await bcrypt.hash(raw, 10);
-      mockPrisma.refreshToken.findMany.mockResolvedValue([
-        {
-          id: 'rt-1',
-          tokenHash: hash,
-          isRevoked: false,
-          expiresAt: new Date(Date.now() + 86400000),
-          user: { id: 'user-uuid-1', email: 'test@example.com' },
-        },
-      ]);
+    const validToken = () => ({
+      id: 'rt-1',
+      selector: 'sel-1',
+      isRevoked: false,
+      expiresAt: new Date(Date.now() + 86400000),
+      user: { id: 'user-uuid-1', email: 'test@example.com' },
+    });
+
+    it('should issue new tokens for valid refresh token, looked up by selector', async () => {
+      const verifier = 'valid-verifier';
+      const hash = await bcrypt.hash(verifier, 10);
+      mockPrisma.refreshToken.findUnique.mockResolvedValue({ ...validToken(), tokenHash: hash });
       mockPrisma.refreshToken.update.mockResolvedValue({});
       mockPrisma.refreshToken.create.mockResolvedValue({});
 
-      const result = await service.refresh(raw);
+      const result = await service.refresh(`sel-1.${verifier}`);
 
       expect(result.accessToken).toBeDefined();
       expect(result.refreshToken).toBeDefined();
+      expect(mockPrisma.refreshToken.findUnique).toHaveBeenCalledWith({
+        where: { selector: 'sel-1' },
+        include: { user: true },
+      });
       // Old token should be revoked
       expect(mockPrisma.refreshToken.update).toHaveBeenCalledWith({
         where: { id: 'rt-1' },
@@ -186,12 +206,38 @@ describe('AuthService', () => {
       });
     });
 
-    it('should throw UnauthorizedException for invalid refresh token', async () => {
-      mockPrisma.refreshToken.findMany.mockResolvedValue([]);
+    it('should throw UnauthorizedException for a malformed token', async () => {
+      await expect(service.refresh('not-a-valid-format')).rejects.toThrow(UnauthorizedException);
+      expect(mockPrisma.refreshToken.findUnique).not.toHaveBeenCalled();
+    });
 
-      await expect(service.refresh('bad-token')).rejects.toThrow(
-        UnauthorizedException,
-      );
+    it('should throw UnauthorizedException when the selector is not found', async () => {
+      mockPrisma.refreshToken.findUnique.mockResolvedValue(null);
+
+      await expect(service.refresh('sel.verifier')).rejects.toThrow(UnauthorizedException);
+    });
+
+    it('should throw UnauthorizedException when the token is revoked', async () => {
+      mockPrisma.refreshToken.findUnique.mockResolvedValue({ ...validToken(), tokenHash: 'x', isRevoked: true });
+
+      await expect(service.refresh('sel-1.verifier')).rejects.toThrow(UnauthorizedException);
+    });
+
+    it('should throw UnauthorizedException when the token has expired', async () => {
+      mockPrisma.refreshToken.findUnique.mockResolvedValue({
+        ...validToken(),
+        tokenHash: 'x',
+        expiresAt: new Date(Date.now() - 1000),
+      });
+
+      await expect(service.refresh('sel-1.verifier')).rejects.toThrow(UnauthorizedException);
+    });
+
+    it('should throw UnauthorizedException when the verifier does not match', async () => {
+      const hash = await bcrypt.hash('correct-verifier', 10);
+      mockPrisma.refreshToken.findUnique.mockResolvedValue({ ...validToken(), tokenHash: hash });
+
+      await expect(service.refresh('sel-1.wrong-verifier')).rejects.toThrow(UnauthorizedException);
     });
   });
 });

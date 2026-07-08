@@ -6,7 +6,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
-import { randomUUID } from 'crypto';
+import { randomBytes } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -83,54 +83,58 @@ export class AuthService {
    * Revoke a refresh token (logout).
    */
   async logout(refreshToken: string): Promise<void> {
-    // Find and revoke the token
-    const tokens = await this.prisma.refreshToken.findMany({
-      where: { isRevoked: false },
-    });
+    const parsed = this.parseRefreshToken(refreshToken);
+    if (!parsed) return;
 
-    for (const t of tokens) {
-      const match = await bcrypt.compare(refreshToken, t.tokenHash);
-      if (match) {
-        await this.prisma.refreshToken.update({
-          where: { id: t.id },
-          data: { isRevoked: true },
-        });
-        return;
-      }
-    }
+    const token = await this.prisma.refreshToken.findUnique({
+      where: { selector: parsed.selector },
+    });
+    if (!token || token.isRevoked) return;
+
+    const match = await bcrypt.compare(parsed.verifier, token.tokenHash);
+    if (!match) return;
+
+    await this.prisma.refreshToken.update({
+      where: { id: token.id },
+      data: { isRevoked: true },
+    });
   }
 
   /**
    * Refresh an access token using a valid refresh token.
    */
   async refresh(refreshToken: string) {
-    const tokens = await this.prisma.refreshToken.findMany({
-      where: { isRevoked: false, expiresAt: { gt: new Date() } },
+    const invalid = () => new UnauthorizedException('Invalid or expired refresh token');
+
+    const parsed = this.parseRefreshToken(refreshToken);
+    if (!parsed) throw invalid();
+
+    const token = await this.prisma.refreshToken.findUnique({
+      where: { selector: parsed.selector },
       include: { user: true },
     });
-
-    for (const t of tokens) {
-      const match = await bcrypt.compare(refreshToken, t.tokenHash);
-      if (match) {
-        // Revoke old token (rotation)
-        await this.prisma.refreshToken.update({
-          where: { id: t.id },
-          data: { isRevoked: true },
-        });
-
-        // Issue new tokens
-        const accessToken = this.generateAccessToken(t.user.id, t.user.email);
-        const newRefreshToken = await this.createRefreshToken(t.user.id);
-
-        return {
-          accessToken,
-          refreshToken: newRefreshToken,
-          user: { id: t.user.id, email: t.user.email },
-        };
-      }
+    if (!token || token.isRevoked || token.expiresAt <= new Date()) {
+      throw invalid();
     }
 
-    throw new UnauthorizedException('Invalid or expired refresh token');
+    const match = await bcrypt.compare(parsed.verifier, token.tokenHash);
+    if (!match) throw invalid();
+
+    // Revoke old token (rotation)
+    await this.prisma.refreshToken.update({
+      where: { id: token.id },
+      data: { isRevoked: true },
+    });
+
+    // Issue new tokens
+    const accessToken = this.generateAccessToken(token.user.id, token.user.email);
+    const newRefreshToken = await this.createRefreshToken(token.user.id);
+
+    return {
+      accessToken,
+      refreshToken: newRefreshToken,
+      user: { id: token.user.id, email: token.user.email },
+    };
   }
 
   // ─── Private helpers ───
@@ -142,17 +146,31 @@ export class AuthService {
     return jwt.sign({ sub: userId, email }, secret, { expiresIn });
   }
 
+  /**
+   * Refresh tokens are `${selector}.${verifier}`. The selector is stored in
+   * plaintext with a unique index, so logout()/refresh() can look up the
+   * matching row directly instead of scanning every active token and running
+   * bcrypt.compare() against each one. Only the verifier is secret — it's
+   * never stored, only its bcrypt hash (tokenHash) is.
+   */
+  private parseRefreshToken(raw: string): { selector: string; verifier: string } | null {
+    const [selector, verifier] = raw.split('.', 2);
+    if (!selector || !verifier) return null;
+    return { selector, verifier };
+  }
+
   private async createRefreshToken(userId: string): Promise<string> {
-    const raw = randomUUID();
-    const tokenHash = await bcrypt.hash(raw, SALT_ROUNDS);
+    const selector = randomBytes(16).toString('hex');
+    const verifier = randomBytes(32).toString('hex');
+    const tokenHash = await bcrypt.hash(verifier, SALT_ROUNDS);
     const ttl = this.config.get<string>('REFRESH_TOKEN_EXPIRES_IN') || '7d';
     const days = parseInt(ttl) || 7;
     const expiresAt = new Date(Date.now() + days * 24 * 60 * 60 * 1000);
 
     await this.prisma.refreshToken.create({
-      data: { userId, tokenHash, expiresAt },
+      data: { userId, selector, tokenHash, expiresAt },
     });
 
-    return raw;
+    return `${selector}.${verifier}`;
   }
 }

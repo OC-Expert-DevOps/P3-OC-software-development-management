@@ -116,7 +116,9 @@ export class DownloadService {
       throw new NotFoundException('File no longer available');
     }
 
-    // Check max downloads
+    // Fast-path rejection so an already-exhausted link doesn't even prompt
+    // for a password. Not the actual enforcement — see the atomic update
+    // below, which is what a concurrent request can't race past.
     if (token.maxDownloads > 0 && token.downloadCount >= token.maxDownloads) {
       throw new GoneException('Download limit reached');
     }
@@ -132,11 +134,20 @@ export class DownloadService {
       }
     }
 
-    // Increment download count
-    await this.prisma.downloadToken.update({
-      where: { id: token.id },
+    // Atomically re-check the limit and increment in a single statement:
+    // the WHERE clause is evaluated by Postgres at update time, so two
+    // concurrent downloads on a token at its last authorized use can't both
+    // read "count < max" before either has written — only one update matches.
+    const incremented = await this.prisma.downloadToken.updateMany({
+      where: {
+        id: token.id,
+        OR: [{ maxDownloads: 0 }, { downloadCount: { lt: token.maxDownloads } }],
+      },
       data: { downloadCount: { increment: 1 } },
     });
+    if (incremented.count === 0) {
+      throw new GoneException('Download limit reached');
+    }
 
     // Record the download in history (was previously never written — the
     // DownloadHistory table stayed empty regardless of real download traffic).
