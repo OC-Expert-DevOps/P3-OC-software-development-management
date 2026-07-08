@@ -15,6 +15,7 @@ const mockPrisma = {
     findMany: jest.fn(),
     findUnique: jest.fn(),
     update: jest.fn(),
+    updateMany: jest.fn(),
   },
   downloadHistory: {
     create: jest.fn(),
@@ -166,9 +167,9 @@ describe('DownloadService', () => {
       file: { storageKey: 'user-1/file.txt', originalName: 'file.txt', mimeType: 'text/plain', isDeleted: false, passwordHash: null },
     };
 
-    it('should stream the file, increment downloadCount and record history', async () => {
+    it('should stream the file, atomically increment downloadCount and record history', async () => {
       mockPrisma.downloadToken.findUnique.mockResolvedValue(baseToken);
-      mockPrisma.downloadToken.update.mockResolvedValue({});
+      mockPrisma.downloadToken.updateMany.mockResolvedValue({ count: 1 });
       mockPrisma.downloadHistory.create.mockResolvedValue({});
       mockMinio.getFileStream.mockResolvedValue(fileStream);
 
@@ -176,13 +177,28 @@ describe('DownloadService', () => {
 
       expect(result.stream).toBe('fake-stream');
       expect(result.originalName).toBe('file.txt');
-      expect(mockPrisma.downloadToken.update).toHaveBeenCalledWith({
-        where: { id: 'token-1' },
+      expect(mockPrisma.downloadToken.updateMany).toHaveBeenCalledWith({
+        where: { id: 'token-1', OR: [{ maxDownloads: 0 }, { downloadCount: { lt: 0 } }] },
         data: { downloadCount: { increment: 1 } },
       });
       expect(mockPrisma.downloadHistory.create).toHaveBeenCalledWith({
         data: { fileId: 'file-1', tokenId: 'token-1', ipAddress: '203.0.113.5', userAgent: 'jest-agent' },
       });
+    });
+
+    it('should throw GoneException if a concurrent download already used up the last slot', async () => {
+      // downloadCount (4) < maxDownloads (5): the fast-path check passes, but
+      // the atomic update reports 0 rows matched — another request won the race.
+      mockPrisma.downloadToken.findUnique.mockResolvedValue({
+        ...baseToken,
+        downloadCount: 4,
+        maxDownloads: 5,
+      });
+      mockPrisma.downloadToken.updateMany.mockResolvedValue({ count: 0 });
+
+      await expect(service.streamFile('valid-uuid')).rejects.toThrow(GoneException);
+      expect(mockMinio.getFileStream).not.toHaveBeenCalled();
+      expect(mockPrisma.downloadHistory.create).not.toHaveBeenCalled();
     });
 
     it('should throw NotFoundException if token does not exist', async () => {
@@ -246,7 +262,7 @@ describe('DownloadService', () => {
         ...baseToken,
         file: { ...baseToken.file, passwordHash: hash },
       });
-      mockPrisma.downloadToken.update.mockResolvedValue({});
+      mockPrisma.downloadToken.updateMany.mockResolvedValue({ count: 1 });
       mockPrisma.downloadHistory.create.mockResolvedValue({});
       mockMinio.getFileStream.mockResolvedValue(fileStream);
 
