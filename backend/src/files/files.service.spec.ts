@@ -20,7 +20,6 @@ const mockPrisma = {
 const mockMinio = {
   uploadFile: jest.fn(),
   deleteFile: jest.fn(),
-  getPresignedUrl: jest.fn(),
 };
 
 const mockConfig = {

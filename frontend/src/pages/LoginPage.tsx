@@ -6,6 +6,9 @@ import { useIsMobile } from '../hooks/useIsMobile';
 export default function LoginPage() {
   const { login } = useAuth();
   const isTablet = useIsMobile(768);
+  // Navbar switches from fixed to static in normal document flow below this
+  // width (see Navbar.tsx) — it no longer needs top padding reserved to clear it.
+  const isMobileNav = useIsMobile(430);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -31,7 +34,7 @@ export default function LoginPage() {
       flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'center',
-      padding: isTablet ? '4rem 1rem 1.5rem' : '5rem 1.5rem 2rem',
+      padding: isMobileNav ? '1.5rem 1rem' : isTablet ? '4rem 1rem 1.5rem' : '5rem 1.5rem 2rem',
       position: 'relative',
     }}>
       <div style={{
@@ -64,10 +67,11 @@ export default function LoginPage() {
 
         <form onSubmit={handleSubmit}>
           <div style={{ marginBottom: '1.25rem' }}>
-            <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.875rem', color: '#666', fontWeight: 500 }}>
+            <label htmlFor="login-email" style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.875rem', color: '#666', fontWeight: 500 }}>
               Email
             </label>
             <input
+              id="login-email"
               type="email"
               placeholder="Saisissez votre email..."
               value={email}
@@ -79,7 +83,6 @@ export default function LoginPage() {
                 border: '1px solid #E0E0E0',
                 borderRadius: '8px',
                 fontSize: '0.9rem',
-                outline: 'none',
                 boxSizing: 'border-box',
                 fontFamily: "'Inter', sans-serif",
               }}
@@ -87,10 +90,11 @@ export default function LoginPage() {
           </div>
 
           <div style={{ marginBottom: '1.25rem' }}>
-            <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.875rem', color: '#666', fontWeight: 500 }}>
+            <label htmlFor="login-password" style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.875rem', color: '#666', fontWeight: 500 }}>
               Mot de passe
             </label>
             <input
+              id="login-password"
               type="password"
               placeholder="Saisissez votre mot de passe..."
               value={password}
@@ -102,7 +106,6 @@ export default function LoginPage() {
                 border: '1px solid #E0E0E0',
                 borderRadius: '8px',
                 fontSize: '0.9rem',
-                outline: 'none',
                 boxSizing: 'border-box',
                 fontFamily: "'Inter', sans-serif",
               }}
@@ -110,7 +113,7 @@ export default function LoginPage() {
           </div>
 
           <div style={{ textAlign: 'center', marginBottom: '1.25rem' }}>
-            <Link to="/register" style={{ color: '#D4785C', fontSize: '0.875rem', textDecoration: 'none', fontWeight: 500 }}>
+            <Link to="/register" style={{ display: 'inline-block', padding: '0.5rem', color: '#D4785C', fontSize: '0.875rem', textDecoration: 'none', fontWeight: 500 }}>
               Créer un compte
             </Link>
           </div>

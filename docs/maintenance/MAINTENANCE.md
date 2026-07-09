@@ -321,7 +321,6 @@ docker compose -f infra/docker-compose.yml logs --tail=30 backend
 |--------|-------|------------|
 | 413 Payload Too Large | Limite de taille du corps Nginx | Définir `client_max_body_size 1g;` dans nginx.conf |
 | MinIO connection refused | Conteneur MinIO non démarré | `docker compose up -d minio` |
-| `SignatureDoesNotMatch` | Incompatibilité URL interne vs publique | Définir `MINIO_PUBLIC_URL` correctement |
 
 ### Problèmes d'authentification
 

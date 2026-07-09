@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { HttpStatus } from '@nestjs/common';
+import { HttpStatus, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
@@ -89,7 +89,7 @@ describe('AuthController', () => {
       await controller.logout(req, res);
 
       expect(mockAuthService.logout).toHaveBeenCalledWith('old-token');
-      expect(res.clearCookie).toHaveBeenCalledWith('refresh_token');
+      expect(res.clearCookie).toHaveBeenCalledWith('refresh_token', { path: '/api/auth' });
       expect(res.status).toHaveBeenCalledWith(HttpStatus.NO_CONTENT);
       expect(res.send).toHaveBeenCalled();
     });
@@ -108,6 +108,14 @@ describe('AuthController', () => {
 
       expect(mockAuthService.refresh).toHaveBeenCalledWith('old-refresh');
       expect(res.status).toHaveBeenCalledWith(HttpStatus.OK);
+    });
+
+    it('should throw UnauthorizedException (standard error shape) when no cookie is present', async () => {
+      const req = { cookies: {} } as any;
+      const res = mockRes();
+
+      await expect(controller.refresh(req, res)).rejects.toThrow(UnauthorizedException);
+      expect(mockAuthService.refresh).not.toHaveBeenCalled();
     });
   });
 });

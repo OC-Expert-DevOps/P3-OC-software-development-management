@@ -1035,7 +1035,11 @@ paths:
           description: File password (required if the file is password-protected)
       responses:
         "200":
-          description: File content, streamed with Content-Disposition attachment headers
+          description: >-
+            File content, streamed with Content-Disposition attachment headers.
+            Content-Type reflects the file's real stored MIME type when known,
+            falling back to application/octet-stream otherwise — not always
+            application/octet-stream literally.
           content:
             application/octet-stream:
               schema:

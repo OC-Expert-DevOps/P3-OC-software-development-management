@@ -6,6 +6,7 @@ import { useIsMobile } from '../hooks/useIsMobile';
 export default function RegisterPage() {
   const navigate = useNavigate();
   const isTablet = useIsMobile(768);
+  const isMobileNav = useIsMobile(430);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -38,7 +39,6 @@ export default function RegisterPage() {
     border: '1px solid #E0E0E0',
     borderRadius: '8px',
     fontSize: '0.9rem',
-    outline: 'none',
     boxSizing: 'border-box',
     fontFamily: "'Inter', sans-serif",
   };
@@ -50,7 +50,7 @@ export default function RegisterPage() {
       flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'center',
-      padding: isTablet ? '4rem 1rem 1.5rem' : '5rem 1.5rem 2rem',
+      padding: isMobileNav ? '1.5rem 1rem' : isTablet ? '4rem 1rem 1.5rem' : '5rem 1.5rem 2rem',
       position: 'relative',
     }}>
       <div style={{
@@ -83,10 +83,11 @@ export default function RegisterPage() {
 
         <form onSubmit={handleSubmit}>
           <div style={{ marginBottom: '1.25rem' }}>
-            <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.875rem', color: '#666', fontWeight: 500 }}>
+            <label htmlFor="register-email" style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.875rem', color: '#666', fontWeight: 500 }}>
               Email
             </label>
             <input
+              id="register-email"
               type="email"
               placeholder="Saisissez votre email..."
               value={email}
@@ -97,24 +98,29 @@ export default function RegisterPage() {
           </div>
 
           <div style={{ marginBottom: '1.25rem' }}>
-            <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.875rem', color: '#666', fontWeight: 500 }}>
+            <label htmlFor="register-password" style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.875rem', color: '#666', fontWeight: 500 }}>
               Mot de passe
             </label>
             <input
+              id="register-password"
               type="password"
-              placeholder="Min. 8 caractères, 1 majuscule, 1 spécial"
+              placeholder="Mot de passe"
               value={password}
               onChange={e => setPassword(e.target.value)}
               required
               style={inputStyle}
             />
+            <div style={{ fontSize: '0.75rem', color: '#999', marginTop: '0.25rem' }}>
+              Min. 8 caractères, 1 majuscule, 1 minuscule, 1 caractère spécial
+            </div>
           </div>
 
           <div style={{ marginBottom: '1.25rem' }}>
-            <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.875rem', color: '#666', fontWeight: 500 }}>
+            <label htmlFor="register-confirm-password" style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.875rem', color: '#666', fontWeight: 500 }}>
               Confirmer le mot de passe
             </label>
             <input
+              id="register-confirm-password"
               type="password"
               placeholder="Ressaisissez votre mot de passe..."
               value={confirmPassword}
@@ -133,7 +139,7 @@ export default function RegisterPage() {
           </div>
 
           <div style={{ textAlign: 'center', marginBottom: '1.25rem' }}>
-            <Link to="/login" style={{ color: '#D4785C', fontSize: '0.875rem', textDecoration: 'none', fontWeight: 500 }}>
+            <Link to="/login" style={{ display: 'inline-block', padding: '0.5rem', color: '#D4785C', fontSize: '0.875rem', textDecoration: 'none', fontWeight: 500 }}>
               Déjà un compte ? Se connecter
             </Link>
           </div>

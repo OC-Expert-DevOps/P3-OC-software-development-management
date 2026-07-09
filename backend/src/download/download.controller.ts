@@ -6,6 +6,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  ParseUUIDPipe,
   Post,
   Query,
   Req,
@@ -32,7 +33,7 @@ export class DownloadController {
   @Post('files/:id/links')
   async createLink(
     @Req() req: any,
-    @Param('id') fileId: string,
+    @Param('id', ParseUUIDPipe) fileId: string,
     @Body() dto: CreateLinkDto,
   ) {
     const userId = req.user.userId as string;
@@ -42,7 +43,7 @@ export class DownloadController {
   @ApiBearerAuth()
   @UseGuards(JwtGuard)
   @Get('files/:id/links')
-  async findByFile(@Req() req: any, @Param('id') fileId: string) {
+  async findByFile(@Req() req: any, @Param('id', ParseUUIDPipe) fileId: string) {
     const userId = req.user.userId as string;
     return this.downloadService.findByFile(fileId, userId);
   }
@@ -53,8 +54,8 @@ export class DownloadController {
   @HttpCode(HttpStatus.NO_CONTENT)
   async revokeLink(
     @Req() req: any,
-    @Param('id') fileId: string,
-    @Param('tokenId') tokenId: string,
+    @Param('id', ParseUUIDPipe) fileId: string,
+    @Param('tokenId', ParseUUIDPipe) tokenId: string,
   ) {
     const userId = req.user.userId as string;
     await this.downloadService.revokeLink(fileId, tokenId, userId);

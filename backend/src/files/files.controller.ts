@@ -7,6 +7,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  ParseUUIDPipe,
   Post,
   Put,
   Req,
@@ -16,11 +17,19 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import { JwtGuard } from '../auth/guards/jwt.guard';
 import { FilesService } from './files.service';
 import { UploadFileDto } from './dto/upload-file.dto';
 import { SetPasswordDto } from './dto/set-password.dto';
 import { ManageTagsDto } from './dto/manage-tags.dto';
+
+// Multer buffers the whole request body in memory before FilesService gets a
+// chance to check file.size — without this, an oversized request is rejected
+// only *after* being fully buffered. Read from env directly (decorators are
+// evaluated before Nest's DI container exists, so ConfigService isn't
+// available here) — kept in sync with FilesService's own default.
+const MAX_FILE_SIZE_BYTES = Number(process.env.MAX_FILE_SIZE_BYTES) || 1073741824;
 
 @ApiTags('Files')
 @Controller('files')
@@ -30,7 +39,10 @@ export class FilesController {
   // --- Anonymous route (NO JWT) ---
 
   @Post('anonymous')
-  @UseInterceptors(FileInterceptor('file'))
+  // No JWT guard on this route, so it's a more attractive DoS/spam target
+  // than the authenticated upload — throttled tighter than the global default.
+  @Throttle({ default: { limit: 20, ttl: 60000 } })
+  @UseInterceptors(FileInterceptor('file', { limits: { fileSize: MAX_FILE_SIZE_BYTES } }))
   async uploadAnonymous(@UploadedFile() file: Express.Multer.File) {
     return this.filesService.uploadAnonymous(file);
   }
@@ -40,7 +52,7 @@ export class FilesController {
   @ApiBearerAuth()
   @UseGuards(JwtGuard)
   @Post('upload')
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(FileInterceptor('file', { limits: { fileSize: MAX_FILE_SIZE_BYTES } }))
   async uploadFile(
     @Req() req: any,
     @UploadedFile() file: Express.Multer.File,
@@ -70,7 +82,7 @@ export class FilesController {
   @ApiBearerAuth()
   @UseGuards(JwtGuard)
   @Get(':id')
-  async findOne(@Req() req: any, @Param('id') id: string) {
+  async findOne(@Req() req: any, @Param('id', ParseUUIDPipe) id: string) {
     const userId = req.user.userId as string;
     return this.filesService.findOne(id, userId);
   }
@@ -79,7 +91,7 @@ export class FilesController {
   @UseGuards(JwtGuard)
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async remove(@Req() req: any, @Param('id') id: string) {
+  async remove(@Req() req: any, @Param('id', ParseUUIDPipe) id: string) {
     const userId = req.user.userId as string;
     await this.filesService.remove(id, userId);
   }
@@ -91,7 +103,7 @@ export class FilesController {
   @Put(':id/password')
   async setPassword(
     @Req() req: any,
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: SetPasswordDto,
   ) {
     const userId = req.user.userId as string;
@@ -102,7 +114,7 @@ export class FilesController {
   @UseGuards(JwtGuard)
   @Delete(':id/password')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async removePassword(@Req() req: any, @Param('id') id: string) {
+  async removePassword(@Req() req: any, @Param('id', ParseUUIDPipe) id: string) {
     const userId = req.user.userId as string;
     await this.filesService.removePassword(id, userId);
   }
@@ -114,7 +126,7 @@ export class FilesController {
   @Put(':id/tags')
   async setTags(
     @Req() req: any,
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: ManageTagsDto,
   ) {
     const userId = req.user.userId as string;
@@ -124,7 +136,7 @@ export class FilesController {
   @ApiBearerAuth()
   @UseGuards(JwtGuard)
   @Get(':id/tags')
-  async getTags(@Req() req: any, @Param('id') id: string) {
+  async getTags(@Req() req: any, @Param('id', ParseUUIDPipe) id: string) {
     const userId = req.user.userId as string;
     return this.filesService.getTags(id, userId);
   }
@@ -134,7 +146,7 @@ export class FilesController {
   @ApiBearerAuth()
   @UseGuards(JwtGuard)
   @Get(':id/history')
-  async getHistory(@Req() req: any, @Param('id') id: string) {
+  async getHistory(@Req() req: any, @Param('id', ParseUUIDPipe) id: string) {
     const userId = req.user.userId as string;
     return this.filesService.getHistory(id, userId);
   }

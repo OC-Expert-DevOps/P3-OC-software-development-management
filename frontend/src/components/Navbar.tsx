@@ -1,16 +1,20 @@
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { useIsMobile } from '../hooks/useIsMobile';
 
 export default function Navbar() {
   const { isAuthenticated, logout } = useAuth();
+  const isMobile = useIsMobile(430);
 
   return (
     <nav style={{
       display: 'flex',
+      flexDirection: isMobile ? 'column' : 'row',
       justifyContent: 'space-between',
-      alignItems: 'center',
-      padding: '1rem 2rem',
-      position: 'fixed',
+      alignItems: isMobile ? 'stretch' : 'center',
+      gap: isMobile ? '0.5rem' : 0,
+      padding: isMobile ? '0.75rem 1rem' : '1rem 2rem',
+      position: isMobile ? 'static' : 'fixed',
       top: 0,
       left: 0,
       right: 0,
@@ -19,7 +23,7 @@ export default function Navbar() {
       <Link to="/" style={{
         color: '#333',
         fontWeight: 700,
-        fontSize: '1.25rem',
+        fontSize: isMobile ? '1.1rem' : '1.25rem',
         textDecoration: 'none',
         letterSpacing: '-0.02em',
         fontFamily: "'Inter', sans-serif",
@@ -27,7 +31,7 @@ export default function Navbar() {
         DataShare
       </Link>
 
-      <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+      <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
         {isAuthenticated ? (
           <>
             <Link to="/dashboard" style={{
