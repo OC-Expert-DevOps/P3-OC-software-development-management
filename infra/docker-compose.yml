@@ -71,8 +71,14 @@ services:
     container_name: datashare-minio
     command: server /data --console-address ":9001"
     ports:
-      - "9000:9000"   # MinIO S3 API (presigned URLs)
-      - "9001:9001"   # MinIO console (dev only)
+      # Bound to loopback only: the backend reaches MinIO over the internal
+      # Docker network (MINIO_ENDPOINT=minio), these are for local dev
+      # access only (e.g. the console) — there is no production compose
+      # override in this repo, so an unrestricted 0.0.0.0 bind here would be
+      # the only thing standing between the internet and admin access to
+      # every stored file if this file were ever run on a host with a public IP.
+      - "127.0.0.1:9000:9000"   # MinIO S3 API
+      - "127.0.0.1:9001:9001"   # MinIO console (dev only)
     env_file:
       - ../.env
     environment:

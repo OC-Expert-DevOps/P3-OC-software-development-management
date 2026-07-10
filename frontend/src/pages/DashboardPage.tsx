@@ -36,6 +36,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<Filter>('all');
   const [linkUrl, setLinkUrl] = useState('');
+  const [linkCopied, setLinkCopied] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const fetchFiles = async () => {
@@ -60,8 +61,13 @@ export default function DashboardPage() {
     const { data } = await api.post(`/files/${id}/links`, { ttlSeconds: 604800 });
     const token = data.token || data.data?.token;
     const url = `${window.location.origin}/download/${token}`;
+    try {
+      await navigator.clipboard?.writeText(url);
+      setLinkCopied(true);
+    } catch {
+      setLinkCopied(false);
+    }
     setLinkUrl(url);
-    navigator.clipboard?.writeText(url);
   };
 
   const getExt = (name: string) => {
@@ -105,7 +111,7 @@ export default function DashboardPage() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
         <div style={{ color: '#fff', fontWeight: 700, fontSize: '1.25rem' }}>DataShare</div>
         {isMobile && (
-          <button aria-label="Fermer le menu" onClick={() => setSidebarOpen(false)} style={{ background: 'none', border: 'none', color: '#fff', fontSize: '1.5rem', cursor: 'pointer' }}>✕</button>
+          <button aria-label="Fermer le menu" onClick={() => setSidebarOpen(false)} style={{ background: 'none', border: 'none', color: '#fff', fontSize: '1.5rem', cursor: 'pointer', width: '44px', height: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
         )}
       </div>
       <div style={{ background: 'rgba(255,255,255,0.2)', borderRadius: '8px', padding: '0.6rem 1rem', color: '#fff', fontSize: '0.875rem', fontWeight: 500 }}>
@@ -133,7 +139,7 @@ export default function DashboardPage() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: isMobile ? '0.75rem 1rem' : '1rem 2rem', gap: '0.5rem', flexWrap: 'wrap' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             {isMobile && (
-              <button aria-label="Ouvrir le menu" onClick={() => setSidebarOpen(true)} style={{ background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: '#333' }}>☰</button>
+              <button aria-label="Ouvrir le menu" onClick={() => setSidebarOpen(true)} style={{ background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: '#333', width: '44px', height: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginLeft: '-0.5rem' }}>☰</button>
             )}
             {isMobile && <span style={{ fontWeight: 700, fontSize: '1.1rem', color: '#333' }}>DataShare</span>}
           </div>
@@ -165,7 +171,7 @@ export default function DashboardPage() {
 
           {linkUrl && (
             <div role="status" data-testid="link-notification" style={{ background: '#E8F5E9', color: '#2E7D32', padding: '0.7rem 1rem', borderRadius: '8px', marginBottom: '1rem', fontSize: '0.85rem', fontWeight: 500, wordBreak: 'break-all' }}>
-              ✅ Lien copié : {linkUrl}
+              {linkCopied ? '✅ Lien copié : ' : 'Lien généré (copie automatique indisponible) : '}{linkUrl}
             </div>
           )}
 
@@ -194,7 +200,7 @@ export default function DashboardPage() {
                       fontSize: '0.65rem', fontWeight: 700, color: '#C0654A', flexShrink: 0,
                     }}>{getExt(f.originalName)}</div>
                     <div style={{ minWidth: 0 }}>
-                      <div data-testid="file-name" style={{ fontSize: '0.875rem', fontWeight: 500, color: '#333', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{f.originalName}</div>
+                      <div title={f.originalName} data-testid="file-name" style={{ fontSize: '0.875rem', fontWeight: 500, color: '#333', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{f.originalName}</div>
                       <div data-testid="file-expiry" style={{ fontSize: '0.75rem', color: isExpired ? '#E53935' : '#999' }}>{expiryLabel(f.expiresAt)}</div>
                     </div>
                   </div>
@@ -206,7 +212,7 @@ export default function DashboardPage() {
                       cursor: 'pointer', fontFamily: "'Inter', sans-serif", display: 'flex', alignItems: 'center', gap: '0.3rem',
                     }}>🗑 Supprimer</button>
                     {!isExpired && (
-                      <button aria-label={`Générer un lien de téléchargement pour ${f.originalName}`} data-testid="generate-link-button" onClick={() => generateLink(f.id)} style={{
+                      <button aria-label={`Accéder : générer un lien de téléchargement pour ${f.originalName}`} data-testid="generate-link-button" onClick={() => generateLink(f.id)} style={{
                         padding: '0.35rem 0.7rem', border: '1px solid #D4785C', borderRadius: '6px',
                         background: 'transparent', color: '#D4785C', fontSize: '0.75rem', fontWeight: 600,
                         cursor: 'pointer', fontFamily: "'Inter', sans-serif",

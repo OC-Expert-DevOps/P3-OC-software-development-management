@@ -39,7 +39,6 @@ make certs
 | `MINIO_SECRET_KEY` | Oui | string | — | stockage | Clé secrète MinIO | `changeme123` |
 | `MINIO_BUCKET` | Non | string | `datashare` | stockage | Nom du bucket MinIO | `datashare` |
 | `MINIO_USE_SSL` | Non | bool | `false` | stockage | Activer SSL pour MinIO | `false` |
-| `MINIO_PUBLIC_URL` | Oui | url | — | stockage | URL MinIO publique (pour les URLs pré-signées) | `https://localhost:9000` |
 | `JWT_SECRET` | Oui | string | — | auth | Secret pour la signature JWT | `votre-secret-jwt-256-bits` |
 | `JWT_EXPIRES_IN` | Non | string | `15m` | auth | Durée de vie du token d'accès | `15m` |
 | `REFRESH_TOKEN_EXPIRES_IN` | Non | string (durée) | `7d` | auth | Durée de vie du token de rafraîchissement | `7d` |

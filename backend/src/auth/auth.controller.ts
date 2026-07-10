@@ -6,6 +6,7 @@ import {
   Post,
   Req,
   Res,
+  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -73,7 +74,7 @@ export class AuthController {
       await this.authService.logout(refreshToken);
     }
 
-    res.clearCookie('refresh_token');
+    res.clearCookie('refresh_token', { path: '/api/auth' });
     return res.status(HttpStatus.NO_CONTENT).send();
   }
 
@@ -86,9 +87,7 @@ export class AuthController {
   async refresh(@Req() req: Request, @Res() res: Response) {
     const refreshToken = req.cookies?.['refresh_token'];
     if (!refreshToken) {
-      return res
-        .status(HttpStatus.UNAUTHORIZED)
-        .json({ error: { code: 'Unauthorized', message: 'No refresh token' } });
+      throw new UnauthorizedException('No refresh token');
     }
 
     const result = await this.authService.refresh(refreshToken);

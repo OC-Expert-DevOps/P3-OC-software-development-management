@@ -20,7 +20,6 @@ const mockPrisma = {
 const mockMinio = {
   uploadFile: jest.fn(),
   deleteFile: jest.fn(),
-  getPresignedUrl: jest.fn(),
 };
 
 const mockConfig = {
@@ -117,6 +116,17 @@ describe('FilesService', () => {
         buffer: Buffer.from([0x00, 0x01, 0x02, 0xff, 0xfe]),
       } as any;
       await expect(service.uploadFile('user-1', binaryFile)).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
+    it('should reject text/plain content containing a script tag', async () => {
+      const scriptFile = {
+        ...file,
+        mimetype: 'text/plain',
+        buffer: Buffer.from('hello <script>alert(1)</script> world'),
+      } as any;
+      await expect(service.uploadFile('user-1', scriptFile)).rejects.toThrow(
         BadRequestException,
       );
     });

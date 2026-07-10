@@ -3,9 +3,29 @@ import { useParams } from 'react-router-dom';
 import api from '../api/client';
 import { useIsMobile } from '../hooks/useIsMobile';
 
+// The backend's error messages are an internal English-language API contract
+// (see docs/architecture/openapi.yaml), not user-facing copy — showing them
+// as-is breaks the French UI and, for a 429, would leak the raw exception
+// class name ("ThrottlerException: Too Many Requests") to the visitor.
+function translateDownloadError(status: number | undefined): string {
+  switch (status) {
+    case 401:
+      return 'Mot de passe incorrect.';
+    case 404:
+      return 'Ce lien est invalide ou introuvable.';
+    case 410:
+      return 'Ce lien de téléchargement a expiré ou a atteint sa limite d\'utilisation.';
+    case 429:
+      return 'Trop de tentatives. Merci de réessayer dans quelques instants.';
+    default:
+      return 'Téléchargement échoué. Merci de réessayer.';
+  }
+}
+
 export default function DownloadPage() {
   const { token } = useParams<{ token: string }>();
   const isTablet = useIsMobile(768);
+  const isMobileNav = useIsMobile(430);
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [error, setError] = useState('');
   const [fileName, setFileName] = useState('');
@@ -23,8 +43,7 @@ export default function DownloadPage() {
         setHasPassword(data.hasPassword === true);
         setStatus('ready');
       } catch (err: any) {
-        const msg = err.response?.data?.message || 'Ce lien est invalide ou expiré.';
-        setError(msg);
+        setError(translateDownloadError(err.response?.status));
         setStatus('error');
       }
     };
@@ -40,9 +59,7 @@ export default function DownloadPage() {
       const resp = await fetch(`/api/download/${token}${params}`);
 
       if (!resp.ok) {
-        const body = await resp.json().catch(() => null);
-        const msg = body?.message || (resp.status === 401 ? 'Mot de passe incorrect' : 'Téléchargement échoué');
-        setError(msg);
+        setError(translateDownloadError(resp.status));
         setDownloading(false);
         return;
       }
@@ -71,7 +88,7 @@ export default function DownloadPage() {
       flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'center',
-      padding: isTablet ? '4rem 1rem 1.5rem' : '5rem 1.5rem 2rem',
+      padding: isMobileNav ? '1.5rem 1rem' : isTablet ? '4rem 1rem 1.5rem' : '5rem 1.5rem 2rem',
     }}>
       <div style={{
         background: 'rgba(255,255,255,0.95)',
@@ -119,10 +136,11 @@ export default function DownloadPage() {
             {/* Password field if file is protected */}
             {hasPassword && (
               <div style={{ marginBottom: '1.25rem' }}>
-                <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.875rem', color: '#666', fontWeight: 500 }}>
+                <label htmlFor="download-password" style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.875rem', color: '#666', fontWeight: 500 }}>
                   🔒 Ce fichier est protégé par un mot de passe
                 </label>
                 <input
+                  id="download-password"
                   type="password"
                   placeholder="Saisissez le mot de passe…"
                   value={password}
@@ -133,7 +151,6 @@ export default function DownloadPage() {
                     border: '1px solid #E0E0E0',
                     borderRadius: '8px',
                     fontSize: '0.9rem',
-                    outline: 'none',
                     boxSizing: 'border-box',
                     fontFamily: "'Inter', sans-serif",
                   }}

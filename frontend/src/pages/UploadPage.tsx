@@ -6,6 +6,7 @@ import { useIsMobile } from '../hooks/useIsMobile';
 export default function UploadPage() {
   const navigate = useNavigate();
   const isTablet = useIsMobile(768);
+  const isMobileNav = useIsMobile(430);
   const fileRef = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -51,7 +52,6 @@ export default function UploadPage() {
     border: '1px solid #E0E0E0',
     borderRadius: '8px',
     fontSize: '0.9rem',
-    outline: 'none',
     boxSizing: 'border-box',
     fontFamily: "'Inter', sans-serif",
   };
@@ -63,7 +63,7 @@ export default function UploadPage() {
       flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'center',
-      padding: isTablet ? '4rem 1rem 1.5rem' : '5rem 1.5rem 2rem',
+      padding: isMobileNav ? '1.5rem 1rem' : isTablet ? '4rem 1rem 1.5rem' : '5rem 1.5rem 2rem',
     }}>
       {!file ? (
         /* Drop zone */
@@ -135,10 +135,11 @@ export default function UploadPage() {
           <form onSubmit={handleSubmit}>
             {/* Expiration */}
             <div style={{ marginBottom: '1.25rem' }}>
-              <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.875rem', color: '#666', fontWeight: 500 }}>
+              <label htmlFor="upload-ttl" style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.875rem', color: '#666', fontWeight: 500 }}>
                 Durée d'expiration (jours)
               </label>
               <select
+                id="upload-ttl"
                 value={ttlDays}
                 onChange={e => setTtlDays(Number(e.target.value))}
                 style={{ ...inputStyle, cursor: 'pointer' }}
@@ -153,10 +154,11 @@ export default function UploadPage() {
 
             {/* Password (optional) */}
             <div style={{ marginBottom: '1.25rem' }}>
-              <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.875rem', color: '#666', fontWeight: 500 }}>
+              <label htmlFor="upload-password" style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.875rem', color: '#666', fontWeight: 500 }}>
                 Mot de passe (optionnel)
               </label>
               <input
+                id="upload-password"
                 type="password"
                 placeholder="Laisser vide pour un accès libre"
                 value={password}
@@ -164,7 +166,7 @@ export default function UploadPage() {
                 style={inputStyle}
               />
               <div style={{ fontSize: '0.75rem', color: '#999', marginTop: '0.25rem' }}>
-                🔒 Protège le lien de téléchargement par un mot de passe
+                🔒 Protège le lien de téléchargement. Si renseigné : min. 8 caractères, 1 majuscule, 1 minuscule, 1 caractère spécial
               </div>
             </div>
 
