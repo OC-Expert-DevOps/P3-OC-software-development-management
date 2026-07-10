@@ -166,7 +166,7 @@ export default function UploadPage() {
                 style={inputStyle}
               />
               <div style={{ fontSize: '0.75rem', color: '#999', marginTop: '0.25rem' }}>
-                🔒 Protège le lien de téléchargement par un mot de passe
+                🔒 Protège le lien de téléchargement. Si renseigné : min. 8 caractères, 1 majuscule, 1 minuscule, 1 caractère spécial
               </div>
             </div>
 

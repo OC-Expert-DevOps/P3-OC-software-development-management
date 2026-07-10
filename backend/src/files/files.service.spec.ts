@@ -120,6 +120,17 @@ describe('FilesService', () => {
       );
     });
 
+    it('should reject text/plain content containing a script tag', async () => {
+      const scriptFile = {
+        ...file,
+        mimetype: 'text/plain',
+        buffer: Buffer.from('hello <script>alert(1)</script> world'),
+      } as any;
+      await expect(service.uploadFile('user-1', scriptFile)).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
     it('should accept a real PNG image regardless of its declared mimetype', async () => {
       mockMinio.uploadFile.mockResolvedValue(undefined);
       mockPrisma.file.create.mockResolvedValue({ id: 'file-3' });

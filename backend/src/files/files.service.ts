@@ -37,6 +37,23 @@ export class FilesService {
   // verified to actually look like text — see looksLikeText().
   private readonly allowedTextMimeTypes = new Set(['text/plain', 'text/csv']);
 
+  // Reduces (does not eliminate — see SECURITY.md) the blind spot where valid
+  // UTF-8 markup/script content sails through as "it's just text": rejects a
+  // text/plain or text/csv upload that contains common script/embed markers.
+  // Trade-off accepted: a text file whose legitimate content happens to
+  // contain one of these substrings (e.g. a tutorial snippet) is a false
+  // positive.
+  private readonly suspiciousTextPatterns = [
+    /<script[\s>]/i,
+    /<\?php/i,
+    /<iframe[\s>]/i,
+    /<object[\s>]/i,
+    /<embed[\s>]/i,
+    /<svg[\s>]/i,
+    /javascript:/i,
+    /\bon[a-z]+\s*=\s*["']/i, // onerror=, onload=, onclick=...
+  ];
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly minioService: MinioService,
@@ -71,7 +88,8 @@ export class FilesService {
       if (byte === 0x00) return false;
       if (byte < 0x07 || (byte > 0x0d && byte < 0x20)) return false;
     }
-    return true;
+    const text = sample.toString('utf8');
+    return !this.suspiciousTextPatterns.some((pattern) => pattern.test(text));
   }
 
   /** Strip the password hash before a File record is returned to the client. */

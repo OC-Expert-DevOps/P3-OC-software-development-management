@@ -85,6 +85,7 @@ cd frontend && npm audit
 | Contrôle | Statut | Détails |
 |----------|--------|---------|
 | Hachage des mots de passe | ✅ | bcrypt avec salage |
+| Politique de mot de passe fichier | ✅ | Alignée sur la politique du compte utilisateur (`SetPasswordDto` et `UploadFileDto.password`) — 8 caractères minimum, majuscule/minuscule/spécial. Anciennement 4 caractères sans règle de complexité |
 | Signature JWT | ✅ | HS256 avec secret de 32+ caractères |
 | Validation JWT | ✅ | Vérifie `sub`, `email`, `exp` |
 | Rotation des jetons de rafraîchissement | ✅ | L'ancien jeton est révoqué lors du rafraîchissement. Lookup par `selector` indexé (pattern selector/verifier), plus de scan linéaire + bcrypt.compare sur tous les tokens actifs |
@@ -103,7 +104,7 @@ cd frontend && npm audit
 | Validation des entrées | ✅ | class-validator sur tous les DTOs |
 | Injection SQL | ✅ | ORM Prisma avec requêtes paramétrées |
 | Limite de taille de fichier | ✅ | `MAX_FILE_SIZE_BYTES` (par défaut 1 Go), appliquée à la fois par Nginx (`client_max_body_size`) et par l'option `limits.fileSize` de Multer côté NestJS — sans cette dernière, tout le corps de la requête était bufferisé en mémoire avant que le service ne vérifie la taille, sur une route (`POST /files/anonymous`) accessible sans authentification |
-| Validation du type de fichier | ⚠️ | Détection du type réel par analyse des octets (`file-type`) contre une liste blanche de types MIME pour les formats binaires — remplace l'ancienne liste noire d'extensions, contournable en renommant un fichier. **Angle mort connu** : les formats texte (`text/plain`, `text/csv`) n'ont pas de signature binaire et sont acceptés dès lors que le contenu ne contient ni octet nul ni caractère de contrôle — du HTML/JS/SVG valide passe ce test. L'exploitation directe (XSS) est neutralisée par `Content-Disposition: attachment` forcé au téléchargement (pas de rendu inline), mais la garantie "validé par le contenu, pas par ce que déclare le client" est partielle sur cette famille de formats |
+| Validation du type de fichier | ⚠️ | Détection du type réel par analyse des octets (`file-type`) contre une liste blanche de types MIME pour les formats binaires — remplace l'ancienne liste noire d'extensions, contournable en renommant un fichier. Pour les formats texte (`text/plain`, `text/csv`, sans signature binaire à analyser), le contenu est en plus rejeté s'il contient des motifs de script/embed courants (`<script`, `<?php`, `<iframe`, gestionnaires `on*=`, etc.). **Limite assumée** : cette liste de motifs réduit mais ne ferme pas l'angle mort — un contenu malveillant qui n'y correspond pas passerait toujours, et un fichier texte légitime contenant un de ces motifs en exemple (tutoriel, extrait de code) serait rejeté à tort. L'exploitation directe (XSS) reste de toute façon neutralisée par `Content-Disposition: attachment` forcé au téléchargement (pas de rendu inline) |
 | En-têtes de sécurité HTTP | ⚠️ | CSP, HSTS, X-Frame-Options, X-Content-Type-Options, X-XSS-Protection (Nginx). `script-src` doit inclure `'unsafe-inline'` tant que le conteneur frontend sert le serveur de dev Vite (préambule React Fast Refresh injecté en inline) — passer à un build de production (`vite build`) permettrait de le retirer |
 
 ### ⚠️ Recommandations pour la Production
@@ -112,7 +113,6 @@ cd frontend && npm audit
 |----------|---------------|
 | Élevée | Avant toute exposition réseau réelle (hors poste de dev local) : changer tous les secrets par défaut de `.env` (`MINIO_ACCESS_KEY`/`MINIO_SECRET_KEY` valent `minioadmin`/`minioadmin` dans `.env.example`) — il n'existe qu'un seul fichier `docker-compose.yml` dans ce repo, pas de variante de production durcie |
 | Élevée | Ajouter une liste blanche CORS (autorise actuellement les origines configurées) |
-| Moyenne | Le mot de passe protégeant un lien de téléchargement (`SetPasswordDto`) n'exige que 4 caractères minimum, sans règle de complexité — contrairement au mot de passe de compte (8 caractères + majuscule/minuscule/spécial). À 4 chiffres, l'espace de recherche (10 000 combinaisons) reste bruteforçable en quelques heures malgré le rate limiting sur le téléchargement. Décision produit à trancher : la simplicité sert l'usage (destinataire qui n'a pas choisi ce mot de passe), mais mérite d'être un choix explicite plutôt qu'un oubli |
 | Moyenne | Implémenter le verrouillage de compte après N tentatives de connexion échouées |
 | Faible | `downloadCount` est incrémenté avant que le flux MinIO ne soit effectivement transmis au client (`download.service.ts`) : un échec réseau ou une panne MinIO pendant le stream consomme quand même un crédit de téléchargement sur un lien à quota limité, sans remboursement |
 | Faible | Ajouter la journalisation des requêtes avec des identifiants de corrélation |
